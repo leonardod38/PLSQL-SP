@@ -1,7 +1,7 @@
 CREATE OR REPLACE PACKAGE pkg_modelo_chunk_cproc
 IS
     -- Author         : 
-    -- Created/Commit : 02/04/2020
+    -- Created/Commit : 04/04/2020                  - testando vscode
     -- Purpose        : Carregar Notas de Entrada
 
     FUNCTION parametros
