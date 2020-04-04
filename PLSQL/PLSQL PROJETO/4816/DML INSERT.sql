@@ -40,6 +40,4 @@
                          
                          
                          
-                         
-                         select * from msafi.fin4816_prev_final_gtt
-                           order by col32, col1, col2, col7, col16
+                        
