@@ -28,9 +28,11 @@ CREATE TABLE msafi.fin4816_report_fiscal_gtt
   , razao_social            VARCHAR2 ( 120 BYTE )
   , municipio_prestador     VARCHAR2 ( 50 BYTE )
   , cod_servico             VARCHAR2 ( 14 BYTE )
+  , cod_cei                 VARCHAR2(15 BYTE)
   , equalizacao             VARCHAR(1)
 );
 
+    
 
 
 PROMPT Index IDX_4818_RPF;

@@ -83,21 +83,19 @@ IS
          g_municipio_prestador typ_municipio_prestador  ;                  
          g_cod_servico         typ_cod_servico          ;                  
          g_equalizacao         typ_equalizacao          ;                   
-         g_cod_cei             typ_cod_cei              ;                  
-         
+         g_cod_cei             typ_cod_cei              ;      
     
     
-    
-        -- =======================================
-        -- Cursors declaration
-        -- =======================================
+                -- =======================================
+                -- Cursors declaration Relatório Fiscal
+                -- =======================================
 
                 cursor cr_rtf   ( pdate  date, pcod_empresa varchar2 , p_proc_id NUMBER )
                   is
                    SELECT   
-                       x09_itens_serv.cod_empresa                           as cod_empresa      -- Codigo da Empresa                                
-                     , x09_itens_serv.cod_estab                             as cod_estab        -- Codigo do Estabelecimento
-                     , x09_itens_serv.data_fiscal                           as data_fiscal      -- Data Fiscal   
+                       x09_itens_serv.cod_empresa                           as cod_empresa          -- Codigo da Empresa                                
+                     , x09_itens_serv.cod_estab                             as cod_estab            -- Codigo do Estabelecimento
+                     , x09_itens_serv.data_fiscal                           as data_fiscal          -- Data Fiscal   
                      , x09_itens_serv.movto_e_s                             as movto_e_s                 
                      , x09_itens_serv.norm_dev                              as norm_dev                             
                      , x09_itens_serv.ident_docto                           as ident_docto               
@@ -375,12 +373,21 @@ IS
         dbms_application_info.set_module ( cc_procedurename || '  ' || v_data , 'n:' || vn_count_new );
 
           --- loga (v_data||' - '|| p_nm_empresa,false);
+          
+          
+          
+            --================================================
+            -- CARGA NA TABELA DO report fiscal 
+            --================================================
 
         OPEN cr_rtf   (v_data, p_nm_empresa, p_proc_id ) ;
 
         LOOP
-            --DBMS_APPLICATION_INFO.SET_MODULE(cc_procedurename,'Executando o fetch...');
-            FETCH cr_rtf 
+           --
+           DBMS_APPLICATION_INFO.SET_MODULE(cc_procedurename,'Executando o fetch report fiscal ...');
+           --
+           
+             FETCH cr_rtf 
                 BULK COLLECT INTO    -- TABLE  TMP                      
                    g_cod_empresa                                                       
                   ,g_cod_estab                                                         
@@ -2688,10 +2695,11 @@ END prc_reinf_conf_retencao;
         --============================================
             --    SELECT * FROM msafi.reinf_conf_previdenciaria_tmp ;
         
-            DELETE from msafi.fin4816_prev_tmp_estab;
+            DELETE from msafi.fin4816_report_fiscal_gtt;
             DELETE from msafi.fin4816_prev_gtt;
-            DELETE FROM msafi.reinf_conf_previdenciaria_tmp ;
-             COMMIT;
+            ---DELETE FROM msafi.reinf_conf_previdenciaria_tmp ;
+            --
+            COMMIT;
               
          COMMIT;
         
