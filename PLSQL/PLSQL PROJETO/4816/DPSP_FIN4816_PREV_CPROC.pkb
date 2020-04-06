@@ -17,159 +17,105 @@ IS
      -- =======================================
      -- VARIÁVEIS DO CURSOR
      -- =======================================
-    TYPE typ_cod_empresa IS TABLE OF x07_docto_fiscal.cod_empresa%TYPE
-        INDEX BY PLS_INTEGER;
+  
 
-    g_cod_empresa typ_cod_empresa;
-
-    TYPE typ_cod_estab IS TABLE OF x07_docto_fiscal.cod_estab%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_cod_estab typ_cod_estab;
-
-    TYPE typ_periodo_emissao IS TABLE OF x07_docto_fiscal.num_docfis%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_perido_emissao typ_periodo_emissao;
-
-    TYPE typ_cgc IS TABLE OF estabelecimento.cgc%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_cgc typ_cgc;
-
-    TYPE typ_num_docfis IS TABLE OF x07_docto_fiscal.num_docfis%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_num_docto typ_num_docfis;
-
-
-    TYPE typ_cod_docto IS TABLE OF x2005_tipo_docto.cod_docto%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_tipo_docto typ_cod_docto;
-
-    TYPE typ_data_emissao IS TABLE OF x07_docto_fiscal.data_emissao%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_data_emissao typ_data_emissao;
-
-    TYPE typ_data_fiscal IS TABLE OF x07_docto_fiscal.data_fiscal%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_data_fiscal typ_data_fiscal;
-
-    TYPE typ_cgc_fornecedor IS TABLE OF x04_pessoa_fis_jur.cpf_cgc%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_cgc_fornecedor typ_cgc_fornecedor;
-
-    TYPE typ_uf IS TABLE OF estado.cod_estado%TYPE
-        INDEX BY PLS_INTEGER;
-
-     g_uf typ_uf; 
-
-     TYPE typ_vlr_tot IS TABLE OF x09_itens_serv.vlr_tot%TYPE
-        INDEX BY PLS_INTEGER;
-
-     g_valor_total typ_vlr_tot;
-
-
-    TYPE typ_vlr_base_inss IS TABLE OF x09_itens_serv.vlr_base_inss%TYPE
-        INDEX BY PLS_INTEGER;
-        
-        g_vlr_base_inss typ_vlr_base_inss;
-
-    TYPE typ_vlr_inss_retido IS TABLE OF x09_itens_serv.vlr_inss_retido%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_base_inss typ_vlr_inss_retido;
-
-
-    TYPE typ_cod_fis_jur IS TABLE OF x04_pessoa_fis_jur.cod_fis_jur%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_cod_fis_jur typ_cod_fis_jur;
-
-    TYPE typ_razao_social IS TABLE OF x04_pessoa_fis_jur.razao_social%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_razao_social typ_razao_social;
-
-    TYPE typ_descricao IS TABLE OF municipio.descricao%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_descricao typ_descricao;
-
-    TYPE typ_cod_servico IS TABLE OF x2018_servicos.cod_servico%TYPE
-        INDEX BY PLS_INTEGER;
-
-    g_cod_servico typ_cod_servico;
+ TYPE typ_cod_empresa             IS TABLE OF msafi.fin4816_report_fiscal_gtt.cod_empresa                 %TYPE  ;
+ TYPE typ_cod_estab               IS TABLE OF msafi.fin4816_report_fiscal_gtt.cod_estab                   %TYPE  ;
+ TYPE typ_data_fiscal             IS TABLE OF msafi.fin4816_report_fiscal_gtt.data_fiscal                 %TYPE  ;
+ TYPE typ_movto_e_s               IS TABLE OF msafi.fin4816_report_fiscal_gtt.movto_e_s                   %TYPE  ;
+ TYPE typ_norm_dev                IS TABLE OF msafi.fin4816_report_fiscal_gtt.norm_dev                    %TYPE  ;
+ TYPE typ_ident_docto             IS TABLE OF msafi.fin4816_report_fiscal_gtt.ident_docto                 %TYPE  ;
+ TYPE typ_ident_fis_jur           IS TABLE OF msafi.fin4816_report_fiscal_gtt.ident_fis_jur               %TYPE  ;
+ TYPE typ_num_docfis              IS TABLE OF msafi.fin4816_report_fiscal_gtt.num_docfis                  %TYPE  ;
+ TYPE typ_serie_docfis            IS TABLE OF msafi.fin4816_report_fiscal_gtt.serie_docfis                %TYPE  ;
+ TYPE typ_sub_serie_docfis        IS TABLE OF msafi.fin4816_report_fiscal_gtt.sub_serie_docfis            %TYPE  ;
+ TYPE typ_ident_servico           IS TABLE OF msafi.fin4816_report_fiscal_gtt.ident_servico               %TYPE  ;
+ TYPE typ_num_item                IS TABLE OF msafi.fin4816_report_fiscal_gtt.num_item                    %TYPE  ;
+ TYPE typ_periodo_emissao         IS TABLE OF msafi.fin4816_report_fiscal_gtt.periodo_emissao             %TYPE  ;
+ TYPE typ_cgc                     IS TABLE OF msafi.fin4816_report_fiscal_gtt.cgc                         %TYPE  ;
+ TYPE typ_num_docto               IS TABLE OF msafi.fin4816_report_fiscal_gtt.num_docto                   %TYPE  ;
+ TYPE typ_tipo_docto              IS TABLE OF msafi.fin4816_report_fiscal_gtt.tipo_docto                  %TYPE  ;
+ TYPE typ_data_emissao            IS TABLE OF msafi.fin4816_report_fiscal_gtt.data_emissao                %TYPE  ;
+ TYPE typ_cgc_fornecedor          IS TABLE OF msafi.fin4816_report_fiscal_gtt.cgc_fornecedor              %TYPE  ;
+ TYPE typ_uf                      IS TABLE OF msafi.fin4816_report_fiscal_gtt.uf                          %TYPE  ;
+ TYPE typ_valor_total             IS TABLE OF msafi.fin4816_report_fiscal_gtt.valor_total                 %TYPE  ;
+ TYPE typ_vlr_base_inss           IS TABLE OF msafi.fin4816_report_fiscal_gtt.vlr_base_inss               %TYPE  ;
+ TYPE typ_vlr_inss                IS TABLE OF msafi.fin4816_report_fiscal_gtt.vlr_inss                    %TYPE  ;
+ TYPE typ_codigo_fisjur           IS TABLE OF msafi.fin4816_report_fiscal_gtt.codigo_fisjur               %TYPE  ;
+ TYPE typ_razao_social            IS TABLE OF msafi.fin4816_report_fiscal_gtt.razao_social                %TYPE  ;
+ TYPE typ_municipio_prestador     IS TABLE OF msafi.fin4816_report_fiscal_gtt.municipio_prestador         %TYPE  ;
+ TYPE typ_cod_servico             IS TABLE OF msafi.fin4816_report_fiscal_gtt.cod_servico                 %TYPE  ;
+ TYPE typ_equalizacao             IS TABLE OF msafi.fin4816_report_fiscal_gtt.equalizacao                 %TYPE  ;
+ 
+        -- =======================================
+        -- Type  report fiscal 
+        -- =======================================
+            
+         g_cod_empresa         typ_cod_empresa          ;
+         g_cod_estab           typ_cod_estab            ;
+         g_data_fiscal         typ_data_fiscal          ;
+         g_movto_e_s           typ_movto_e_s            ;
+         g_norm_dev            typ_norm_dev             ;
+         g_ident_docto         typ_ident_docto          ;
+         g_ident_fis_jur       typ_ident_fis_jur        ;
+         g_num_docfis          typ_num_docfis           ;
+         g_serie_docfis        typ_serie_docfis         ;
+         g_sub_serie_docfis    typ_sub_serie_docfis     ;
+         g_ident_servico       typ_ident_servico        ;
+         g_num_item            typ_num_item             ;
+         g_periodo_emissao     typ_periodo_emissao      ;
+         g_cgc                 typ_cgc                  ;
+         g_num_docto           typ_num_docto            ;
+         g_tipo_docto          typ_tipo_docto           ;
+         g_data_emissao        typ_data_emissao         ;
+         g_cgc_fornecedor      typ_cgc_fornecedor       ;
+         g_uf                  typ_uf                   ;
+         g_valor_total         typ_valor_total          ;
+         g_vlr_base_inss       typ_vlr_base_inss        ;
+         g_vlr_inss            typ_vlr_inss             ;
+         g_codigo_fisjur       typ_codigo_fisjur        ;
+         g_razao_social        typ_razao_social         ;
+         g_municipio_prestador typ_municipio_prestador  ;
+         g_cod_servico         typ_cod_servico          ;
+         g_equalizacao         typ_equalizacao          ;
     
-     TYPE g_cur_tab_prec IS RECORD(
-     ID                 NUMBER ,
-     col1               varchar2(255),   
-     col2               varchar2(255),   
-     col3               varchar2(255),   
-     col4               varchar2(255),   
-     col5               varchar2(255),   
-     col6               varchar2(255),   
-     col7               varchar2(255),   
-     col8               varchar2(255),   
-     col9               varchar2(255),   
-     col10               varchar2(255),  
-     col11               varchar2(255),  
-     col12               varchar2(255),  
-     col13               varchar2(255),  
-     col14               varchar2(255),  
-     col15               varchar2(255),  
-     col16               varchar2(255), 
-     col17               varchar2(255),  
-     col18               varchar2(255),  
-     col19               varchar2(255),  
-     col20               varchar2(255),  
-     col21               varchar2(255),  
-     col22               varchar2(255),  
-     col23               varchar2(255),  
-     col24               varchar2(255),  
-     col25               varchar2(255),  
-     col26               varchar2(255),  
-     col27               varchar2(255),  
-     col28               varchar2(255),  
-     col29               varchar2(255),  
-     col30               varchar2(255),  
-     col31               varchar2(255),  
-     col32               varchar2(255)); 
-      
-  
-  
-     TYPE c_tab_conc IS TABLE OF g_cur_tab_prec;
-        tab_e c_tab_conc;
     
     
         -- =======================================
         -- Cursors declaration
         -- =======================================
 
-                cursor cr_prev   ( pdate  date, pcod_empresa varchar2 , p_proc_id NUMBER )
+                cursor cr_rtf   ( pdate  date, pcod_empresa varchar2 , p_proc_id NUMBER )
                   is
                    SELECT   
-                       x07_docto_fiscal.cod_empresa                       as cod_empresa
-                     , x07_docto_fiscal.cod_estab                         as cod_estab
-                     , x07_docto_fiscal.data_emissao                      as perido_emissao   
-                     , estabelecimento.cgc                                as cgc 
-                     , x07_docto_fiscal.num_docfis                        as num_docto
-                     , x2005_tipo_docto.cod_docto                         as tipo_docto
-                     , x07_docto_fiscal.data_emissao                      as data_emissao
-                     , x07_docto_fiscal.data_fiscal                       as data_fiscal
-                     , x04_pessoa_fis_jur.cpf_cgc                         as cgc_fornecedor
-                     , estado.cod_estado                                  as uf
-                     , MAX(x09_itens_serv.vlr_tot)                        as valor_total
-                     , MAX(x09_itens_serv.vlr_base_inss)                  as base_inss
-                     , MAX(x09_itens_serv.vlr_inss_retido )               as valor_inss
-                     , MAX(x04_pessoa_fis_jur.cod_fis_jur )               as cod_fis_jur
-                     , x04_pessoa_fis_jur.razao_social                    as razao_social
-                     , municipio.descricao                                as municipio_prestador
-                     , x2018_servicos.cod_servico                         as cod_servico
+                       x09_itens_serv.cod_empresa                           as cod_empresa      -- Codigo da Empresa        
+                     , x09_itens_serv.cod_estab                             as cod_estab        -- Codigo do Estabelecimento
+                     , x09_itens_serv.data_fiscal                           as data_fiscal      -- Data Fiscal   
+                     , x09_itens_serv.movto_e_s                             as movto_e_s                 
+                     , x09_itens_serv.norm_dev                              as norm_dev                             
+                     , x09_itens_serv.ident_docto                           as ident_docto               
+                     , x09_itens_serv.ident_fis_jur                         as ident_fis_jur             
+                     , x09_itens_serv.num_docfis                            as num_docfis                
+                     , x09_itens_serv.serie_docfis                          as serie_docfis              
+                     , x09_itens_serv.sub_serie_docfis                      as sub_serie_docfis          
+                     , x09_itens_serv.ident_servico                         as ident_servico             
+                     , x09_itens_serv.num_item                              as num_item     
+                     , x07_docto_fiscal.data_emissao                        as perido_emissao        -- Periodo de Emissão  
+                     , estabelecimento.cgc                                  as cgc                   -- CNPJ Drogaria 
+                     , x07_docto_fiscal.num_docfis                          as num_docto             -- Numero da Nota Fiscal
+                     , x2005_tipo_docto.cod_docto                           as tipo_docto            -- Tipo de Documento
+                     , x07_docto_fiscal.data_emissao                        as data_emissao          -- Data Emissão          
+                     , x04_pessoa_fis_jur.cpf_cgc                           as cgc_fornecedor        -- CNPJ_Fonecedor
+                     , estado.cod_estado                                    as uf                    -- uf 
+                     , x09_itens_serv.vlr_tot                               as valor_total           -- Valor Total da Nota
+                     , x09_itens_serv.vlr_base_inss                         as base_inss             -- Base de Calculo INSS
+                     , x09_itens_serv.vlr_inss_retido                       as valor_inss            -- Valor do INSS 
+                     , x04_pessoa_fis_jur.cod_fis_jur                       as cod_fis_jur           -- Codigo Pessoa Fisica/juridica
+                     , x04_pessoa_fis_jur.razao_social                      as razao_social          -- Razão Social
+                     , municipio.descricao                                  as municipio_prestador   -- Municipio Prestador
+                     , x2018_servicos.cod_servico                           as cod_servico           -- Codigo de Serviço
+                     , x07_docto_fiscal.cod_cei                             as cod_cei               -- Codigo CEI
+                     , NULL                                                 as equalizacao           -- Equalização    
                     FROM x07_docto_fiscal
                        , x2005_tipo_docto    
                        , x04_pessoa_fis_jur      
@@ -238,31 +184,19 @@ IS
                                          AND esta.cod_estab = x07_docto_fiscal.cod_estab
                                          AND ipiu.dsc_param = '64'
                                          AND ipiu.ind_tp_par = 'S') ) ) )
-                GROUP BY x07_docto_fiscal.cod_empresa
-                       , x07_docto_fiscal.cod_estab
-                       , x07_docto_fiscal.num_docfis
-                       , x2005_tipo_docto.cod_docto
-                       , x07_docto_fiscal.serie_docfis
-                       , x07_docto_fiscal.sub_serie_docfis
-                       , x07_docto_fiscal.movto_e_s
-                       , x07_docto_fiscal.data_emissao
-                       , x07_docto_fiscal.data_fiscal
-                       , x04_pessoa_fis_jur.cpf_cgc
-                       , x04_pessoa_fis_jur.ident_estado
-                       , x04_pessoa_fis_jur.razao_social
-                       , x04_pessoa_fis_jur.cod_municipio
-                       --, x07_docto_fiscal.vlr_tot_nota
-                       , x09_itens_serv.vlr_tot
-                       , Estabelecimento.Cgc
-                       , Estado.Cod_Estado    
-                       , X09_Itens_Serv.Vlr_Base_Inss   
-                       , X2018_Servicos.Cod_Servico  
-                       , Municipio.Descricao  
-                ORDER BY
-                  cod_empresa
-                , cod_estab
-                , data_emissao
-                , num_docto
+                        ORDER BY 
+                                  x09_itens_serv.cod_empresa                 
+                                 , x09_itens_serv.cod_estab                             
+                                 , x09_itens_serv.data_fiscal                           
+                                 , x09_itens_serv.movto_e_s                             
+                                 , x09_itens_serv.norm_dev                              
+                                 , x09_itens_serv.ident_docto                           
+                                 , x09_itens_serv.ident_fis_jur                         
+                                 , x09_itens_serv.num_docfis                            
+                                 , x09_itens_serv.serie_docfis                          
+                                 , x09_itens_serv.sub_serie_docfis                      
+                                 , x09_itens_serv.ident_servico                         
+                                 , x09_itens_serv.num_item    
                   ;
                 
 
