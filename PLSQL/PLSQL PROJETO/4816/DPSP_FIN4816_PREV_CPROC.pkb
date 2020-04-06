@@ -2129,6 +2129,8 @@ IS
     PROCEDURE gravaregistro ( preg IN reinf_conf_previdenciaria%ROWTYPE )
     IS
     BEGIN
+    
+    
         BEGIN
             INSERT INTO msafi.reinf_conf_previdenciaria_tmp ( cod_empresa
                                                   , cod_estab
@@ -2182,12 +2184,33 @@ IS
                         , preg.ident_servico
                         , preg.ident_produto
                         , preg.cod_param );
+                        
+                        
+                        
+                        
+                        
+         
         EXCEPTION
             WHEN DUP_VAL_ON_INDEX THEN
                 NULL;
             WHEN OTHERS THEN
                 p_status := -1;
         END;
+        
+        
+        
+        BEGIN
+        
+        
+          NULL  ---  AKKK  
+        
+        
+        
+        END ;
+        
+        
+        
+        
     END gravaregistro;
 
 
