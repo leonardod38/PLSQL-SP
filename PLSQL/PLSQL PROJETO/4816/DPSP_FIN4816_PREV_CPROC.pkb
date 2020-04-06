@@ -19,65 +19,72 @@ IS
      -- =======================================
   
 
- TYPE typ_cod_empresa             IS TABLE OF msafi.fin4816_report_fiscal_gtt.cod_empresa                 %TYPE  ;
- TYPE typ_cod_estab               IS TABLE OF msafi.fin4816_report_fiscal_gtt.cod_estab                   %TYPE  ;
- TYPE typ_data_fiscal             IS TABLE OF msafi.fin4816_report_fiscal_gtt.data_fiscal                 %TYPE  ;
- TYPE typ_movto_e_s               IS TABLE OF msafi.fin4816_report_fiscal_gtt.movto_e_s                   %TYPE  ;
- TYPE typ_norm_dev                IS TABLE OF msafi.fin4816_report_fiscal_gtt.norm_dev                    %TYPE  ;
- TYPE typ_ident_docto             IS TABLE OF msafi.fin4816_report_fiscal_gtt.ident_docto                 %TYPE  ;
- TYPE typ_ident_fis_jur           IS TABLE OF msafi.fin4816_report_fiscal_gtt.ident_fis_jur               %TYPE  ;
- TYPE typ_num_docfis              IS TABLE OF msafi.fin4816_report_fiscal_gtt.num_docfis                  %TYPE  ;
- TYPE typ_serie_docfis            IS TABLE OF msafi.fin4816_report_fiscal_gtt.serie_docfis                %TYPE  ;
- TYPE typ_sub_serie_docfis        IS TABLE OF msafi.fin4816_report_fiscal_gtt.sub_serie_docfis            %TYPE  ;
- TYPE typ_ident_servico           IS TABLE OF msafi.fin4816_report_fiscal_gtt.ident_servico               %TYPE  ;
- TYPE typ_num_item                IS TABLE OF msafi.fin4816_report_fiscal_gtt.num_item                    %TYPE  ;
- TYPE typ_periodo_emissao         IS TABLE OF msafi.fin4816_report_fiscal_gtt.periodo_emissao             %TYPE  ;
- TYPE typ_cgc                     IS TABLE OF msafi.fin4816_report_fiscal_gtt.cgc                         %TYPE  ;
- TYPE typ_num_docto               IS TABLE OF msafi.fin4816_report_fiscal_gtt.num_docto                   %TYPE  ;
- TYPE typ_tipo_docto              IS TABLE OF msafi.fin4816_report_fiscal_gtt.tipo_docto                  %TYPE  ;
- TYPE typ_data_emissao            IS TABLE OF msafi.fin4816_report_fiscal_gtt.data_emissao                %TYPE  ;
- TYPE typ_cgc_fornecedor          IS TABLE OF msafi.fin4816_report_fiscal_gtt.cgc_fornecedor              %TYPE  ;
- TYPE typ_uf                      IS TABLE OF msafi.fin4816_report_fiscal_gtt.uf                          %TYPE  ;
- TYPE typ_valor_total             IS TABLE OF msafi.fin4816_report_fiscal_gtt.valor_total                 %TYPE  ;
- TYPE typ_vlr_base_inss           IS TABLE OF msafi.fin4816_report_fiscal_gtt.vlr_base_inss               %TYPE  ;
- TYPE typ_vlr_inss                IS TABLE OF msafi.fin4816_report_fiscal_gtt.vlr_inss                    %TYPE  ;
- TYPE typ_codigo_fisjur           IS TABLE OF msafi.fin4816_report_fiscal_gtt.codigo_fisjur               %TYPE  ;
- TYPE typ_razao_social            IS TABLE OF msafi.fin4816_report_fiscal_gtt.razao_social                %TYPE  ;
- TYPE typ_municipio_prestador     IS TABLE OF msafi.fin4816_report_fiscal_gtt.municipio_prestador         %TYPE  ;
- TYPE typ_cod_servico             IS TABLE OF msafi.fin4816_report_fiscal_gtt.cod_servico                 %TYPE  ;
- TYPE typ_equalizacao             IS TABLE OF msafi.fin4816_report_fiscal_gtt.equalizacao                 %TYPE  ;
+ TYPE typ_cod_empresa             IS TABLE OF msafi.fin4816_report_fiscal_gtt.cod_empresa                 %TYPE  ;         
+ TYPE typ_cod_estab               IS TABLE OF msafi.fin4816_report_fiscal_gtt.cod_estab                   %TYPE  ;         
+ TYPE typ_data_fiscal             IS TABLE OF msafi.fin4816_report_fiscal_gtt.data_fiscal                 %TYPE  ;         
+ TYPE typ_movto_e_s               IS TABLE OF msafi.fin4816_report_fiscal_gtt.movto_e_s                   %TYPE  ;         
+ TYPE typ_norm_dev                IS TABLE OF msafi.fin4816_report_fiscal_gtt.norm_dev                    %TYPE  ;         
+ TYPE typ_ident_docto             IS TABLE OF msafi.fin4816_report_fiscal_gtt.ident_docto                 %TYPE  ;         
+ TYPE typ_ident_fis_jur           IS TABLE OF msafi.fin4816_report_fiscal_gtt.ident_fis_jur               %TYPE  ;         
+ TYPE typ_num_docfis              IS TABLE OF msafi.fin4816_report_fiscal_gtt.num_docfis                  %TYPE  ;         
+ TYPE typ_serie_docfis            IS TABLE OF msafi.fin4816_report_fiscal_gtt.serie_docfis                %TYPE  ;         
+ TYPE typ_sub_serie_docfis        IS TABLE OF msafi.fin4816_report_fiscal_gtt.sub_serie_docfis            %TYPE  ;         
+ TYPE typ_ident_servico           IS TABLE OF msafi.fin4816_report_fiscal_gtt.ident_servico               %TYPE  ;         
+ TYPE typ_num_item                IS TABLE OF msafi.fin4816_report_fiscal_gtt.num_item                    %TYPE  ;         
+ TYPE typ_periodo_emissao         IS TABLE OF msafi.fin4816_report_fiscal_gtt.periodo_emissao             %TYPE  ;         
+ TYPE typ_cgc                     IS TABLE OF msafi.fin4816_report_fiscal_gtt.cgc                         %TYPE  ;         
+ TYPE typ_num_docto               IS TABLE OF msafi.fin4816_report_fiscal_gtt.num_docto                   %TYPE  ;         
+ TYPE typ_tipo_docto              IS TABLE OF msafi.fin4816_report_fiscal_gtt.tipo_docto                  %TYPE  ;         
+ TYPE typ_data_emissao            IS TABLE OF msafi.fin4816_report_fiscal_gtt.data_emissao                %TYPE  ;         
+ TYPE typ_cgc_fornecedor          IS TABLE OF msafi.fin4816_report_fiscal_gtt.cgc_fornecedor              %TYPE  ;         
+ TYPE typ_uf                      IS TABLE OF msafi.fin4816_report_fiscal_gtt.uf                          %TYPE  ;         
+ TYPE typ_valor_total             IS TABLE OF msafi.fin4816_report_fiscal_gtt.valor_total                 %TYPE  ;         
+ TYPE typ_vlr_base_inss           IS TABLE OF msafi.fin4816_report_fiscal_gtt.vlr_base_inss               %TYPE  ;         
+ TYPE typ_vlr_inss                IS TABLE OF msafi.fin4816_report_fiscal_gtt.vlr_inss                    %TYPE  ;         
+ TYPE typ_codigo_fisjur           IS TABLE OF msafi.fin4816_report_fiscal_gtt.codigo_fisjur               %TYPE  ;         
+ TYPE typ_razao_social            IS TABLE OF msafi.fin4816_report_fiscal_gtt.razao_social                %TYPE  ;         
+ TYPE typ_municipio_prestador     IS TABLE OF msafi.fin4816_report_fiscal_gtt.municipio_prestador         %TYPE  ;         
+ TYPE typ_cod_servico             IS TABLE OF msafi.fin4816_report_fiscal_gtt.cod_servico                 %TYPE  ;         
+ TYPE typ_cod_cei                 IS TABLE OF msafi.fin4816_report_fiscal_gtt.cod_cei                     %TYPE  ;         
+ TYPE typ_equalizacao             IS TABLE OF msafi.fin4816_report_fiscal_gtt.equalizacao                 %TYPE  ;         
+ 
+ 
+ 
+
  
         -- =======================================
         -- Type  report fiscal 
         -- =======================================
             
-         g_cod_empresa         typ_cod_empresa          ;
-         g_cod_estab           typ_cod_estab            ;
-         g_data_fiscal         typ_data_fiscal          ;
-         g_movto_e_s           typ_movto_e_s            ;
-         g_norm_dev            typ_norm_dev             ;
-         g_ident_docto         typ_ident_docto          ;
-         g_ident_fis_jur       typ_ident_fis_jur        ;
-         g_num_docfis          typ_num_docfis           ;
-         g_serie_docfis        typ_serie_docfis         ;
-         g_sub_serie_docfis    typ_sub_serie_docfis     ;
-         g_ident_servico       typ_ident_servico        ;
-         g_num_item            typ_num_item             ;
-         g_periodo_emissao     typ_periodo_emissao      ;
-         g_cgc                 typ_cgc                  ;
-         g_num_docto           typ_num_docto            ;
-         g_tipo_docto          typ_tipo_docto           ;
-         g_data_emissao        typ_data_emissao         ;
-         g_cgc_fornecedor      typ_cgc_fornecedor       ;
-         g_uf                  typ_uf                   ;
-         g_valor_total         typ_valor_total          ;
-         g_vlr_base_inss       typ_vlr_base_inss        ;
-         g_vlr_inss            typ_vlr_inss             ;
-         g_codigo_fisjur       typ_codigo_fisjur        ;
-         g_razao_social        typ_razao_social         ;
-         g_municipio_prestador typ_municipio_prestador  ;
-         g_cod_servico         typ_cod_servico          ;
-         g_equalizacao         typ_equalizacao          ;
+         g_cod_empresa         typ_cod_empresa          ;                  
+         g_cod_estab           typ_cod_estab            ;                  
+         g_data_fiscal         typ_data_fiscal          ;                  
+         g_movto_e_s           typ_movto_e_s            ;                  
+         g_norm_dev            typ_norm_dev             ;                  
+         g_ident_docto         typ_ident_docto          ;                  
+         g_ident_fis_jur       typ_ident_fis_jur        ;                  
+         g_num_docfis          typ_num_docfis           ;                  
+         g_serie_docfis        typ_serie_docfis         ;                  
+         g_sub_serie_docfis    typ_sub_serie_docfis     ;                  
+         g_ident_servico       typ_ident_servico        ;                  
+         g_num_item            typ_num_item             ;                  
+         g_periodo_emissao     typ_periodo_emissao      ;                  
+         g_cgc                 typ_cgc                  ;                  
+         g_num_docto           typ_num_docto            ;                  
+         g_tipo_docto          typ_tipo_docto           ;                  
+         g_data_emissao        typ_data_emissao         ;                  
+         g_cgc_fornecedor      typ_cgc_fornecedor       ;                  
+         g_uf                  typ_uf                   ;                  
+         g_valor_total         typ_valor_total          ;                  
+         g_vlr_base_inss       typ_vlr_base_inss        ;                  
+         g_vlr_inss            typ_vlr_inss             ;                  
+         g_codigo_fisjur       typ_codigo_fisjur        ;                  
+         g_razao_social        typ_razao_social         ;                  
+         g_municipio_prestador typ_municipio_prestador  ;                  
+         g_cod_servico         typ_cod_servico          ;                  
+         g_equalizacao         typ_equalizacao          ;                   
+         g_cod_cei             typ_cod_cei              ;                  
+         
     
     
     
@@ -88,7 +95,7 @@ IS
                 cursor cr_rtf   ( pdate  date, pcod_empresa varchar2 , p_proc_id NUMBER )
                   is
                    SELECT   
-                       x09_itens_serv.cod_empresa                           as cod_empresa      -- Codigo da Empresa        
+                       x09_itens_serv.cod_empresa                           as cod_empresa      -- Codigo da Empresa                                
                      , x09_itens_serv.cod_estab                             as cod_estab        -- Codigo do Estabelecimento
                      , x09_itens_serv.data_fiscal                           as data_fiscal      -- Data Fiscal   
                      , x09_itens_serv.movto_e_s                             as movto_e_s                 
@@ -369,29 +376,40 @@ IS
 
           --- loga (v_data||' - '|| p_nm_empresa,false);
 
-        OPEN cr_prev   (v_data, p_nm_empresa, p_proc_id ) ;
+        OPEN cr_rtf   (v_data, p_nm_empresa, p_proc_id ) ;
 
         LOOP
             --DBMS_APPLICATION_INFO.SET_MODULE(cc_procedurename,'Executando o fetch...');
-            FETCH cr_prev   
-                BULK COLLECT INTO                       -- TABLE  TMP
-                         g_cod_empresa 		            -- COD_EMPRESA        
-                    ,    g_cod_estab 	                -- COD_ESTAB          
-                    ,    g_perido_emissao               -- PERIODO_EMISSAO    
-                    ,    g_cgc                          -- CGC                
-                    ,    g_num_docto                    -- NUM_DOCTO          
-                    ,    g_tipo_docto                   -- TIPO_DOCTO         
-                    ,    g_data_emissao                 -- DATA_EMISSAO       
-                    ,    g_data_fiscal                  -- DATA_FISCAL        
-                    ,    g_cgc_fornecedor               -- CGC_FORNECEDOR     
-                    ,    g_uf                           -- UF                 
-                    ,    g_valor_total                  -- VALOR_TOTAL        
-                    ,    g_vlr_base_inss	            -- VLR_BASE_INSS      
-                    ,    g_base_inss                    -- VLR_INSS           
-                    ,    g_cod_fis_jur                  -- CODIGO_FISJUR      
-                    ,    g_razao_social                 -- RAZAO_SOCIAL       
-                    ,    g_descricao                    -- MUNICIPIO_PRESTADOR
-                    ,    g_cod_servico                  -- COD_SERVICO        
+            FETCH cr_rtf 
+                BULK COLLECT INTO    -- TABLE  TMP                      
+                   g_cod_empresa                                                       
+                  ,g_cod_estab                                                         
+                  ,g_data_fiscal                                                       
+                  ,g_movto_e_s                                                         
+                  ,g_norm_dev                                                          
+                  ,g_ident_docto                                                       
+                  ,g_ident_fis_jur                                                     
+                  ,g_num_docfis                                                        
+                  ,g_serie_docfis                                                      
+                  ,g_sub_serie_docfis                                                  
+                  ,g_ident_servico                                                     
+                  ,g_num_item                                                          
+                  ,g_periodo_emissao                                                   
+                  ,g_cgc                                                               
+                  ,g_num_docto                                                         
+                  ,g_tipo_docto                                                        
+                  ,g_data_emissao                                                      
+                  ,g_cgc_fornecedor                                                    
+                  ,g_uf                                                                
+                  ,g_valor_total                                                       
+                  ,g_vlr_base_inss                                                     
+                  ,g_vlr_inss                                                          
+                  ,g_codigo_fisjur                                                     
+                  ,g_razao_social                                                      
+                  ,g_municipio_prestador                                               
+                  ,g_cod_servico                                                       
+                  ,g_cod_cei   
+                  ,g_equalizacao                                                        
                 LIMIT cc_limit;
 
 
@@ -399,43 +417,65 @@ IS
             -- inicia o cursor
                  FORALL i IN g_cod_empresa.FIRST .. g_cod_empresa.LAST
                  INSERT /*+ APPEND */
-                   INTO msafi.fin4816_prev_gtt ( 
-                                         cod_empresa
-                                       , cod_estab
-                                       , periodo_emissao
-                                       , cgc
-                                       , num_docto
-                                       , tipo_docto
-                                       , data_emissao
-                                       , data_fiscal
-                                       , cgc_fornecedor
-                                       , uf
-                                       , valor_total
-                                       , vlr_base_inss
-                                       , vlr_inss
-                                       , codigo_fisjur
-                                       , razao_social
-                                       , municipio_prestador
-                                       , cod_servico )
-         VALUES ( 
-                             g_cod_empresa   (i)		
-                        ,    g_cod_estab 	 (i)   
-                        ,    g_perido_emissao(i) 
-                        ,    g_cgc           (i)   
-                        ,    g_num_docto     (i)   
-                        ,    g_tipo_docto    (i)   
-                        ,    g_data_emissao  (i)  
-                        ,    g_data_fiscal   (i)  
-                        ,    g_cgc_fornecedor(i) 
-                        ,    g_uf            (i)   
-                        ,    g_valor_total   (i)   
-                        ,    g_vlr_base_inss (i)	
-                        ,    g_base_inss     (i)   
-                        ,    g_cod_fis_jur   (i)  
-                        ,    g_razao_social  (i)  
-                        ,    g_descricao     (i)  
-                        ,    g_cod_servico   (i)  
-                );
+                 INTO msafi.fin4816_report_fiscal_gtt
+                   (  cod_empresa         
+                    , cod_estab             
+                    , data_fiscal           
+                    , movto_e_s             
+                    , norm_dev              
+                    , ident_docto           
+                    , ident_fis_jur         
+                    , num_docfis            
+                    , serie_docfis          
+                    , sub_serie_docfis      
+                    , ident_servico         
+                    , num_item              
+                    , periodo_emissao       
+                    , cgc                   
+                    , num_docto             
+                    , tipo_docto            
+                    , data_emissao          
+                    , cgc_fornecedor        
+                    , uf                    
+                    , valor_total           
+                    , vlr_base_inss         
+                    , vlr_inss              
+                    , codigo_fisjur         
+                    , razao_social          
+                    , municipio_prestador   
+                    , cod_servico 
+                    , cod_cei          
+                    , equalizacao )
+                  VALUES (          
+                         g_cod_empresa           (i),       
+                         g_cod_estab             (i),  
+                         g_data_fiscal           (i),  
+                         g_movto_e_s             (i),  
+                         g_norm_dev              (i),  
+                         g_ident_docto           (i),  
+                         g_ident_fis_jur         (i),  
+                         g_num_docfis            (i),  
+                         g_serie_docfis          (i),  
+                         g_sub_serie_docfis      (i),  
+                         g_ident_servico         (i),  
+                         g_num_item              (i),  
+                         g_periodo_emissao       (i),  
+                         g_cgc                   (i),  
+                         g_num_docto             (i),  
+                         g_tipo_docto            (i),  
+                         g_data_emissao          (i),  
+                         g_cgc_fornecedor        (i),  
+                         g_uf                    (i),  
+                         g_valor_total           (i),  
+                         g_vlr_base_inss         (i),  
+                         g_vlr_inss              (i),  
+                         g_codigo_fisjur         (i),  
+                         g_razao_social          (i),  
+                         g_municipio_prestador   (i),  
+                         g_cod_servico           (i),  
+                         g_cod_cei               (i),  
+                         g_equalizacao           (i)
+                           );
         --END;
 
             vn_count_new := vn_count_new + SQL%ROWCOUNT;
@@ -445,49 +485,57 @@ IS
             dbms_application_info.set_module ( cc_procedurename || '  ' || v_data, 'n:' || vn_count_new );
             dbms_application_info.set_client_info ( TO_CHAR ( SYSDATE, 'dd-mm-yyyy hh24:mi:ss' ) );
 
-                     g_cod_empresa.delete;		
-                     g_cod_estab.delete;		 	    
-                     g_perido_emissao.delete;		    
-                     g_cgc.delete;		               
-                     g_num_docto.delete;		         
-                     g_tipo_docto.delete;		        
-                     g_data_emissao.delete;		      
-                     g_data_fiscal.delete;		       
-                     g_cgc_fornecedor.delete;		    
-                     g_uf.delete;		                
-                     g_valor_total.delete;		       
-                     g_vlr_base_inss.delete;			    
-                     g_base_inss.delete;		         
-                     g_cod_fis_jur.delete;		       
-                     g_razao_social.delete;		      
-                     g_descricao.delete;		         
-                     g_cod_servico.delete;		       
-
-            EXIT WHEN cr_prev%NOTFOUND;
+                     
+            
+                         g_cod_empresa.delete;        
+                         g_cod_estab.delete;           
+                         g_data_fiscal.delete;         
+                         g_movto_e_s.delete;           
+                         g_norm_dev.delete;            
+                         g_ident_docto.delete;         
+                         g_ident_fis_jur.delete;       
+                         g_num_docfis.delete;          
+                         g_serie_docfis.delete;        
+                         g_sub_serie_docfis.delete;    
+                         g_ident_servico.delete;       
+                         g_num_item.delete;            
+                         g_periodo_emissao.delete;     
+                         g_cgc.delete;                 
+                         g_num_docto.delete;           
+                         g_tipo_docto.delete;          
+                         g_data_emissao.delete;        
+                         g_cgc_fornecedor.delete;      
+                         g_uf.delete;                  
+                         g_valor_total.delete;         
+                         g_vlr_base_inss.delete;       
+                         g_vlr_inss.delete;            
+                         g_codigo_fisjur.delete;       
+                         g_razao_social.delete;        
+                         g_municipio_prestador.delete; 
+                         g_cod_servico.delete;  
+                         g_cod_cei.delete;         
+                         g_equalizacao.delete; 
+                         
+            EXIT WHEN cr_rtf%NOTFOUND;
             
         END LOOP;
 
         COMMIT;
 
-        CLOSE cr_prev;
+        CLOSE cr_rtf;
 
         COMMIT;
 
-        --  END LOOP;
+      
 
         --================================================
         -- CARGA NA DEFINITIVA
         --================================================
 
         dbms_application_info.set_module ( cc_procedurename || '  ' || v_data , 'Carga definitiva' );
-
---        DELETE FROM msafi.dpsp_fin2662_dub
---              WHERE data_fiscal = v_data;
---
---        COMMIT;
-      
-
         dbms_application_info.set_module ( cc_procedurename , 'END:' || vn_count_new );
+
+
     END  carga;
     
     
