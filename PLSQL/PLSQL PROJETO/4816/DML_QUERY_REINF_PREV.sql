@@ -1,24 +1,22 @@
 SELECT * FROM msafi.fin4816_reinf_prev_gtt
 
+delete  msafi.fin4816_reinf_prev_gtt;
 
 
-INSERT INTO msafi.fin4816_reinf_prev_gtt
+--INSERT INTO msafi.fin4816_reinf_prev_gtt
  SELECT 
-   COD_EMPRESA, COD_ESTAB, DATA_EMISSAO, 
-   DATA_FISCAL, IDENT_FIS_JUR, IDENT_DOCTO, 
-   NUM_DOCFIS, SERIE_DOCFIS, SUB_SERIE_DOCFIS, 
-   NUM_ITEM, COD_USUARIO, TIPO,  COD_FIS_JUR, 
-   X04_RAZAO_SOCIAL, IND_FIS_JUR,  CPF_CGC, 
-   COD_CLASS_DOC_FIS, VLR_TOT_NOTA,VLR_BASE_INSS, 
-   VLR_ALIQ_INSS, VLR_INSS_RETIDO, VLR_CONTAB_COMPL, 
-   IND_TIPO_PROC, NUM_PROC_JUR,    RAZAO_SOCIAL, CGC, 
-   DESCRICAO,    COD_TIPO_SERV_ESOCIAL,    
-   DSC_TIPO_SERV_ESOCIAL,    EMPRESA_RAZAO_SOCIAL,    
-   VLR_SERVICO, NUM_PROC_ADJ_ADIC, IND_TP_PROC_ADJ_ADIC, 
-   CODIGO_SERV_PROD, DESC_SERV_PROD
-   
-   
-   
+   cod_empresa, cod_estab, data_emissao, 
+   data_fiscal, ident_fis_jur, ident_docto, 
+   num_docfis, serie_docfis, sub_serie_docfis, 
+   num_item, cod_usuario, tipo,  cod_fis_jur, 
+   x04_razao_social, ind_fis_jur,  cpf_cgc, 
+   cod_class_doc_fis, vlr_tot_nota,vlr_base_inss, 
+   vlr_aliq_inss, vlr_inss_retido, vlr_contab_compl, 
+   ind_tipo_proc, num_proc_jur,    razao_social, cgc, 
+   descricao,    cod_tipo_serv_esocial,    
+   dsc_tipo_serv_esocial,    empresa_razao_social,    
+   vlr_servico, num_proc_adj_adic, ind_tp_proc_adj_adic, 
+   codigo_serv_prod, desc_serv_prod
  FROM (SELECT 'S' AS tipo
                  , reinf.cod_empresa
                  , reinf.cod_estab
@@ -96,8 +94,7 @@ INSERT INTO msafi.fin4816_reinf_prev_gtt
                  , estab.razao_social
                  , estab.cgc
                  , x2005.descricao
-                 , TO_CHAR ( reinf.cod_param
-                           , '000000000' )
+                 , TO_CHAR ( reinf.cod_param, '000000000' )
                  , prt_repasse.dsc_param
                  , empresa.razao_social
                  , reinf.vlr_servico

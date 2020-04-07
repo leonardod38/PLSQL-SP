@@ -63,9 +63,9 @@ IS
  TYPE typ_empresa_razao_social    IS TABLE OF msafi.fin4816_reinf_prev_gtt.empresa_razao_social %TYPE  ;
  TYPE typ_vlr_servico             IS TABLE OF msafi.fin4816_reinf_prev_gtt.vlr_servico          %TYPE  ;
  TYPE typ_num_proc_adj_adic       IS TABLE OF msafi.fin4816_reinf_prev_gtt.num_proc_adj_adic    %TYPE  ;
- TYPE typ_num_proc_adj_adic       IS TABLE OF msafi.fin4816_reinf_prev_gtt.ind_tp_proc_adj_adic %TYPE  ;
+ TYPE typ_ind_tp_proc_adj_adic    IS TABLE OF msafi.fin4816_reinf_prev_gtt.ind_tp_proc_adj_adic %TYPE  ;
  TYPE typ_codigo_serv_prod        IS TABLE OF msafi.fin4816_reinf_prev_gtt.codigo_serv_prod     %TYPE  ;
- TYPE typ_desc_serv_prod          IS TABLE OF msafi.fin4816_reinf_prev_gtt.desc_serv_prod     %TYPE  ;
+ TYPE typ_desc_serv_prod          IS TABLE OF msafi.fin4816_reinf_prev_gtt.desc_serv_prod       %TYPE  ;
  
  
  
@@ -102,126 +102,157 @@ IS
          g_cod_servico         typ_cod_servico          ;                  
          g_equalizacao         typ_equalizacao          ;                   
          g_cod_cei             typ_cod_cei              ;      
+         
+        -- =======================================
+        -- Type  previdenciario 
+        -- =======================================
     
-    
-                -- =======================================
-                -- Cursors declaration Relatório Fiscal
-                -- =======================================
 
-                cursor cr_rtf   ( pdate  date, pcod_empresa varchar2 , p_proc_id NUMBER )
-                  is
-                   SELECT   
-                       x09_itens_serv.cod_empresa                           as cod_empresa          -- Codigo da Empresa                                
-                     , x09_itens_serv.cod_estab                             as cod_estab            -- Codigo do Estabelecimento
-                     , x09_itens_serv.data_fiscal                           as data_fiscal          -- Data Fiscal   
-                     , x09_itens_serv.movto_e_s                             as movto_e_s                 
-                     , x09_itens_serv.norm_dev                              as norm_dev                             
-                     , x09_itens_serv.ident_docto                           as ident_docto               
-                     , x09_itens_serv.ident_fis_jur                         as ident_fis_jur             
-                     , x09_itens_serv.num_docfis                            as num_docfis                
-                     , x09_itens_serv.serie_docfis                          as serie_docfis              
-                     , x09_itens_serv.sub_serie_docfis                      as sub_serie_docfis          
-                     , x09_itens_serv.ident_servico                         as ident_servico             
-                     , x09_itens_serv.num_item                              as num_item     
-                     , x07_docto_fiscal.data_emissao                        as perido_emissao        -- Periodo de Emissão  
-                     , estabelecimento.cgc                                  as cgc                   -- CNPJ Drogaria 
-                     , x07_docto_fiscal.num_docfis                          as num_docto             -- Numero da Nota Fiscal
-                     , x2005_tipo_docto.cod_docto                           as tipo_docto            -- Tipo de Documento
-                     , x07_docto_fiscal.data_emissao                        as data_emissao          -- Data Emissão          
-                     , x04_pessoa_fis_jur.cpf_cgc                           as cgc_fornecedor        -- CNPJ_Fonecedor
-                     , estado.cod_estado                                    as uf                    -- uf 
-                     , x09_itens_serv.vlr_tot                               as valor_total           -- Valor Total da Nota
-                     , x09_itens_serv.vlr_base_inss                         as base_inss             -- Base de Calculo INSS
-                     , x09_itens_serv.vlr_inss_retido                       as valor_inss            -- Valor do INSS 
-                     , x04_pessoa_fis_jur.cod_fis_jur                       as cod_fis_jur           -- Codigo Pessoa Fisica/juridica
-                     , x04_pessoa_fis_jur.razao_social                      as razao_social          -- Razão Social
-                     , municipio.descricao                                  as municipio_prestador   -- Municipio Prestador
-                     , x2018_servicos.cod_servico                           as cod_servico           -- Codigo de Serviço
-                     , x07_docto_fiscal.cod_cei                             as cod_cei               -- Codigo CEI
-                     , NULL                                                 as equalizacao           -- Equalização    
-                    FROM x07_docto_fiscal
-                       , x2005_tipo_docto    
-                       , x04_pessoa_fis_jur      
-                       , x09_itens_serv
-                       , estabelecimento
-                       , estado  
-                       , x2018_servicos
-                       , municipio  
-                       , msafi.fin4816_prev_tmp_estab estab
-                   WHERE 1=1 
-                     AND   x09_itens_serv.cod_empresa               =   estabelecimento.cod_empresa
-                     AND   x09_itens_serv.cod_estab                 =   estabelecimento.cod_estab
-                     AND   x09_itens_serv.cod_estab                 =   estab.cod_estab
-                     AND   estab.proc_id                            =   p_proc_id
-                     AND   x09_itens_serv.cod_empresa               =   x07_docto_fiscal.cod_empresa
-                     AND   x09_itens_serv.cod_estab                 =   x07_docto_fiscal.cod_estab
-                     AND   x09_itens_serv.data_fiscal               =   x07_docto_fiscal.data_fiscal
-                     AND   x07_docto_fiscal.data_emissao            =   pdate     
-                     AND   x09_itens_serv.vlr_inss_retido           > 0              
-                     AND   x09_itens_serv.movto_e_s                 =   x07_docto_fiscal.movto_e_s
-                     AND   x09_itens_serv.norm_dev                  =   x07_docto_fiscal.norm_dev
-                     AND   x09_itens_serv.ident_docto               =   x07_docto_fiscal.ident_docto
-                     AND   x09_itens_serv.ident_fis_jur             =   x07_docto_fiscal.ident_fis_jur
-                     AND   x09_itens_serv.num_docfis                =   x07_docto_fiscal.num_docfis
-                     AND   x09_itens_serv.serie_docfis              =   x07_docto_fiscal.serie_docfis
-                     AND   x09_itens_serv.sub_serie_docfis          =   x07_docto_fiscal.sub_serie_docfis
-                     -- estado /municio 
-                     and  estado.ident_estado                       = x04_pessoa_fis_jur.ident_estado
-                     and  municipio.ident_estado                    = estado.ident_estado 
-                     and  municipio.cod_municipio                   = x04_pessoa_fis_jur.cod_municipio
-                     --  X2018_SERVICOS
-                     AND  x2018_servicos.ident_servico  = x09_itens_serv.ident_servico
-                     AND ( x2005_tipo_docto.ident_docto = x07_docto_fiscal.ident_docto )
-                     AND ( x04_pessoa_fis_jur.ident_fis_jur = x07_docto_fiscal.ident_fis_jur )
-                   --  AND ( x07_docto_fiscal.data_fiscal <= pdata_final   )    ---  DATA EMISSAO 
-                    -- AND ( x07_docto_fiscal.data_fiscal >= pdata_inicial )
-                     AND ( x07_docto_fiscal.movto_e_s IN ( 1
-                                                         , 2
-                                                         , 3
-                                                         , 4
-                                                         , 5 ) )
-                     AND ( ( x07_docto_fiscal.situacao <> 'S' )
-                       OR ( x07_docto_fiscal.situacao IS NULL ) )
-                     AND ( x07_docto_fiscal.cod_estab  IS NOT NULL  )  -- COD_ESTAB 
-                     AND ( x07_docto_fiscal.cod_empresa =  pcod_empresa )
-                     AND ( x07_docto_fiscal.cod_class_doc_fis = '2' )
-                     AND ( ( x07_docto_fiscal.ident_cfo IS NULL )
-                       OR ( NOT ( EXISTS
-                                     (SELECT 1
-                                        FROM x2012_cod_fiscal x2012
-                                           , prt_cfo_uf_msaf pcum
-                                           , estabelecimento est
-                                       WHERE x2012.ident_cfo = x07_docto_fiscal.ident_cfo
-                                         AND est.cod_empresa = x07_docto_fiscal.cod_empresa
-                                         AND est.cod_estab = x07_docto_fiscal.cod_estab
-                                         AND pcum.cod_empresa = est.cod_empresa
-                                         AND pcum.cod_param = 415  --
-                                         AND pcum.ident_estado = est.ident_estado
-                                         AND pcum.cod_cfo = x2012.cod_cfo)
-                             AND EXISTS
-                                     (SELECT 1
-                                        FROM ict_par_icms_uf ipiu
-                                           , estabelecimento esta
-                                       WHERE ipiu.ident_estado = esta.ident_estado
-                                         AND esta.cod_empresa = x07_docto_fiscal.cod_empresa
-                                         AND esta.cod_estab = x07_docto_fiscal.cod_estab
-                                         AND ipiu.dsc_param = '64'
-                                         AND ipiu.ind_tp_par = 'S') ) ) )
-                        ORDER BY 
-                                  x09_itens_serv.cod_empresa                 
-                                 , x09_itens_serv.cod_estab                             
-                                 , x09_itens_serv.data_fiscal                           
-                                 , x09_itens_serv.movto_e_s                             
-                                 , x09_itens_serv.norm_dev                              
-                                 , x09_itens_serv.ident_docto                           
-                                 , x09_itens_serv.ident_fis_jur                         
-                                 , x09_itens_serv.num_docfis                            
-                                 , x09_itens_serv.serie_docfis                          
-                                 , x09_itens_serv.sub_serie_docfis                      
-                                 , x09_itens_serv.ident_servico                         
-                                 , x09_itens_serv.num_item    
+         g_cod_usuario           typ_cod_usuario           ;
+         g_tipo                  typ_tipo                  ;
+         g_cod_fis_jur           typ_cod_fis_jur           ;
+         g_x04_razao_social      typ_x04_razao_social      ;
+         g_ind_fis_jur           typ_ind_fis_jur           ;
+         g_cod_class_doc_fis     typ_cod_class_doc_fis     ;
+         g_vlr_aliq_inss         typ_vlr_aliq_inss         ;
+         g_vlr_contab_compl      typ_vlr_contab_compl      ;
+         g_ind_tipo_proc         typ_ind_tipo_proc         ;
+         g_num_proc_jur          typ_num_proc_jur          ;
+         g_descricao             typ_descricao             ;
+         g_cod_tipo_serv_esocial typ_cod_tipo_serv_esocial ;
+         g_empresa_razao_social  typ_empresa_razao_social  ;
+         g_vlr_servico           typ_vlr_servico           ;
+         g_num_proc_adj_adic     typ_num_proc_adj_adic     ;
+         g_ind_tp_proc_adj_adic  typ_ind_tp_proc_adj_adic  ;
+         g_codigo_serv_prod      typ_codigo_serv_prod      ;
+         g_desc_serv_prod        typ_desc_serv_prod        ;
+                               
+
+
+    
+         -- =======================================
+         -- Cursors declaration Relatório Fiscal
+         -- =======================================
+
+             CURSOR cr_rtf   ( pdate  date, pcod_empresa varchar2 , p_proc_id NUMBER )
+              is
+             SELECT   
+                 x09_itens_serv.cod_empresa                           as cod_empresa          -- Codigo da Empresa                                
+               , x09_itens_serv.cod_estab                             as cod_estab            -- Codigo do Estabelecimento
+               , x09_itens_serv.data_fiscal                           as data_fiscal          -- Data Fiscal   
+               , x09_itens_serv.movto_e_s                             as movto_e_s                 
+               , x09_itens_serv.norm_dev                              as norm_dev                             
+               , x09_itens_serv.ident_docto                           as ident_docto               
+               , x09_itens_serv.ident_fis_jur                         as ident_fis_jur             
+               , x09_itens_serv.num_docfis                            as num_docfis                
+               , x09_itens_serv.serie_docfis                          as serie_docfis              
+               , x09_itens_serv.sub_serie_docfis                      as sub_serie_docfis          
+               , x09_itens_serv.ident_servico                         as ident_servico             
+               , x09_itens_serv.num_item                              as num_item     
+               , x07_docto_fiscal.data_emissao                        as perido_emissao        -- Periodo de Emissão  
+               , estabelecimento.cgc                                  as cgc                   -- CNPJ Drogaria 
+               , x07_docto_fiscal.num_docfis                          as num_docto             -- Numero da Nota Fiscal
+               , x2005_tipo_docto.cod_docto                           as tipo_docto            -- Tipo de Documento
+               , x07_docto_fiscal.data_emissao                        as data_emissao          -- Data Emissão          
+               , x04_pessoa_fis_jur.cpf_cgc                           as cgc_fornecedor        -- CNPJ_Fonecedor
+               , estado.cod_estado                                    as uf                    -- uf 
+               , x09_itens_serv.vlr_tot                               as valor_total           -- Valor Total da Nota
+               , x09_itens_serv.vlr_base_inss                         as base_inss             -- Base de Calculo INSS
+               , x09_itens_serv.vlr_inss_retido                       as valor_inss            -- Valor do INSS 
+               , x04_pessoa_fis_jur.cod_fis_jur                       as cod_fis_jur           -- Codigo Pessoa Fisica/juridica
+               , x04_pessoa_fis_jur.razao_social                      as razao_social          -- Razão Social
+               , municipio.descricao                                  as municipio_prestador   -- Municipio Prestador
+               , x2018_servicos.cod_servico                           as cod_servico           -- Codigo de Serviço
+               , x07_docto_fiscal.cod_cei                             as cod_cei               -- Codigo CEI
+               , NULL                                                 as equalizacao           -- Equalização    
+              FROM x07_docto_fiscal
+                 , x2005_tipo_docto    
+                 , x04_pessoa_fis_jur      
+                 , x09_itens_serv
+                 , estabelecimento
+                 , estado  
+                 , x2018_servicos
+                 , municipio  
+                 , msafi.fin4816_prev_tmp_estab estab
+             WHERE 1=1 
+               AND   x09_itens_serv.cod_empresa               =   estabelecimento.cod_empresa
+               AND   x09_itens_serv.cod_estab                 =   estabelecimento.cod_estab
+               AND   x09_itens_serv.cod_estab                 =   estab.cod_estab
+               AND   estab.proc_id                            =   p_proc_id
+               AND   x09_itens_serv.cod_empresa               =   x07_docto_fiscal.cod_empresa
+               AND   x09_itens_serv.cod_estab                 =   x07_docto_fiscal.cod_estab
+               AND   x09_itens_serv.data_fiscal               =   x07_docto_fiscal.data_fiscal
+               AND   x07_docto_fiscal.data_emissao            =   pdate     
+               AND   x09_itens_serv.vlr_inss_retido           > 0              
+               AND   x09_itens_serv.movto_e_s                 =   x07_docto_fiscal.movto_e_s
+               AND   x09_itens_serv.norm_dev                  =   x07_docto_fiscal.norm_dev
+               AND   x09_itens_serv.ident_docto               =   x07_docto_fiscal.ident_docto
+               AND   x09_itens_serv.ident_fis_jur             =   x07_docto_fiscal.ident_fis_jur
+               AND   x09_itens_serv.num_docfis                =   x07_docto_fiscal.num_docfis
+               AND   x09_itens_serv.serie_docfis              =   x07_docto_fiscal.serie_docfis
+               AND   x09_itens_serv.sub_serie_docfis          =   x07_docto_fiscal.sub_serie_docfis
+               -- estado /municio 
+               and  estado.ident_estado                       = x04_pessoa_fis_jur.ident_estado
+               and  municipio.ident_estado                    = estado.ident_estado 
+               and  municipio.cod_municipio                   = x04_pessoa_fis_jur.cod_municipio
+               --  X2018_SERVICOS
+               AND  x2018_servicos.ident_servico  = x09_itens_serv.ident_servico
+               AND ( x2005_tipo_docto.ident_docto = x07_docto_fiscal.ident_docto )
+               AND ( x04_pessoa_fis_jur.ident_fis_jur = x07_docto_fiscal.ident_fis_jur )
+             --  AND ( x07_docto_fiscal.data_fiscal <= pdata_final   )    ---  DATA EMISSAO 
+              -- AND ( x07_docto_fiscal.data_fiscal >= pdata_inicial )
+               AND ( x07_docto_fiscal.movto_e_s IN ( 1
+                                                   , 2
+                                                   , 3
+                                                   , 4
+                                                   , 5 ) )
+               AND ( ( x07_docto_fiscal.situacao <> 'S' )
+                 OR ( x07_docto_fiscal.situacao IS NULL ) )
+               AND ( x07_docto_fiscal.cod_estab  IS NOT NULL  )  -- COD_ESTAB 
+               AND ( x07_docto_fiscal.cod_empresa =  pcod_empresa )
+               AND ( x07_docto_fiscal.cod_class_doc_fis = '2' )
+               AND ( ( x07_docto_fiscal.ident_cfo IS NULL )
+                 OR ( NOT ( EXISTS
+                               (SELECT 1
+                                  FROM x2012_cod_fiscal x2012
+                                     , prt_cfo_uf_msaf pcum
+                                     , estabelecimento est
+                                 WHERE x2012.ident_cfo = x07_docto_fiscal.ident_cfo
+                                   AND est.cod_empresa = x07_docto_fiscal.cod_empresa
+                                   AND est.cod_estab = x07_docto_fiscal.cod_estab
+                                   AND pcum.cod_empresa = est.cod_empresa
+                                   AND pcum.cod_param = 415  --
+                                   AND pcum.ident_estado = est.ident_estado
+                                   AND pcum.cod_cfo = x2012.cod_cfo)
+                       AND EXISTS
+                               (SELECT 1
+                                  FROM ict_par_icms_uf ipiu
+                                     , estabelecimento esta
+                                 WHERE ipiu.ident_estado = esta.ident_estado
+                                   AND esta.cod_empresa = x07_docto_fiscal.cod_empresa
+                                   AND esta.cod_estab = x07_docto_fiscal.cod_estab
+                                   AND ipiu.dsc_param = '64'
+                                   AND ipiu.ind_tp_par = 'S') ) ) )
+                  ORDER BY 
+                            x09_itens_serv.cod_empresa                 
+                           , x09_itens_serv.cod_estab                             
+                           , x09_itens_serv.data_fiscal                           
+                           , x09_itens_serv.movto_e_s                             
+                           , x09_itens_serv.norm_dev                              
+                           , x09_itens_serv.ident_docto                           
+                           , x09_itens_serv.ident_fis_jur                         
+                           , x09_itens_serv.num_docfis                            
+                           , x09_itens_serv.serie_docfis                          
+                           , x09_itens_serv.sub_serie_docfis                      
+                           , x09_itens_serv.ident_servico                         
+                           , x09_itens_serv.num_item    
                   ;
-                
+                  
+                  
+                  
+                  
+                  
+         
 
     FUNCTION parametros
         RETURN VARCHAR2
@@ -559,7 +590,8 @@ IS
 
         dbms_application_info.set_module ( cc_procedurename || '  ' || v_data , 'Carga definitiva' );
         dbms_application_info.set_module ( cc_procedurename , 'END:' || vn_count_new );
-
+        
+        
 
     END  carga;
     
@@ -2220,7 +2252,200 @@ IS
         BEGIN
         
         
-          NULL ;  ---  AKKK  
+         INSERT INTO msafi.fin4816_reinf_prev_gtt
+          SELECT 
+           cod_empresa,             cod_estab,              data_emissao, 
+           data_fiscal,             ident_fis_jur,          ident_docto, 
+           num_docfis,              serie_docfis,           sub_serie_docfis, 
+           num_item,                cod_usuario,            tipo,  cod_fis_jur, 
+           x04_razao_social,        ind_fis_jur,            cpf_cgc, 
+           cod_class_doc_fis,       vlr_tot_nota,           vlr_base_inss, 
+           vlr_aliq_inss,           vlr_inss_retido,        vlr_contab_compl, 
+           ind_tipo_proc,           num_proc_jur,           razao_social, cgc, 
+           descricao,               cod_tipo_serv_esocial,  dsc_tipo_serv_esocial,   
+           empresa_razao_social,    vlr_servico,            num_proc_adj_adic, 
+           ind_tp_proc_adj_adic,    codigo_serv_prod,       desc_serv_prod
+         FROM (SELECT 
+                   'S' AS tipo
+                     , reinf.cod_empresa
+                     , reinf.cod_estab
+                     , reinf.ident_fis_jur
+                     , x04.cod_fis_jur
+                     , x04.razao_social x04_razao_social
+                     , x04.ind_fis_jur
+                     , x04.cpf_cgc
+                     , reinf.num_docfis
+                     , reinf.serie_docfis
+                     , reinf.sub_serie_docfis
+                     , reinf.num_item
+                     , reinf.data_emissao
+                     , reinf.data_fiscal
+                     , reinf.cod_class_doc_fis
+                     , reinf.vlr_tot_nota
+                     , reinf.vlr_base_inss
+                     , reinf.vlr_aliq_inss
+                     , reinf.vlr_inss_retido
+                     , reinf.vlr_contab_compl
+                     , reinf.ind_tipo_proc
+                     , reinf.num_proc_jur
+                     , estab.razao_social
+                     , estab.cgc
+                     , x2005.descricao
+                     , prt_tipo.cod_tipo_serv_esocial
+                     , prt_tipo.dsc_tipo_serv_esocial
+                     , empresa.razao_social empresa_razao_social
+                     , reinf.vlr_servico
+                     , reinf.num_proc_adj_adic
+                     , reinf.ind_tp_proc_adj_adic
+                     , x2018.cod_servico AS codigo_serv_prod
+                     , x2018.descricao AS desc_serv_prod
+                     , reinf.cod_usuario
+                     , reinf.ident_docto
+                    FROM msafi.reinf_conf_previdenciaria_tmp reinf
+                     , x04_pessoa_fis_jur x04
+                     , estabelecimento estab
+                     , x2005_tipo_docto x2005
+                     , prt_tipo_serv_esocial prt_tipo
+                     , x2018_servicos x2018
+                     , empresa
+                    WHERE reinf.ident_fis_jur               = x04.ident_fis_jur
+                       AND reinf.cod_empresa                = estab.cod_empresa
+                       AND reinf.cod_estab                  = estab.cod_estab
+                       AND reinf.ident_docto                = x2005.ident_docto
+                       AND reinf.ident_tipo_serv_esocial    = prt_tipo.ident_tipo_serv_esocial /*(+)*/
+                       AND reinf.cod_empresa                = empresa.cod_empresa
+                       AND LENGTH ( TRIM ( x04.cpf_cgc ) ) > 11
+                       AND reinf.cod_usuario                = mnm_usuario
+                       AND reinf.ident_servico              = x2018.ident_servico
+                       -- parametros 
+                       AND reinf.cod_empresa                = p_cod_empresa
+                       AND reinf.cod_estab                  = p_cod_estab
+                       AND reinf.data_emissao              >= p_data_inicial
+                       AND reinf.data_emissao              <= p_data_final
+                       --
+                      UNION
+                       --
+                    SELECT 'R' AS tipo
+                         , reinf.cod_empresa
+                         , reinf.cod_estab
+                         , reinf.ident_fis_jur
+                         , x04.cod_fis_jur
+                         , x04.razao_social
+                         , x04.ind_fis_jur
+                         , x04.cpf_cgc
+                         , reinf.num_docfis
+                         , reinf.serie_docfis
+                         , reinf.sub_serie_docfis
+                         , reinf.num_item
+                         , reinf.data_emissao
+                         , reinf.data_fiscal
+                         , reinf.cod_class_doc_fis
+                         , reinf.vlr_tot_nota
+                         , reinf.vlr_base_inss
+                         , reinf.vlr_aliq_inss
+                         , reinf.vlr_inss_retido
+                         , reinf.vlr_contab_compl
+                         , reinf.ind_tipo_proc
+                         , reinf.num_proc_jur
+                         , estab.razao_social
+                         , estab.cgc
+                         , x2005.descricao
+                         , TO_CHAR ( reinf.cod_param, '000000000' )
+                         , prt_repasse.dsc_param
+                         , empresa.razao_social
+                         , reinf.vlr_servico
+                         , reinf.num_proc_adj_adic
+                         , reinf.ind_tp_proc_adj_adic
+                         , x2018.cod_servico AS codigo_serv_prod
+                         , x2018.descricao AS desc_serv_prod
+                         , reinf.cod_usuario
+                         , reinf.ident_docto
+                      FROM msafi.reinf_conf_previdenciaria_tmp reinf
+                         , x04_pessoa_fis_jur x04
+                         , estabelecimento estab
+                         , x2005_tipo_docto x2005
+                         , prt_par2_msaf prt_repasse
+                         , x2018_servicos x2018
+                         , empresa
+                     WHERE reinf.ident_fis_jur              = x04.ident_fis_jur
+                       AND reinf.cod_empresa                = estab.cod_empresa
+                       AND reinf.cod_estab                  = estab.cod_estab
+                       AND reinf.ident_docto                = x2005.ident_docto
+                       AND reinf.cod_param                  = prt_repasse.cod_param
+                       AND reinf.cod_empresa                = empresa.cod_empresa
+                       AND LENGTH ( TRIM ( x04.cpf_cgc ) ) > 11
+                       AND reinf.ident_servico              = x2018.ident_servico
+                       -- parametros 
+                       AND reinf.cod_usuario                = mnm_usuario
+                       AND reinf.cod_empresa                = p_cod_empresa
+                       AND reinf.cod_estab                  = p_cod_estab
+                       AND reinf.data_emissao              >= p_data_inicial
+                       AND reinf.data_emissao              <= p_data_final
+                       --
+                    UNION
+                    SELECT 'P' AS tipo
+                         , reinf.cod_empresa
+                         , reinf.cod_estab
+                         , reinf.ident_fis_jur
+                         , x04.cod_fis_jur
+                         , x04.razao_social
+                         , x04.ind_fis_jur
+                         , x04.cpf_cgc
+                         , reinf.num_docfis
+                         , reinf.serie_docfis
+                         , reinf.sub_serie_docfis
+                         , reinf.num_item
+                         , reinf.data_emissao
+                         , reinf.data_fiscal
+                         , reinf.cod_class_doc_fis
+                         , reinf.vlr_tot_nota
+                         , reinf.vlr_base_inss
+                         , reinf.vlr_aliq_inss
+                         , reinf.vlr_inss_retido
+                         , reinf.vlr_contab_compl
+                         , reinf.ind_tipo_proc
+                         , reinf.num_proc_jur
+                         , estab.razao_social
+                         , estab.cgc
+                         , x2005.descricao
+                         , prt_tipo.cod_tipo_serv_esocial
+                         , prt_tipo.dsc_tipo_serv_esocial
+                         , empresa.razao_social
+                         , reinf.vlr_servico
+                         , reinf.num_proc_adj_adic
+                         , reinf.ind_tp_proc_adj_adic
+                         , x2013.cod_produto AS codigo_serv_prod
+                         , x2013.descricao AS desc_serv_prod
+                         , reinf.cod_usuario
+                         , reinf.ident_docto
+                      FROM msafi.reinf_conf_previdenciaria_tmp reinf
+                         , x04_pessoa_fis_jur x04
+                         , estabelecimento estab
+                         , x2005_tipo_docto x2005
+                         , prt_tipo_serv_esocial prt_tipo
+                         , x2013_produto x2013
+                         , empresa
+                     WHERE reinf.ident_fis_jur              = x04.ident_fis_jur
+                       AND reinf.cod_empresa                = estab.cod_empresa
+                       AND reinf.cod_estab                  = estab.cod_estab
+                       AND reinf.ident_docto                = x2005.ident_docto
+                       AND reinf.ident_tipo_serv_esocial    = prt_tipo.ident_tipo_serv_esocial /*(+)*/
+                       AND reinf.cod_empresa                = empresa.cod_empresa
+                       AND LENGTH ( TRIM ( x04.cpf_cgc ) ) > 11
+                       AND reinf.cod_usuario                = mnm_usuario
+                       AND reinf.ident_produto              = x2013.ident_produto
+                       -- parametros 
+                       AND reinf.cod_usuario                = mnm_usuario
+                       AND reinf.cod_empresa                = p_cod_empresa
+                       AND reinf.cod_estab                  = p_cod_estab
+                       AND reinf.data_emissao              >= p_data_inicial
+                       AND reinf.data_emissao              <= p_data_final
+                       
+                       
+                       
+                       )
+                        ;
+               
         
         
         
