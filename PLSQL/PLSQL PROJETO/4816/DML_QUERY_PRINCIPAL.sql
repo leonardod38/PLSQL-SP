@@ -116,7 +116,7 @@ SELECT rtf.cod_empresa                                  AS "Codigo da Empresa"
                      AND rpv.ident_fis_jur      = rtf.ident_fis_jur
                      AND rpv.num_docfis         = rtf.num_docfis
                      AND rpv.num_item           = rtf.num_item          ) AS  "Valor Base de Calculo INSS 1"
-          ,(   SELECT rpv.vlr_base_inss  
+          ,(   SELECT rpv.vlr_aliq_inss  
                     FROM msafi.fin4816_reinf_prev_gtt rpv
                    WHERE rpv.cod_empresa        = rtf.cod_empresa
                      AND rpv.cod_estab          = rtf.cod_estab
@@ -124,12 +124,84 @@ SELECT rtf.cod_empresa                                  AS "Codigo da Empresa"
                      AND rpv.ident_docto        = rtf.ident_docto
                      AND rpv.ident_fis_jur      = rtf.ident_fis_jur
                      AND rpv.num_docfis         = rtf.num_docfis
-                     AND rpv.num_item           = rtf.num_item          ) AS  "Valor Base de Calculo INSS 1"
+                     AND rpv.num_item           = rtf.num_item          ) AS  "Valor Aliquota INSS 1"
+          ,(   SELECT rpv.razao_social  
+                    FROM msafi.fin4816_reinf_prev_gtt rpv
+                   WHERE rpv.cod_empresa        = rtf.cod_empresa
+                     AND rpv.cod_estab          = rtf.cod_estab
+                     AND rpv.data_fiscal        = rtf.data_fiscal                    
+                     AND rpv.ident_docto        = rtf.ident_docto
+                     AND rpv.ident_fis_jur      = rtf.ident_fis_jur
+                     AND rpv.num_docfis         = rtf.num_docfis
+                     AND rpv.num_item           = rtf.num_item          ) AS  "Razão Social Drogaria 1"
+           ,(   SELECT rpv.CGC  
+                    FROM msafi.fin4816_reinf_prev_gtt rpv
+                   WHERE rpv.cod_empresa        = rtf.cod_empresa
+                     AND rpv.cod_estab          = rtf.cod_estab
+                     AND rpv.data_fiscal        = rtf.data_fiscal                    
+                     AND rpv.ident_docto        = rtf.ident_docto
+                     AND rpv.ident_fis_jur      = rtf.ident_fis_jur
+                     AND rpv.num_docfis         = rtf.num_docfis
+                     AND rpv.num_item           = rtf.num_item          ) AS  "CNPJ Drogaria 1"
+           ,(   SELECT initcap(rpv.descricao)
+                    FROM msafi.fin4816_reinf_prev_gtt rpv
+                   WHERE rpv.cod_empresa        = rtf.cod_empresa
+                     AND rpv.cod_estab          = rtf.cod_estab
+                     AND rpv.data_fiscal        = rtf.data_fiscal                    
+                     AND rpv.ident_docto        = rtf.ident_docto
+                     AND rpv.ident_fis_jur      = rtf.ident_fis_jur
+                     AND rpv.num_docfis         = rtf.num_docfis
+                     AND rpv.num_item           = rtf.num_item          ) AS  "Descr. do Tipo de Documento 1"
+           ,(   SELECT initcap(rpv.cod_tipo_serv_esocial)
+                    FROM msafi.fin4816_reinf_prev_gtt rpv
+                   WHERE rpv.cod_empresa        = rtf.cod_empresa
+                     AND rpv.cod_estab          = rtf.cod_estab
+                     AND rpv.data_fiscal        = rtf.data_fiscal                    
+                     AND rpv.ident_docto        = rtf.ident_docto
+                     AND rpv.ident_fis_jur      = rtf.ident_fis_jur
+                     AND rpv.num_docfis         = rtf.num_docfis
+                     AND rpv.num_item           = rtf.num_item          ) AS  "Cod. Tipo de Serv. E-social 1" 
+             --
+             ,(   SELECT initcap(rpv.desc_serv_prod)
+                    FROM msafi.fin4816_reinf_prev_gtt rpv
+                   WHERE rpv.cod_empresa        = rtf.cod_empresa
+                     AND rpv.cod_estab          = rtf.cod_estab
+                     AND rpv.data_fiscal        = rtf.data_fiscal                    
+                     AND rpv.ident_docto        = rtf.ident_docto
+                     AND rpv.ident_fis_jur      = rtf.ident_fis_jur
+                     AND rpv.num_docfis         = rtf.num_docfis
+                     AND rpv.num_item           = rtf.num_item          ) AS  "Desc. Tipo de Serv. E-social 1" 
+              ,(   SELECT rpv.vlr_servico
+                    FROM msafi.fin4816_reinf_prev_gtt rpv
+                   WHERE rpv.cod_empresa        = rtf.cod_empresa
+                     AND rpv.cod_estab          = rtf.cod_estab
+                     AND rpv.data_fiscal        = rtf.data_fiscal                    
+                     AND rpv.ident_docto        = rtf.ident_docto
+                     AND rpv.ident_fis_jur      = rtf.ident_fis_jur
+                     AND rpv.num_docfis         = rtf.num_docfis
+                     AND rpv.num_item           = rtf.num_item          ) AS  "Valor do Serviço 1" 
+             ,(   SELECT x2018.cod_servico
+                    FROM x2018_servicos   x2018
+                   WHERE 1=1
+                   AND  x2018.ident_servico = rtf.IDENT_SERVICO         ) AS  "Cod. Serv. Mastersaf 1" 
+              ,(   SELECT initcap(x2018.descricao)
+                    FROM x2018_servicos   x2018
+                   WHERE 1=1
+                   AND  x2018.ident_servico = rtf.ident_servico         ) AS  "Descr. Cod. Serv. Mastersaf 1" 
   FROM msafi.fin4816_report_fiscal_gtt rtf
- ORDER BY  
-  rtf.cod_empresa
- ,rtf.cod_estab
- ,rtf.data_emissao  
- ,rtf.ident_docto
- ,rtf.ident_fis_jur
- ,rtf.num_docfis 
+    ORDER BY  
+          rtf.cod_empresa
+         ,rtf.cod_estab
+         ,rtf.data_emissao  
+         ,rtf.ident_docto
+         ,rtf.ident_fis_jur
+         ,rtf.num_docfis 
+
+
+
+select * from msafi.fin4816_reinf_prev_gtt;
+
+select * from  msafi.fin4816_report_fiscal_gtt rtf;
+
+
+select * from x2018_servicos
