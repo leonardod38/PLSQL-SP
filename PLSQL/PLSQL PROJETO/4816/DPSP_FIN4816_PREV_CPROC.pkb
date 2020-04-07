@@ -48,9 +48,27 @@ IS
  TYPE typ_cod_cei                 IS TABLE OF msafi.fin4816_report_fiscal_gtt.cod_cei                     %TYPE  ;         
  TYPE typ_equalizacao             IS TABLE OF msafi.fin4816_report_fiscal_gtt.equalizacao                 %TYPE  ;         
  
+ TYPE typ_cod_usuario             IS TABLE OF msafi.fin4816_reinf_prev_gtt.cod_usuario          %TYPE  ;         
+ TYPE typ_tipo                    IS TABLE OF msafi.fin4816_reinf_prev_gtt.tipo                 %TYPE  ;       
+ TYPE typ_cod_fis_jur             IS TABLE OF msafi.fin4816_reinf_prev_gtt.cod_fis_jur          %TYPE  ; 
+ TYPE typ_x04_razao_social        IS TABLE OF msafi.fin4816_reinf_prev_gtt.x04_razao_social     %TYPE  ; 
+ TYPE typ_ind_fis_jur             IS TABLE OF msafi.fin4816_reinf_prev_gtt.ind_fis_jur          %TYPE  ; 
+ TYPE typ_cod_class_doc_fis       IS TABLE OF msafi.fin4816_reinf_prev_gtt.cod_class_doc_fis    %TYPE  ; 
+ TYPE typ_vlr_aliq_inss           IS TABLE OF msafi.fin4816_reinf_prev_gtt.vlr_aliq_inss        %TYPE  ; 
+ TYPE typ_vlr_contab_compl        IS TABLE OF msafi.fin4816_reinf_prev_gtt.vlr_contab_compl     %TYPE  ;
+ TYPE typ_ind_tipo_proc           IS TABLE OF msafi.fin4816_reinf_prev_gtt.ind_tipo_proc        %TYPE  ;
+ TYPE typ_num_proc_jur            IS TABLE OF msafi.fin4816_reinf_prev_gtt.num_proc_jur         %TYPE  ;
+ TYPE typ_descricao               IS TABLE OF msafi.fin4816_reinf_prev_gtt.descricao            %TYPE  ;
+ TYPE typ_cod_tipo_serv_esocial   IS TABLE OF msafi.fin4816_reinf_prev_gtt.cod_tipo_serv_esocial%TYPE  ;
+ TYPE typ_empresa_razao_social    IS TABLE OF msafi.fin4816_reinf_prev_gtt.empresa_razao_social %TYPE  ;
+ TYPE typ_vlr_servico             IS TABLE OF msafi.fin4816_reinf_prev_gtt.vlr_servico          %TYPE  ;
+ TYPE typ_num_proc_adj_adic       IS TABLE OF msafi.fin4816_reinf_prev_gtt.num_proc_adj_adic    %TYPE  ;
+ TYPE typ_num_proc_adj_adic       IS TABLE OF msafi.fin4816_reinf_prev_gtt.ind_tp_proc_adj_adic %TYPE  ;
+ TYPE typ_codigo_serv_prod        IS TABLE OF msafi.fin4816_reinf_prev_gtt.codigo_serv_prod     %TYPE  ;
+ TYPE typ_desc_serv_prod          IS TABLE OF msafi.fin4816_reinf_prev_gtt.desc_serv_prod     %TYPE  ;
  
  
-
+ 
  
         -- =======================================
         -- Type  report fiscal 
@@ -2202,7 +2220,7 @@ IS
         BEGIN
         
         
-          NULL  ---  AKKK  
+          NULL ;  ---  AKKK  
         
         
         
