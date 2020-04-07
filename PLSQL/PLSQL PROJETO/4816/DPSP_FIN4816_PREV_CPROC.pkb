@@ -2963,7 +2963,7 @@ END prc_reinf_conf_retencao;
         
             DELETE from msafi.fin4816_report_fiscal_gtt;
             DELETE from msafi.fin4816_prev_gtt;
-            ---DELETE FROM msafi.reinf_conf_previdenciaria_tmp ;
+            DELETE FROM msafi.fin4816_reinf_prev_gtt ;
             --
             COMMIT;
               
