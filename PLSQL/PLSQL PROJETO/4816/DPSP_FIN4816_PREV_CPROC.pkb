@@ -2251,7 +2251,9 @@ IS
         
         BEGIN
         
-        
+     -- =======================================
+     --    INSERT/SELCT  -- PREVIDENCIARIO
+     -- =======================================
          INSERT INTO msafi.fin4816_reinf_prev_gtt
           SELECT 
            cod_empresa,             cod_estab,              data_emissao, 
@@ -2439,15 +2441,32 @@ IS
                        AND reinf.cod_empresa                = p_cod_empresa
                        AND reinf.cod_estab                  = p_cod_estab
                        AND reinf.data_emissao              >= p_data_inicial
-                       AND reinf.data_emissao              <= p_data_final
+                       AND reinf.data_emissao              <= p_data_final  )
                        
-                       
-                       
-                       )
+
                         ;
-               
+              EXCEPTION
+                WHEN DUP_VAL_ON_INDEX THEN
+                   NULL;
+                    WHEN OTHERS THEN
+                p_status := -1;               
         
-        
+            
+
+
+                 -- =======================================
+                 --  INSERT/SELECT  --  REINF 2010
+                 -- =======================================
+
+                    BEGIN
+                     NULL;
+                      EXCEPTION
+                        WHEN DUP_VAL_ON_INDEX THEN
+                           NULL;
+                            WHEN OTHERS THEN
+                            p_status := -1;      
+                         END ;
+
         
         END ;
         
@@ -2964,6 +2983,10 @@ END prc_reinf_conf_retencao;
             DELETE from msafi.fin4816_report_fiscal_gtt;
             DELETE from msafi.fin4816_prev_gtt;
             DELETE FROM msafi.fin4816_reinf_prev_gtt ;
+            DELETE FROM msafi.fin4816_reinf_2010_gtt;
+            
+            
+            
             --
             COMMIT;
               
