@@ -1,10 +1,10 @@
 
 
-DELETE FROM tt 
+select *  FROM MSAFI.FIN4816_REINF_2010_GTT
 
 
 
-INSERT INTO MSAFI.FIN4816_REINF_2010_GTT
+--INSERT INTO MSAFI.FIN4816_REINF_2010_GTT
 SELECT 
         --  pk        
         reinf_pger_apur.cod_empresa             as cod_empresa_pk

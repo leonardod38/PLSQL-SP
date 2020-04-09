@@ -2182,7 +2182,8 @@ IS
     
     
         BEGIN
-            INSERT INTO msafi.reinf_conf_previdenciaria_tmp ( cod_empresa
+                           INSERT INTO msafi.reinf_conf_previdenciaria_tmp 
+                                                  ( cod_empresa
                                                   , cod_estab
                                                   , data_emissao
                                                   , data_fiscal
@@ -2239,6 +2240,7 @@ IS
                         
                         
                         
+         commit ;
          
         EXCEPTION
             WHEN DUP_VAL_ON_INDEX THEN
@@ -2443,13 +2445,13 @@ IS
                        AND reinf.data_emissao              >= p_data_inicial
                        AND reinf.data_emissao              <= p_data_final  )
                        
-
-                        ;
+                            commit ;
+                        
               EXCEPTION
                 WHEN DUP_VAL_ON_INDEX THEN
                    NULL;
                     WHEN OTHERS THEN
-                p_status := -1;               
+                p_status := -2;               
         
             
 
@@ -2460,7 +2462,7 @@ IS
 
                   BEGIN
                                      
-                  INSERT INTO MSAFI.FIN4816_REINF_2010_GTT
+                  INSERT INTO msafi.fin4816_reinf_2010_gtt
                   SELECT 
                         --  pk        
                         reinf_pger_apur.cod_empresa             as cod_empresa_pk
@@ -2599,18 +2601,19 @@ IS
                      OR '' IS NULL )
                    AND ( reinf_pger_apur.ind_r2010 = 'S' )
                    --AND ( reinf_pger_apur.cod_versao = 'v1_04_00' )
-                   AND reinf_pger_apur.ind_tp_amb = '2'
+                   AND reinf_pger_apur.ind_tp_amb = '2';
                    --AND rnf.num_docto = '000008508' ;
                    
-                   ;
+                   commit ;
                   EXCEPTION
                    WHEN DUP_VAL_ON_INDEX THEN
                     NULL;
                    WHEN OTHERS THEN
-                   p_status := -1;      
+                   p_status := -3;      
                   END ;
 
-        
+         commit ;
+         
         END ;
         
         
