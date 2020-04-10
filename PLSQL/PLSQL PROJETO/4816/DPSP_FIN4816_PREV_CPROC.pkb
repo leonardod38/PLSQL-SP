@@ -934,9 +934,8 @@ IS
 
                           EXIT WHEN rc_prev%NOTFOUND;
                 
-        END LOOP;
-
-                    COMMIT;
+                END LOOP;
+                  COMMIT;
                     CLOSE rc_prev;
 
                     

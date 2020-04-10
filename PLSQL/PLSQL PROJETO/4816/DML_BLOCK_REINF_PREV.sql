@@ -1,3 +1,6 @@
+select * from  MSAFI.DPSP_TB_FIN4816_REINF_PREV_GTT 
+
+
 DECLARE
     TYPE typ_tipo_prv                   IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt.tipo%TYPE;
     TYPE typ_codigo_empresa_prv         IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt."Codigo Empresa"%TYPE;
