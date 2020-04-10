@@ -41,49 +41,49 @@ DECLARE
     TYPE typ_observação_prv             IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt."Observação"%TYPE;
     TYPE typ_dsc_param_prv              IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt.dsc_param%TYPE;
 
-                            typ_tipo_prv                   
-                            typ_codigo_empresa_prv             
-                            typ_codigo_estab_prv               
-                            typ_data_emissao_prv               
-                            typ_data_fiscal_prv                
-                            typ_ident_fis_jur_prv              
-                            typ_ident_docto_prv                
-                            typ_numero_nota_fiscal_prv         
-                            typ_docto_serie_prv                
-                            typ_emissao_prv                    
-                            typ_serie_docfis_prv               
-                            typ_sub_serie_docfis_prv           
-                            typ_num_item_prv                   
-                            typ_cod_usuario_prv                
-                            typ_codigo_pess_fis_jur_prv        
-                            typ_razao_social_cliente_prv       
-                            typ_ind_fis_jur_prv                
-                            typ_cnpj_cliente_prv               
-                            typ_cod_class_doc_fis_prv          
-                            typ_vlr_tot_nota_prv               
-                            typ_vlr_bs_calc_retencao_prv       
-                            typ_vlr_aliq_inss_prv              
-                            typ_vlr_trib_inss_retido_prv       
-                            typ_vlr_retencao__prv              
-                            typ_vlr_contab_compl_prv           
-                            typ_ind_tipo_proc_prv              
-                            typ_num_proc_jur_prv               
-                            typ_razao_social_prv               
-                            typ_cgc_prv                        
-                            typ_documento_prv                  
-                            typ_tipo_serv_e_social_prv         
-                            typ_dsc_tipo_serv_esocial_prv      
-                            typ_razao_social_drogaria_prv      
-                            typ_valor_servico_prv              
-                            typ_num_proc_adj_adic_prv          
-                            typ_ind_tp_proc_adj_adic_prv       
-                            typ_codigo_serv_prod_prv           
-                            typ_desc_serv_prod_prv             
-                            typ_cod_docto_prv                  
-                            typ_observação_prv                 
-                            typ_dsc_param_prv                  
-                                
-                                
+            g_tipo_prv                    typ_tipo_prv                   ;
+            g_codigo_empresa_prv          typ_codigo_empresa_prv         ;
+            g_codigo_estab_prv            typ_codigo_estab_prv           ;
+            g_data_emissao_prv            typ_data_emissao_prv           ;
+            g_data_fiscal_prv             typ_data_fiscal_prv            ;
+            g_ident_fis_jur_prv           typ_ident_fis_jur_prv          ;
+            g_ident_docto_prv             typ_ident_docto_prv            ;
+            g_numero_nota_fiscal_prv      typ_numero_nota_fiscal_prv     ;
+            g_docto_serie_prv             typ_docto_serie_prv            ;
+            g_emissao_prv                 typ_emissao_prv                ;
+            g_serie_docfis_prv            typ_serie_docfis_prv           ;
+            g_sub_serie_docfis_prv        typ_sub_serie_docfis_prv       ;
+            g_num_item_prv                typ_num_item_prv               ;
+            g_cod_usuario_prv             typ_cod_usuario_prv            ;
+            g_codigo_pess_fis_jur_prv     typ_codigo_pess_fis_jur_prv    ;
+            g_razao_social_cliente_prv    typ_razao_social_cliente_prv   ;
+            g_ind_fis_jur_prv             typ_ind_fis_jur_prv            ;
+            g_cnpj_cliente_prv            typ_cnpj_cliente_prv           ;
+            g_cod_class_doc_fis_prv       typ_cod_class_doc_fis_prv      ;
+            g_vlr_tot_nota_prv            typ_vlr_tot_nota_prv           ;
+            g_vlr_bs_calc_retencao_prv    typ_vlr_bs_calc_retencao_prv   ;
+            g_vlr_aliq_inss_prv           typ_vlr_aliq_inss_prv          ;
+            g_vlr_trib_inss_retido_prv    typ_vlr_trib_inss_retido_prv   ;
+            g_vlr_retencao__prv           typ_vlr_retencao__prv          ;
+            g_vlr_contab_compl_prv        typ_vlr_contab_compl_prv       ;
+            g_ind_tipo_proc_prv           typ_ind_tipo_proc_prv          ;
+            g_num_proc_jur_prv            typ_num_proc_jur_prv           ;
+            g_razao_social_prv            typ_razao_social_prv           ;
+            g_cgc_prv                     typ_cgc_prv                    ;
+            g_documento_prv               typ_documento_prv              ;
+            g_tipo_serv_e_social_prv      typ_tipo_serv_e_social_prv     ;
+            g_dsc_tipo_serv_esocial_prv   typ_dsc_tipo_serv_esocial_prv  ;
+            g_razao_social_drogaria_prv   typ_razao_social_drogaria_prv  ;
+            g_valor_servico_prv           typ_valor_servico_prv          ;
+            g_num_proc_adj_adic_prv       typ_num_proc_adj_adic_prv      ;
+            g_ind_tp_proc_adj_adic_prv    typ_ind_tp_proc_adj_adic_prv   ;
+            g_codigo_serv_prod_prv        typ_codigo_serv_prod_prv       ;
+            g_desc_serv_prod_prv          typ_desc_serv_prod_prv         ;
+            g_cod_docto_prv               typ_cod_docto_prv              ;
+            g_observação_prv              typ_observação_prv             ;
+            g_dsc_param_prv               typ_dsc_param_prv              ;
+                                                                         
+                                                                         
 
 
 
@@ -226,54 +226,54 @@ BEGIN
 
         FETCH rc_prev
             BULK COLLECT INTO -- TABLE  TMP
-                             g_tipo
-               , g_codigo_empresa
-               , g_codigo_estab
-               , g_data_emissao
-               , g_data_fiscal_1
-               , g_ident_fis_jur
-               , g_ident_docto
-               , g_numero_nota_fiscal
-               , g_docto_serie
-               , g_emissao
-               , g_serie_docfis
-               , g_sub_serie_docfis
-               , g_num_item
-               , g_cod_usuario
-               , g_codigo_pess_fis_jur
-               , g_razao_social_cliente
-               , g_ind_fis_jur
-               , g_cnpj_cliente
-               , g_cod_class_doc_fis
-               , g_vlr_tot_nota
-               , g_vlr_bs_calc_retencao
-               , g_vlr_aliq_inss
-               , g_vlr_trib_inss_retido
-               , g_vlr_retenção
-               , g_vlr_contab_compl
-               , g_ind_tipo_proc
-               , g_num_proc_jur
-               , g_razao_social
-               , g_cgc
-               , g_documento
-               , g_tipo_serv_e_social
-               , g_dsc_tipo_serv_esocial
-               , g_razao_social_drogaria
-               , g_valor_servico
-               , g_num_proc_adj_adic
-               , g_ind_tp_proc_adj_adic
-               , g_codigo_serv_prod
-               , g_desc_serv_prod
-               , g_cod_docto
-               , g_observação
-               , g_dsc_param
+             g_tipo_prv                 
+            ,g_codigo_empresa_prv       
+            ,g_codigo_estab_prv         
+            ,g_data_emissao_prv         
+            ,g_data_fiscal_prv          
+            ,g_ident_fis_jur_prv        
+            ,g_ident_docto_prv          
+            ,g_numero_nota_fiscal_prv   
+            ,g_docto_serie_prv          
+            ,g_emissao_prv              
+            ,g_serie_docfis_prv         
+            ,g_sub_serie_docfis_prv     
+            ,g_num_item_prv             
+            ,g_cod_usuario_prv          
+            ,g_codigo_pess_fis_jur_prv  
+            ,g_razao_social_cliente_prv 
+            ,g_ind_fis_jur_prv          
+            ,g_cnpj_cliente_prv         
+            ,g_cod_class_doc_fis_prv    
+            ,g_vlr_tot_nota_prv         
+            ,g_vlr_bs_calc_retencao_prv 
+            ,g_vlr_aliq_inss_prv        
+            ,g_vlr_trib_inss_retido_prv 
+            ,g_vlr_retencao__prv        
+            ,g_vlr_contab_compl_prv     
+            ,g_ind_tipo_proc_prv        
+            ,g_num_proc_jur_prv         
+            ,g_razao_social_prv         
+            ,g_cgc_prv                  
+            ,g_documento_prv            
+            ,g_tipo_serv_e_social_prv   
+            ,g_dsc_tipo_serv_esocial_prv
+            ,g_razao_social_drogaria_prv
+            ,g_valor_servico_prv        
+            ,g_num_proc_adj_adic_prv    
+            ,g_ind_tp_proc_adj_adic_prv 
+            ,g_codigo_serv_prod_prv     
+            ,g_desc_serv_prod_prv       
+            ,g_cod_docto_prv            
+            ,g_observação_prv           
+            ,g_dsc_param_prv    
             LIMIT 100;
             
             
-            FORALL i IN g_codigo_empresa.FIRST .. g_codigo_empresa.LAST
+                      FORALL i IN g_num_item_prv.FIRST .. g_num_item_prv.LAST
             
-                               INSERT /*+ APPEND */
-                               INTO MSAFI.DPSP_TB_FIN4816_REINF_PREV_GTT (
+                            INSERT /*+ APPEND */
+                             INTO MSAFI.DPSP_TB_FIN4816_REINF_PREV_GTT (
                                TIPO, "Codigo Empresa", "Codigo Estabelecimento", 
                                "Data Emissão", "Data Fiscal", IDENT_FIS_JUR, 
                                IDENT_DOCTO, "Número da Nota Fiscal", "Docto/Série", 
@@ -288,57 +288,52 @@ BEGIN
                                "Valor do Servico", NUM_PROC_ADJ_ADIC, IND_TP_PROC_ADJ_ADIC, 
                                CODIGO_SERV_PROD, DESC_SERV_PROD, COD_DOCTO, 
                                "Observação", DSC_PARAM) 
-                               VALUES (      
-                                             g_tipo                       (i)
-                                           , g_codigo_empresa             (i)
-                                           , g_codigo_estab               (i)
-                                           , g_data_emissao               (i)
-                                           , g_data_fiscal_1              (i)
-                                           , g_ident_fis_jur              (i)
-                                           , g_ident_docto                (i)
-                                           , g_numero_nota_fiscal         (i)
-                                           , g_docto_serie                (i)
-                                           , g_emissao                    (i)
-                                           , g_serie_docfis               (i)
-                                           , g_sub_serie_docfis           (i)
-                                           , g_num_item                   (i)
-                                           , g_cod_usuario                (i)
-                                           , g_codigo_pess_fis_jur        (i)
-                                           , g_razao_social_cliente       (i)
-                                           , g_ind_fis_jur                (i)
-                                           , g_cnpj_cliente               (i)
-                                           , g_cod_class_doc_fis          (i)
-                                           , g_vlr_tot_nota               (i)
-                                           , g_vlr_bs_calc_retencao       (i)
-                                           , g_vlr_aliq_inss              (i)
-                                           , g_vlr_trib_inss_retido       (i)
-                                           , g_vlr_retenção               (i)
-                                           , g_vlr_contab_compl           (i)
-                                           , g_ind_tipo_proc              (i)
-                                           , g_num_proc_jur               (i)
-                                           , g_razao_social               (i)
-                                           , g_cgc                        (i)
-                                           , g_documento                  (i)
-                                           , g_tipo_serv_e_social         (i)
-                                           , g_dsc_tipo_serv_esocial      (i)
-                                           , g_razao_social_drogaria      (i)
-                                           , g_valor_servico              (i)
-                                           , g_num_proc_adj_adic          (i)
-                                           , g_ind_tp_proc_adj_adic       (i)
-                                           , g_codigo_serv_prod           (i)
-                                           , g_desc_serv_prod             (i)
-                                           , g_cod_docto                  (i)
-                                           , g_observação                 (i)
-                                           , g_dsc_param                  (i) 
- );
-            
-            
-            
-            
-               
-            
+                             VALUES (      
+                                         g_tipo_prv                      (i)
+                                        ,g_codigo_empresa_prv            (i)
+                                        ,g_codigo_estab_prv              (i)
+                                        ,g_data_emissao_prv              (i)
+                                        ,g_data_fiscal_prv               (i)
+                                        ,g_ident_fis_jur_prv             (i)
+                                        ,g_ident_docto_prv               (i)
+                                        ,g_numero_nota_fiscal_prv        (i)
+                                        ,g_docto_serie_prv               (i)
+                                        ,g_emissao_prv                   (i)
+                                        ,g_serie_docfis_prv              (i)
+                                        ,g_sub_serie_docfis_prv          (i)
+                                        ,g_num_item_prv                  (i)
+                                        ,g_cod_usuario_prv               (i)
+                                        ,g_codigo_pess_fis_jur_prv       (i)
+                                        ,g_razao_social_cliente_prv      (i)
+                                        ,g_ind_fis_jur_prv               (i)
+                                        ,g_cnpj_cliente_prv              (i)
+                                        ,g_cod_class_doc_fis_prv         (i)
+                                        ,g_vlr_tot_nota_prv              (i)
+                                        ,g_vlr_bs_calc_retencao_prv      (i)
+                                        ,g_vlr_aliq_inss_prv             (i)
+                                        ,g_vlr_trib_inss_retido_prv      (i)
+                                        ,g_vlr_retencao__prv             (i)
+                                        ,g_vlr_contab_compl_prv          (i)
+                                        ,g_ind_tipo_proc_prv             (i)
+                                        ,g_num_proc_jur_prv              (i)
+                                        ,g_razao_social_prv              (i)
+                                        ,g_cgc_prv                       (i)
+                                        ,g_documento_prv                 (i)
+                                        ,g_tipo_serv_e_social_prv        (i)
+                                        ,g_dsc_tipo_serv_esocial_prv     (i)
+                                        ,g_razao_social_drogaria_prv     (i)
+                                        ,g_valor_servico_prv             (i)
+                                        ,g_num_proc_adj_adic_prv         (i)
+                                        ,g_ind_tp_proc_adj_adic_prv      (i)
+                                        ,g_codigo_serv_prod_prv          (i)
+                                        ,g_desc_serv_prod_prv            (i)
+                                        ,g_cod_docto_prv                 (i)
+                                        ,g_observação_prv                (i)
+                                        ,g_dsc_param_prv                 (i) );
+ 
 
         EXIT WHEN rc_prev%NOTFOUND;
+        
     END LOOP;
 
     COMMIT;

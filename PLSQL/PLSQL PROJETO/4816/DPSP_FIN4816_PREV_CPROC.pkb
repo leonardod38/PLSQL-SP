@@ -223,7 +223,7 @@ IS
     TYPE typ_vlr_bs_calc_retencao_prv   IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt."Vlr Base Calc. Retenção"%TYPE;
     TYPE typ_vlr_aliq_inss_prv          IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt.vlr_aliq_inss%TYPE;
     TYPE typ_vlr_trib_inss_retido_prv   IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt."Vlr.Trib INSS RETIDO"%TYPE;
-    TYPE typ_vlr_retencao__prv          IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt."Valor da Retenção"%TYPE;
+    TYPE typ_vlr_retencao_prv          IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt."Valor da Retenção"%TYPE;
     TYPE typ_vlr_contab_compl_prv       IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt.vlr_contab_compl%TYPE;
     TYPE typ_ind_tipo_proc_prv          IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt.ind_tipo_proc%TYPE;
     TYPE typ_num_proc_jur_prv           IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt.num_proc_jur%TYPE;
@@ -265,7 +265,7 @@ IS
             g_vlr_bs_calc_retencao_prv    typ_vlr_bs_calc_retencao_prv   ;
             g_vlr_aliq_inss_prv           typ_vlr_aliq_inss_prv          ;
             g_vlr_trib_inss_retido_prv    typ_vlr_trib_inss_retido_prv   ;
-            g_vlr_retencao__prv           typ_vlr_retencao__prv          ;
+            g_vlr_retencao_prv            typ_vlr_retencao_prv           ;     --
             g_vlr_contab_compl_prv        typ_vlr_contab_compl_prv       ;
             g_ind_tipo_proc_prv           typ_ind_tipo_proc_prv          ;
             g_num_proc_jur_prv            typ_num_proc_jur_prv           ;
@@ -286,6 +286,151 @@ IS
                             
 
 
+
+        CURSOR rc_prev   ( pdate  date, pcod_empresa varchar2 , p_proc_id NUMBER )
+         IS
+         SELECT 
+             'S' AS tipo
+             , reinf.cod_empresa AS "Codigo Empresa"
+             , reinf.cod_estab AS "Codigo Estabelecimento"
+             , reinf.data_emissao AS "Data Emissão"
+             , reinf.data_fiscal AS "Data Fiscal"
+             , reinf.ident_fis_jur
+             , reinf.ident_docto
+             , reinf.num_docfis AS "Número da Nota Fiscal"
+             --
+             , reinf.num_docfis || '/' || reinf.serie_docfis AS "Docto/Série"
+             , reinf.data_emissao AS "Emissão"
+             --
+             , reinf.serie_docfis
+             , reinf.sub_serie_docfis
+             , reinf.num_item
+             , reinf.cod_usuario
+             , x04.cod_fis_jur AS "Codigo Pessoa Fisica/Juridica"
+             , INITCAP ( x04.razao_social ) AS "Razão Social Cliente"
+             , x04.ind_fis_jur
+             , x04.cpf_cgc AS "CNPJ Cliente"
+             , reinf.cod_class_doc_fis
+             , reinf.vlr_tot_nota
+             , reinf.vlr_base_inss AS "Vlr Base Calc. Retenção"
+             , reinf.vlr_aliq_inss
+             , reinf.vlr_inss_retido AS "Vlr.Trib INSS RETIDO"
+             , reinf.vlr_inss_retido AS "Valor da Retenção"
+             , reinf.vlr_contab_compl
+             , reinf.ind_tipo_proc
+             , reinf.num_proc_jur
+             , estab.razao_social
+             , estab.cgc
+             , x2005.descricao AS "Documento"
+             , prt_tipo.cod_tipo_serv_esocial AS "Tipo de Serviço E-social"
+             , prt_tipo.dsc_tipo_serv_esocial
+             , INITCAP ( empresa.razao_social ) AS "Razão Social Drogaria"
+             , reinf.vlr_servico AS "Valor do Servico"
+             , reinf.num_proc_adj_adic
+             , reinf.ind_tp_proc_adj_adic
+             , x2018.cod_servico AS codigo_serv_prod
+             , INITCAP ( x2018.descricao ) AS desc_serv_prod
+             , x2005.cod_docto
+             , NULL AS "Observação"
+             , NULL AS dsc_param
+          FROM msafi.reinf_conf_previdenciaria_tmp  reinf
+             , msafi.fin4816_prev_tmp_estab         estab1
+             , x04_pessoa_fis_jur                   x04
+             , estabelecimento                      estab
+             , x2005_tipo_docto                     x2005
+             , prt_tipo_serv_esocial                prt_tipo
+             , x2018_servicos                       x2018
+             , empresa             
+         WHERE 1=1 
+           AND reinf.cod_estab                  = estab1.cod_estab      -- parametro
+           AND estab1.proc_id                   = p_proc_id             -- parametro
+           AND reinf.cod_empresa                = pcod_empresa          -- parametro
+           AND reinf.data_emissao               = pdate                 -- parametro
+           ---
+           AND reinf.ident_fis_jur              = x04.ident_fis_jur
+           AND reinf.cod_empresa                = estab.cod_empresa
+           AND reinf.cod_estab                  = estab.cod_estab
+           AND reinf.ident_docto                = x2005.ident_docto
+           AND reinf.ident_tipo_serv_esocial    = prt_tipo.ident_tipo_serv_esocial /*(+)*/
+           AND reinf.cod_empresa                = empresa.cod_empresa
+           AND LENGTH ( TRIM ( x04.cpf_cgc ) ) > 11
+           AND reinf.ident_servico  = x2018.ident_servico
+           --AND reinf.cod_usuario    = 'marcelo.orikasa' 
+           --AND reinf.cod_empresa    = 'DSP'             
+           --AND reinf.data_emissao   = '4/12/2018'      
+           --AND reinf.cod_estab      = 'DSP062'
+        UNION
+        SELECT 'R' AS tipo
+             , reinf.cod_empresa AS "Codigo Empresa"
+             , reinf.cod_estab AS "Codigo Estabelecimento"
+             , reinf.data_emissao AS "Data Emissão"
+             , reinf.data_fiscal AS "Data Fiscal"
+             , reinf.ident_fis_jur
+             , reinf.ident_docto
+             , reinf.num_docfis AS "Número da Nota Fiscal"
+             --
+             , reinf.num_docfis || '/' || reinf.serie_docfis AS "Docto/Série"
+             , reinf.data_emissao AS "Emissão"
+             --
+             , reinf.serie_docfis
+             , reinf.sub_serie_docfis
+             , reinf.num_item
+             , reinf.cod_usuario
+             , x04.cod_fis_jur AS "Codigo Pessoa Fisica/Juridica"
+             , INITCAP ( x04.razao_social ) AS "Razão Social Cliente"
+             , x04.ind_fis_jur
+             , x04.cpf_cgc AS "CNPJ Cliente"
+             , reinf.cod_class_doc_fis
+             , reinf.vlr_tot_nota
+             , reinf.vlr_base_inss AS "Vlr Base Calc. Retenção"
+             , reinf.vlr_aliq_inss
+             , reinf.vlr_inss_retido AS "Vlr.Trib INSS RETIDO"
+             , reinf.vlr_inss_retido AS "Valor da Retenção"
+             , reinf.vlr_contab_compl
+             , reinf.ind_tipo_proc
+             , reinf.num_proc_jur
+             , estab.razao_social
+             , estab.cgc
+             , x2005.descricao AS "Documento"
+             , NULL
+             , NULL
+             , INITCAP ( empresa.razao_social ) AS "Razão Social Drogaria"
+             , reinf.vlr_servico AS "Valor do Servico"
+             , reinf.num_proc_adj_adic
+             , reinf.ind_tp_proc_adj_adic
+             , x2018.cod_servico AS codigo_serv_prod
+             , INITCAP ( x2018.descricao ) AS desc_serv_prod
+             , x2005.cod_docto
+             , NULL AS "Observação"
+             , prt_repasse.dsc_param
+            FROM msafi.reinf_conf_previdenciaria_tmp  reinf
+             ,   msafi.fin4816_prev_tmp_estab          estab1
+             , x04_pessoa_fis_jur                     x04 
+             , estabelecimento                        estab
+             , x2005_tipo_docto                       x2005
+             , prt_par2_msaf                          prt_repasse
+             , x2018_servicos                         x2018
+             , empresa
+         WHERE 1=1 
+           AND reinf.cod_estab                  = estab1.cod_estab      -- parametro
+           AND estab1.proc_id                   = p_proc_id             -- parametro
+           AND reinf.cod_empresa                = pcod_empresa          -- parametro
+           AND reinf.data_emissao               = pdate                 -- parametro
+           --
+           AND reinf.ident_fis_jur              = x04.ident_fis_jur
+           AND reinf.cod_empresa                = estab.cod_empresa
+           AND reinf.cod_estab                  = estab.cod_estab
+           AND reinf.ident_docto                = x2005.ident_docto
+           AND reinf.cod_param                  = prt_repasse.cod_param
+           AND reinf.cod_empresa                = empresa.cod_empresa
+           AND LENGTH ( TRIM ( x04.cpf_cgc ) ) > 11
+           AND reinf.ident_servico              = x2018.ident_servico
+           --  AND reinf.cod_usuario                = mnm_usuario
+           --  AND reinf.cod_empresa                = p_cod_empresa
+           --  AND reinf.cod_estab                  = p_cod_estab
+           --  AND reinf.data_emissao              >= p_data_inicial
+           --  AND reinf.data_emissao              <= p_data_final
+                                                        ;
                           
                   
                   
@@ -458,7 +603,7 @@ IS
             --================================================
             -- CARGA NA TABELA DO report fiscal 
             --================================================
-
+        
             OPEN cr_rtf   (v_data, p_nm_empresa, p_proc_id ) ;
 
             LOOP
@@ -613,10 +758,191 @@ IS
         COMMIT;
 
       
+        
+        
+         --================================================
+         -- CARGA NA TABELA DO report previdenciario 
+         --================================================
+        BEGIN
+          vn_count_new := 0;     
+          OPEN rc_prev (v_data, p_nm_empresa, p_proc_id ) ;
 
-        --================================================
-        -- CARGA NA DEFINITIVA
-        --================================================
+         LOOP
+             --
+                dbms_application_info.set_module ( cc_procedurename
+                                                 , 'Executando o fetch previdenciario ...' );
+
+                 FETCH rc_prev
+                    BULK COLLECT INTO -- TABLE  TMP
+                     g_tipo_prv                 
+                    ,g_codigo_empresa_prv       
+                    ,g_codigo_estab_prv         
+                    ,g_data_emissao_prv         
+                    ,g_data_fiscal_prv          
+                    ,g_ident_fis_jur_prv        
+                    ,g_ident_docto_prv          
+                    ,g_numero_nota_fiscal_prv   
+                    ,g_docto_serie_prv          
+                    ,g_emissao_prv              
+                    ,g_serie_docfis_prv         
+                    ,g_sub_serie_docfis_prv     
+                    ,g_num_item_prv             
+                    ,g_cod_usuario_prv          
+                    ,g_codigo_pess_fis_jur_prv  
+                    ,g_razao_social_cliente_prv 
+                    ,g_ind_fis_jur_prv          
+                    ,g_cnpj_cliente_prv         
+                    ,g_cod_class_doc_fis_prv    
+                    ,g_vlr_tot_nota_prv         
+                    ,g_vlr_bs_calc_retencao_prv 
+                    ,g_vlr_aliq_inss_prv        
+                    ,g_vlr_trib_inss_retido_prv 
+                    ,g_vlr_retencao_prv        
+                    ,g_vlr_contab_compl_prv     
+                    ,g_ind_tipo_proc_prv        
+                    ,g_num_proc_jur_prv         
+                    ,g_razao_social_prv         
+                    ,g_cgc_prv                  
+                    ,g_documento_prv            
+                    ,g_tipo_serv_e_social_prv   
+                    ,g_dsc_tipo_serv_esocial_prv
+                    ,g_razao_social_drogaria_prv
+                    ,g_valor_servico_prv        
+                    ,g_num_proc_adj_adic_prv    
+                    ,g_ind_tp_proc_adj_adic_prv 
+                    ,g_codigo_serv_prod_prv     
+                    ,g_desc_serv_prod_prv       
+                    ,g_cod_docto_prv            
+                    ,g_observação_prv           
+                    ,g_dsc_param_prv    
+                    
+                    LIMIT cc_limit;
+                    
+              
+             
+             FORALL i IN g_num_item_prv.FIRST .. g_num_item_prv.LAST                    
+             INSERT /*+ APPEND */
+                INTO MSAFI.DPSP_TB_FIN4816_REINF_PREV_GTT (
+                        TIPO, "Codigo Empresa", "Codigo Estabelecimento", 
+                        "Data Emissão", "Data Fiscal", IDENT_FIS_JUR, 
+                        IDENT_DOCTO, "Número da Nota Fiscal", "Docto/Série", 
+                        "Emissão", SERIE_DOCFIS, SUB_SERIE_DOCFIS, 
+                         NUM_ITEM, COD_USUARIO, "Codigo Pessoa Fisica/Juridica", 
+                         "Razão Social Cliente", IND_FIS_JUR, "CNPJ Cliente", 
+                         COD_CLASS_DOC_FIS, VLR_TOT_NOTA, "Vlr Base Calc. Retenção", 
+                         VLR_ALIQ_INSS, "Vlr.Trib INSS RETIDO", "Valor da Retenção", 
+                         VLR_CONTAB_COMPL, IND_TIPO_PROC, NUM_PROC_JUR, 
+                         RAZAO_SOCIAL, CGC, "Documento", 
+                         "Tipo de Serviço E-social", DSC_TIPO_SERV_ESOCIAL, "Razão Social Drogaria", 
+                         "Valor do Servico", NUM_PROC_ADJ_ADIC, IND_TP_PROC_ADJ_ADIC, 
+                          CODIGO_SERV_PROD, DESC_SERV_PROD, COD_DOCTO, "Observação", DSC_PARAM) 
+                VALUES (      
+                             g_tipo_prv                      (i)
+                            ,g_codigo_empresa_prv            (i)
+                            ,g_codigo_estab_prv              (i)
+                            ,g_data_emissao_prv              (i)
+                            ,g_data_fiscal_prv               (i)
+                            ,g_ident_fis_jur_prv             (i)
+                            ,g_ident_docto_prv               (i)
+                            ,g_numero_nota_fiscal_prv        (i)
+                            ,g_docto_serie_prv               (i)
+                            ,g_emissao_prv                   (i)
+                            ,g_serie_docfis_prv              (i)
+                            ,g_sub_serie_docfis_prv          (i)
+                            ,g_num_item_prv                  (i)
+                            ,g_cod_usuario_prv               (i)
+                            ,g_codigo_pess_fis_jur_prv       (i)
+                            ,g_razao_social_cliente_prv      (i)
+                            ,g_ind_fis_jur_prv               (i)
+                            ,g_cnpj_cliente_prv              (i)
+                            ,g_cod_class_doc_fis_prv         (i)
+                            ,g_vlr_tot_nota_prv              (i)
+                            ,g_vlr_bs_calc_retencao_prv      (i)
+                            ,g_vlr_aliq_inss_prv             (i)
+                            ,g_vlr_trib_inss_retido_prv      (i)
+                            ,g_vlr_retencao_prv             (i)
+                            ,g_vlr_contab_compl_prv          (i)
+                            ,g_ind_tipo_proc_prv             (i)
+                            ,g_num_proc_jur_prv              (i)
+                            ,g_razao_social_prv              (i)
+                            ,g_cgc_prv                       (i)
+                            ,g_documento_prv                 (i)
+                            ,g_tipo_serv_e_social_prv        (i)
+                            ,g_dsc_tipo_serv_esocial_prv     (i)
+                            ,g_razao_social_drogaria_prv     (i)
+                            ,g_valor_servico_prv             (i)
+                            ,g_num_proc_adj_adic_prv         (i)
+                            ,g_ind_tp_proc_adj_adic_prv      (i)
+                            ,g_codigo_serv_prod_prv          (i)
+                            ,g_desc_serv_prod_prv            (i)
+                            ,g_cod_docto_prv                 (i)
+                            ,g_observação_prv                (i)
+                            ,g_dsc_param_prv                 (i) );
+                            
+                            
+                            
+                            
+                            vn_count_new := vn_count_new + SQL%ROWCOUNT;
+                            COMMIT;
+                            -- Registra o andamento do processo na v$session
+                            dbms_application_info.set_module ( cc_procedurename || '  ' || v_data, 'n:' || vn_count_new );
+                            dbms_application_info.set_client_info ( TO_CHAR ( SYSDATE, 'dd-mm-yyyy hh24:mi:ss' ) );
+                            
+                            --
+                            g_tipo_prv.delete;                 
+                            g_codigo_empresa_prv.delete;       
+                            g_codigo_estab_prv.delete;         
+                            g_data_emissao_prv.delete;         
+                            g_data_fiscal_prv.delete;          
+                            g_ident_fis_jur_prv.delete;        
+                            g_ident_docto_prv.delete;          
+                            g_numero_nota_fiscal_prv.delete;   
+                            g_docto_serie_prv.delete;          
+                            g_emissao_prv.delete;              
+                            g_serie_docfis_prv.delete;         
+                            g_sub_serie_docfis_prv.delete;     
+                            g_num_item_prv.delete;             
+                            g_cod_usuario_prv.delete;          
+                            g_codigo_pess_fis_jur_prv.delete;  
+                            g_razao_social_cliente_prv.delete; 
+                            g_ind_fis_jur_prv.delete;          
+                            g_cnpj_cliente_prv.delete;         
+                            g_cod_class_doc_fis_prv.delete;    
+                            g_vlr_tot_nota_prv.delete;         
+                            g_vlr_bs_calc_retencao_prv.delete; 
+                            g_vlr_aliq_inss_prv.delete;        
+                            g_vlr_trib_inss_retido_prv.delete; 
+                            g_vlr_retencao_prv.delete;         
+                            g_vlr_contab_compl_prv.delete;      
+                            g_ind_tipo_proc_prv.delete;  
+                            g_num_proc_jur_prv.delete;          
+                            g_razao_social_prv.delete;          
+                            g_cgc_prv.delete;                   
+                            g_documento_prv.delete;             
+                            g_tipo_serv_e_social_prv.delete;    
+                            g_dsc_tipo_serv_esocial_prv.delete; 
+                            g_razao_social_drogaria_prv.delete; 
+                            g_valor_servico_prv.delete;         
+                            g_num_proc_adj_adic_prv.delete;     
+                            g_ind_tp_proc_adj_adic_prv.delete;  
+                            g_codigo_serv_prod_prv.delete;      
+                            g_desc_serv_prod_prv.delete;        
+                            g_cod_docto_prv.delete;             
+                            g_observação_prv.delete;            
+                            g_dsc_param_prv.delete;     
+                            
+
+                          EXIT WHEN rc_prev%NOTFOUND;
+                
+        END LOOP;
+
+                    COMMIT;
+                    CLOSE rc_prev;
+
+                    
+        
+        END ; 
+       
 
         dbms_application_info.set_module ( cc_procedurename || '  ' || v_data , 'Carga definitiva' );
         dbms_application_info.set_module ( cc_procedurename , 'END:' || vn_count_new );
