@@ -1,15 +1,15 @@
-Prompt Table TT;
+Prompt Table FIN4816_REINF_2010_GTT;
 --
---  FIN4816_REINF_2010_GTT  (Table) 
+-- FIN4816_REINF_2010_GTT  (Table) 
 --
+
 CREATE TABLE MSAFI.FIN4816_REINF_2010_GTT
 (
-  COD_EMPRESA_PK                 VARCHAR2(3 BYTE) NOT NULL,
-  COD_ESTAB_PK                   VARCHAR2(6 BYTE) NOT NULL,
-  DAT_FISCAL_PK                  DATE,
-  DAT_EMISSAO_PK                 DATE,
-  IDEN_FIS_JUR_PK                NUMBER(12)     NOT NULL,
-  NUM_DOCFIS_PK                  VARCHAR2(15 BYTE) NOT NULL,
+  COD_EMPRESA                    VARCHAR2(3 BYTE) NOT NULL,
+  COD_ESTAB                      VARCHAR2(6 BYTE) NOT NULL,
+  DAT_EMISSAO                    DATE           NOT NULL,
+  IDEN_FIS_JUR                   NUMBER(12)     NOT NULL,
+  NUM_DOCFIS                     VARCHAR2(15 BYTE) NOT NULL,
   "Codigo Empresa"               VARCHAR2(3 BYTE),
   "Razão Social Drogaria"        VARCHAR2(100 BYTE),
   "Razão Social Cliente"         VARCHAR2(70 BYTE),
@@ -41,8 +41,6 @@ CREATE TABLE MSAFI.FIN4816_REINF_2010_GTT
   IND_PROC_EMISSAO               CHAR(1 BYTE),
   ID_EVENTO                      VARCHAR2(36 BYTE),
   IND_OPER                       CHAR(1 BYTE),
-  COD_EMPRESA                    VARCHAR2(3 BYTE) NOT NULL,
-  COD_ESTAB                      VARCHAR2(6 BYTE) NOT NULL,
   DAT_OCORRENCIA                 DATE           NOT NULL,
   CGC                            VARCHAR2(14 BYTE),
   RAZAO_SOCIAL                   VARCHAR2(70 BYTE),
@@ -78,27 +76,4 @@ LOGGING
 ROW STORE COMPRESS BASIC
 NOCACHE
 MONITORING
-/
-
-
-Prompt Index IDX_TT;
---
--- IDX_TT  (Index) 
---
-CREATE UNIQUE INDEX IDX_2010 ON MSAFI.FIN4816_REINF_2010_GTT
-(COD_EMPRESA_PK, COD_ESTAB_PK, DAT_FISCAL_PK, DAT_EMISSAO_PK, IDEN_FIS_JUR_PK, 
-NUM_DOCFIS_PK)
-LOGGING
-/
-
--- 
--- Non Foreign Key Constraints for Table TT 
--- 
-Prompt Non-Foreign Key Constraints on Table TT;
-ALTER TABLE MSAFI.FIN4816_REINF_2010_GTT ADD (
-  CONSTRAINT IDX_2010
-  PRIMARY KEY
-  (COD_EMPRESA_PK, COD_ESTAB_PK, DAT_FISCAL_PK, DAT_EMISSAO_PK, IDEN_FIS_JUR_PK, NUM_DOCFIS_PK)
-  USING INDEX IDX_2010
-  ENABLE VALIDATE)
 /

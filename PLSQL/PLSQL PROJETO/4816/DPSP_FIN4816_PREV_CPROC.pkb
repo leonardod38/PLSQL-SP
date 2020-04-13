@@ -146,8 +146,6 @@ IS
                AND  x2018_servicos.ident_servico  = x09_itens_serv.ident_servico
                AND ( x2005_tipo_docto.ident_docto = x07_docto_fiscal.ident_docto )
                AND ( x04_pessoa_fis_jur.ident_fis_jur = x07_docto_fiscal.ident_fis_jur )
-             --  AND ( x07_docto_fiscal.data_fiscal <= pdata_final   )    ---  DATA EMISSAO 
-              -- AND ( x07_docto_fiscal.data_fiscal >= pdata_inicial )
                AND ( x07_docto_fiscal.movto_e_s IN ( 1
                                                    , 2
                                                    , 3
@@ -200,7 +198,7 @@ IS
     -- =======================================
     -- Type  previdenciario/ cursor  
     -- =======================================
-    TYPE typ_tipo_prv                  IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt.tipo%TYPE;
+    TYPE typ_tipo_prv                   IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt.tipo%TYPE;
     TYPE typ_codigo_empresa_prv         IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt."Codigo Empresa"%TYPE;
     TYPE typ_codigo_estab_prv           IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt."Codigo Estabelecimento"%TYPE;
     TYPE typ_data_emissao_prv           IS TABLE OF msafi.dpsp_tb_fin4816_reinf_prev_gtt."Data Emissão"%TYPE;
@@ -355,11 +353,9 @@ IS
            AND reinf.cod_empresa                = empresa.cod_empresa
            AND LENGTH ( TRIM ( x04.cpf_cgc ) ) > 11
            AND reinf.ident_servico  = x2018.ident_servico
-           --AND reinf.cod_usuario    = 'marcelo.orikasa' 
-           --AND reinf.cod_empresa    = 'DSP'             
-           --AND reinf.data_emissao   = '4/12/2018'      
-           --AND reinf.cod_estab      = 'DSP062'
-        UNION
+         
+            UNION
+        
         SELECT 'R' AS tipo
              , reinf.cod_empresa AS "Codigo Empresa"
              , reinf.cod_estab AS "Codigo Estabelecimento"
@@ -425,15 +421,337 @@ IS
            AND reinf.cod_empresa                = empresa.cod_empresa
            AND LENGTH ( TRIM ( x04.cpf_cgc ) ) > 11
            AND reinf.ident_servico              = x2018.ident_servico
-           --  AND reinf.cod_usuario                = mnm_usuario
-           --  AND reinf.cod_empresa                = p_cod_empresa
-           --  AND reinf.cod_estab                  = p_cod_estab
-           --  AND reinf.data_emissao              >= p_data_inicial
-           --  AND reinf.data_emissao              <= p_data_final
+         
                                                         ;
                           
                   
-                  
+                 
+
+
+
+
+
+
+    -- =======================================
+    --    Type  REINF 2010 / cursor  
+    -- =======================================
+
+  TYPE typ_cod_empresa2            	IS TABLE OF  msafi.fin4816_reinf_2010_gtt.cod_empresa				   %TYPE;			              
+  TYPE typ_cod_estab2               IS TABLE OF  msafi.fin4816_reinf_2010_gtt.cod_estab                    %TYPE;
+  TYPE typ_dat_emissao2             IS TABLE OF  msafi.fin4816_reinf_2010_gtt.dat_emissao                  %TYPE;
+  TYPE typ_iden_fis_jur2            IS TABLE OF  msafi.fin4816_reinf_2010_gtt.iden_fis_jur                 %TYPE;
+  TYPE typ_num_docfis2              IS TABLE OF  msafi.fin4816_reinf_2010_gtt.num_docfis                   %TYPE;
+  TYPE typ_cd_empresa               IS TABLE OF  msafi.fin4816_reinf_2010_gtt."Codigo Empresa"             %TYPE;
+  TYPE typ_rz_social_drogaria       IS TABLE OF  msafi.fin4816_reinf_2010_gtt."Razão Social Drogaria"      %TYPE;
+  TYPE typ_rz_social_client         IS TABLE OF  msafi.fin4816_reinf_2010_gtt."Razão Social Cliente"       %TYPE;
+  TYPE typ_ntf                      IS TABLE OF  msafi.fin4816_reinf_2010_gtt."Número da Nota Fiscal"      %TYPE;
+  TYPE typ_data_emissao_nf          IS TABLE OF  msafi.fin4816_reinf_2010_gtt."Data de Emissão da NF"      %TYPE;
+  TYPE typ_data_fiscal2             IS TABLE OF  msafi.fin4816_reinf_2010_gtt."Data Fiscal"                %TYPE;
+  TYPE typ_vlr_tributo              IS TABLE OF  msafi.fin4816_reinf_2010_gtt."Valor do Tributo"           %TYPE;
+  TYPE typ_observacao               IS TABLE OF  msafi.fin4816_reinf_2010_gtt."observacao"                 %TYPE;
+  TYPE typ_tp_servico_e_social      IS TABLE OF  msafi.fin4816_reinf_2010_gtt."Tipo de Serviço E-social"   %TYPE;
+  TYPE typ_vlr_bs_calc_retencao     IS TABLE OF  msafi.fin4816_reinf_2010_gtt."Vlr. Base de Calc. Retenção"%TYPE;
+  TYPE typ_vlr_retencao             IS TABLE OF  msafi.fin4816_reinf_2010_gtt."Valor da Retenção"          %TYPE;
+  TYPE typ_proc_id                  IS TABLE OF  msafi.fin4816_reinf_2010_gtt.proc_id                      %TYPE;
+  TYPE typ_ind_status               IS TABLE OF  msafi.fin4816_reinf_2010_gtt.ind_status                   %TYPE;
+  TYPE typ_cnpj_prestador           IS TABLE OF  msafi.fin4816_reinf_2010_gtt.cnpj_prestador               %TYPE;
+  TYPE typ_ind_obra                 IS TABLE OF  msafi.fin4816_reinf_2010_gtt.ind_obra                     %TYPE;
+  TYPE typ_tp_inscricao             IS TABLE OF  msafi.fin4816_reinf_2010_gtt.tp_inscricao                 %TYPE;
+  TYPE typ_nr_inscricao             IS TABLE OF  msafi.fin4816_reinf_2010_gtt.nr_inscricao                 %TYPE;
+  TYPE typ_num_recibo               IS TABLE OF  msafi.fin4816_reinf_2010_gtt.num_recibo                   %TYPE;
+  TYPE typ_ind_tp_amb               IS TABLE OF  msafi.fin4816_reinf_2010_gtt.ind_tp_amb                   %TYPE;
+  TYPE typ_vlr_bruto                IS TABLE OF  msafi.fin4816_reinf_2010_gtt.vlr_bruto                    %TYPE;
+  TYPE typ_vlr_base_ret             IS TABLE OF  msafi.fin4816_reinf_2010_gtt.vlr_base_ret                 %TYPE;
+  TYPE typ_vlr_ret_princ            IS TABLE OF  msafi.fin4816_reinf_2010_gtt.vlr_ret_princ                %TYPE;
+  TYPE typ_vlr_ret_adic             IS TABLE OF  msafi.fin4816_reinf_2010_gtt.vlr_ret_adic                 %TYPE;
+  TYPE typ_vlr_n_ret_princ          IS TABLE OF  msafi.fin4816_reinf_2010_gtt.vlr_n_ret_princ              %TYPE;
+  TYPE typ_vlr_n_ret_adic           IS TABLE OF  msafi.fin4816_reinf_2010_gtt.vlr_n_ret_adic               %TYPE;
+  TYPE typ_ind_cprb                 IS TABLE OF  msafi.fin4816_reinf_2010_gtt.ind_cprb                     %TYPE;
+  TYPE typ_cod_versao_proc          IS TABLE OF  msafi.fin4816_reinf_2010_gtt.cod_versao_proc              %TYPE;
+  TYPE typ_cod_versao_layout        IS TABLE OF  msafi.fin4816_reinf_2010_gtt.cod_versao_layout            %TYPE;
+  TYPE typ_ind_proc_emissao         IS TABLE OF  msafi.fin4816_reinf_2010_gtt.ind_proc_emissao             %TYPE;
+  TYPE typ_id_evento                IS TABLE OF  msafi.fin4816_reinf_2010_gtt.id_evento                    %TYPE;
+  TYPE typ_ind_oper                 IS TABLE OF  msafi.fin4816_reinf_2010_gtt.ind_oper                     %TYPE;
+  TYPE typ_dat_ocorrencia           IS TABLE OF  msafi.fin4816_reinf_2010_gtt.dat_ocorrencia               %TYPE;
+  TYPE typ_cgc_cpf                  IS TABLE OF  msafi.fin4816_reinf_2010_gtt.cgc                          %TYPE;
+  TYPE typ_rz_social                IS TABLE OF  msafi.fin4816_reinf_2010_gtt.razao_social                 %TYPE;
+  TYPE typ_x04_razao_social         IS TABLE OF  msafi.fin4816_reinf_2010_gtt.x04_razao_social             %TYPE;
+  TYPE typ_id_r2010_oc              IS TABLE OF  msafi.fin4816_reinf_2010_gtt.id_r2010_oc                  %TYPE;
+  TYPE typ_nm_docto                 IS TABLE OF  msafi.fin4816_reinf_2010_gtt.num_docto                    %TYPE;
+  TYPE typ_serie                    IS TABLE OF  msafi.fin4816_reinf_2010_gtt.serie                        %TYPE;
+  TYPE typ_dat_emissao_nf           IS TABLE OF  msafi.fin4816_reinf_2010_gtt.dat_emissao_nf               %TYPE;
+  TYPE typ_dt_fiscal                IS TABLE OF  msafi.fin4816_reinf_2010_gtt.data_fiscal                  %TYPE;
+  TYPE typ_rnf_vlr_bruto            IS TABLE OF  msafi.fin4816_reinf_2010_gtt.rnf_vlr_bruto                %TYPE;
+  TYPE typ_obs                      IS TABLE OF  msafi.fin4816_reinf_2010_gtt.observacao                   %TYPE;
+  TYPE typ_id_r2010_nf              IS TABLE OF  msafi.fin4816_reinf_2010_gtt.id_r2010_nf                  %TYPE;
+  TYPE typ_ind_tp_proc_adj_adic     IS TABLE OF  msafi.fin4816_reinf_2010_gtt.ind_tp_proc_adj_adic         %TYPE;
+  TYPE typ_num_proc_adj_adic        IS TABLE OF  msafi.fin4816_reinf_2010_gtt.num_proc_adj_adic            %TYPE;
+  TYPE typ_cod_susp_adic            IS TABLE OF  msafi.fin4816_reinf_2010_gtt.cod_susp_adic                %TYPE;
+  TYPE typ_radic_vlr_n_ret_adic     IS TABLE OF  msafi.fin4816_reinf_2010_gtt.radic_vlr_n_ret_adic         %TYPE;
+  TYPE typ_ind_tp_proc_adj_princ    IS TABLE OF  msafi.fin4816_reinf_2010_gtt.ind_tp_proc_adj_princ        %TYPE;
+  TYPE typ_num_proc_adj_princ       IS TABLE OF  msafi.fin4816_reinf_2010_gtt.num_proc_adj_princ           %TYPE;
+  TYPE typ_cod_susp_princ           IS TABLE OF  msafi.fin4816_reinf_2010_gtt.cod_susp_princ               %TYPE;
+  TYPE typ_rprinc_vlr_n_ret_princ   IS TABLE OF  msafi.fin4816_reinf_2010_gtt.rprinc_vlr_n_ret_princ       %TYPE;
+  TYPE typ_tp_servico               IS TABLE OF  msafi.fin4816_reinf_2010_gtt.tp_servico                   %TYPE;
+  TYPE typ_rserv_vlr_base_ret       IS TABLE OF  msafi.fin4816_reinf_2010_gtt.rserv_vlr_base_ret           %TYPE;
+  TYPE typ_valor_retencao           IS TABLE OF  msafi.fin4816_reinf_2010_gtt.vlr_retencao                 %TYPE;
+  TYPE typ_vlr_ret_sub              IS TABLE OF  msafi.fin4816_reinf_2010_gtt.vlr_ret_sub                  %TYPE;
+  TYPE typ_rserv_vlr_n_ret_princ    IS TABLE OF  msafi.fin4816_reinf_2010_gtt.rserv_vlr_n_ret_princ        %TYPE;
+  TYPE typ_vlr_servicos_15          IS TABLE OF  msafi.fin4816_reinf_2010_gtt.vlr_servicos_15              %TYPE;
+  TYPE typ_vlr_servicos_20          IS TABLE OF  msafi.fin4816_reinf_2010_gtt.vlr_servicos_20              %TYPE;
+  TYPE typ_vlr_servicos_25          IS TABLE OF  msafi.fin4816_reinf_2010_gtt.vlr_servicos_25              %TYPE;
+  TYPE typ_rserv_vlr_ret_adic       IS TABLE OF  msafi.fin4816_reinf_2010_gtt.rserv_vlr_ret_adic           %TYPE;
+  TYPE typ_rserv_vlr_n_ret_adic     IS TABLE OF  msafi.fin4816_reinf_2010_gtt.rserv_vlr_n_ret_adic         %TYPE;  
+
+                    
+                 g_cod_empresa2                     typ_cod_empresa2                ;
+                 g_cod_estab2                       typ_cod_estab2                  ;
+                 g_dat_emissao2                     typ_dat_emissao2                ;
+                 g_iden_fis_jur2                    typ_iden_fis_jur2               ;
+                 g_num_docfis2                      typ_num_docfis2                 ;
+                 g_cd_empresa                       typ_cd_empresa                  ;
+                 g_rz_social_drogaria               typ_rz_social_drogaria          ;
+                 g_rz_social_client                 typ_rz_social_client         	 ;
+                 g_ntf                              typ_ntf                         ;
+                 g_data_emissao_nf                  typ_data_emissao_nf             ;
+                 g_data_fiscal2                     typ_data_fiscal2                ;
+                 g_vlr_tributo                      typ_vlr_tributo                 ;
+                 g_observacao                       typ_observacao                  ;
+                 g_tp_servico_e_social              typ_tp_servico_e_social         ;
+                 g_vlr_bs_calc_retencao             typ_vlr_bs_calc_retencao        ;
+                 g_vlr_retencao                     typ_vlr_retencao                ;
+                 g_proc_id                          typ_proc_id                     ;
+                 g_ind_status                       typ_ind_status                  ;
+                 g_cnpj_prestador                   typ_cnpj_prestador              ;
+                 g_ind_obra                         typ_ind_obra                    ;
+                 g_tp_inscricao                     typ_tp_inscricao                ;
+                 g_nr_inscricao                     typ_nr_inscricao                ;
+                 g_num_recibo                       typ_num_recibo                  ;
+                 g_ind_tp_amb                       typ_ind_tp_amb                  ;
+                 g_vlr_bruto                        typ_vlr_bruto                   ;
+                 g_vlr_base_ret                     typ_vlr_base_ret                ;
+                 g_vlr_ret_princ                    typ_vlr_ret_princ               ;
+                 g_vlr_ret_adic                     typ_vlr_ret_adic                ;
+                 g_vlr_n_ret_princ                  typ_vlr_n_ret_princ             ;
+                 g_vlr_n_ret_adic                   typ_vlr_n_ret_adic              ;
+                 g_ind_cprb                         typ_ind_cprb                    ;
+                 g_cod_versao_proc                  typ_cod_versao_proc             ;
+                 g_cod_versao_layout                typ_cod_versao_layout           ;
+                 g_ind_proc_emissao                 typ_ind_proc_emissao            ;
+                 g_id_evento                        typ_id_evento                   ;
+                 g_ind_oper                         typ_ind_oper                    ;
+                 g_dat_ocorrencia                   typ_dat_ocorrencia              ;
+                 g_cgc_cpf                          typ_cgc_cpf                     ;
+                 g_rz_social                        typ_rz_social                   ;
+                 g_x04_razao_social                 typ_x04_razao_social            ;
+                 g_id_r2010_oc                      typ_id_r2010_oc                 ;
+                 g_nm_docto                         typ_nm_docto                    ;
+                 g_serie                            typ_serie                       ;
+                 g_dat_emissao_nf                   typ_dat_emissao_nf              ;
+                 g_dt_fiscal                        typ_dt_fiscal                   ;
+                 g_rnf_vlr_bruto                    typ_rnf_vlr_bruto               ;
+                 g_obs                              typ_obs                         ;
+                 g_id_r2010_nf                      typ_id_r2010_nf                 ;
+                 g_ind_tp_proc_adj_adic             typ_ind_tp_proc_adj_adic        ;
+                 g_num_proc_adj_adic                typ_num_proc_adj_adic           ;
+                 g_cod_susp_adic                    typ_cod_susp_adic               ;
+                 g_radic_vlr_n_ret_adic             typ_radic_vlr_n_ret_adic        ;
+                 g_ind_tp_proc_adj_princ            typ_ind_tp_proc_adj_princ       ;
+                 g_num_proc_adj_princ               typ_num_proc_adj_princ          ;
+                 g_cod_susp_princ                   typ_cod_susp_princ              ;
+                 g_rprinc_vlr_n_ret_princ           typ_rprinc_vlr_n_ret_princ      ;
+                 g_tp_servico                       typ_tp_servico                  ;
+                 g_rserv_vlr_base_ret               typ_rserv_vlr_base_ret          ;
+                 g_valor_retencao                   typ_valor_retencao              ;
+                 g_vlr_ret_sub                      typ_vlr_ret_sub                 ;
+                 g_rserv_vlr_n_ret_princ            typ_rserv_vlr_n_ret_princ       ;
+                 g_vlr_servicos_15                  typ_vlr_servicos_15             ;
+                 g_vlr_servicos_20                  typ_vlr_servicos_20             ;
+                 g_vlr_servicos_25                  typ_vlr_servicos_25             ;
+                 g_rserv_vlr_ret_adic               typ_rserv_vlr_ret_adic          ;
+                 g_rserv_vlr_n_ret_adic             typ_rserv_vlr_n_ret_adic        ;
+                      
+  
+  
+  
+         
+
+             CURSOR rc_2010   ( pdate  date, pcod_empresa varchar2 , p_proc_id NUMBER )
+                IS 
+              SELECT  
+                    --  pk        
+                   reinf_pger_apur.cod_empresa             as cod_empresa                                                                 
+                 , reinf_pger_apur.cod_estab               as cod_estab                                                                   
+                 , rnf.dat_emissao_nf                      as dat_emissao                                                                 
+                 , x04_pessoa_fis_jur.ident_fis_jur        as iden_fis_jur                                                                
+                 , rnf.num_docto                           as num_docfis                                                                  
+                 ,  empresa.cod_empresa                     AS "Codigo Empresa"                                                           
+                 , estabelecimento.razao_social             AS "Razão Social Drogaria"                                                    
+                 , ( x04_pessoa_fis_jur.razao_social )      AS "Razão Social Cliente"                                                     
+                 ,  rnf.num_docto                           AS "Número da Nota Fiscal"                                                    
+                 ,  rnf.dat_emissao_nf                      AS "Data de Emissão da NF"                                                    
+                 ,  rnf.data_saida_rec_nf                   AS "Data Fiscal"                                                              
+                 ,  rserv.vlr_retencao                      AS "Valor do Tributo"                                                         
+                 ,  rnf.observacao                          AS "observacao"                                                               
+                 ,  rserv.tp_servico                        AS "Tipo de Serviço E-social"                                                 
+                 ,  rserv.vlr_base_ret                      AS "Vlr. Base de Calc. Retenção"                                              
+                 ,  rserv.vlr_retencao                      AS "Valor da Retenção"                                                        
+                 , reinf_pger_r2010_oc.proc_id                                                                                            
+                 , reinf_pger_r2010_oc.ind_status                                                                                         
+                 , reinf_pger_r2010_prest.cnpj_prestador                                                                                  
+                 , reinf_pger_r2010_oc.ind_obra                                                                                           
+                 , reinf_pger_r2010_tom.tp_inscricao                                                                                      
+                 , reinf_pger_r2010_tom.nr_inscricao                                                                                      
+                 , reinf_pger_r2010_oc.num_recibo                                                                                         
+                 , reinf_pger_r2010_oc.ind_tp_amb                                                                                         
+                 , reinf_pger_r2010_oc.vlr_bruto                                                                                          
+                 , reinf_pger_r2010_oc.vlr_base_ret                                                                                       
+                 , reinf_pger_r2010_oc.vlr_ret_princ                                                                                      
+                 , reinf_pger_r2010_oc.vlr_ret_adic                                                                                       
+                 , reinf_pger_r2010_oc.vlr_n_ret_princ                                                                                    
+                 , reinf_pger_r2010_oc.vlr_n_ret_adic                                                                                     
+                 , reinf_pger_r2010_oc.ind_cprb                                                                                           
+                 , reinf_pger_r2010_oc.cod_versao_proc                                                                                    
+                 , reinf_pger_r2010_oc.cod_versao_layout                                                                                  
+                 , reinf_pger_r2010_oc.ind_proc_emissao                                                                                   
+                 , reinf_pger_r2010_oc.id_evento                                                                                          
+                 , reinf_pger_r2010_oc.ind_oper                                                                                           
+                 , reinf_pger_r2010_oc.dat_ocorrencia                                                                                     
+                 , estabelecimento.cgc                                                                                                    
+                 , empresa.razao_social                                                                                                   
+                 , ( x04_pessoa_fis_jur.razao_social ) x04_razao_social                                                                   
+                 , reinf_pger_r2010_oc.id_r2010_oc                                                                                        
+                 , ( rnf.num_docto ) num_docto                                                                                            
+                 , ( rnf.serie ) serie                                                                                                    
+                 , ( rnf.dat_emissao_nf ) dat_emissao_nf                                                                                  
+                 , ( rnf.data_saida_rec_nf ) data_fiscal                                                                                  
+                 , ( rnf.vlr_bruto ) rnf_vlr_bruto                                                                                        
+                 , ( rnf.observacao ) observacao                                                                                          
+                 , ( rnf.id_r2010_nf ) id_r2010_nf                                                                                        
+                 , ( radic.ind_tp_proc_adj_adic ) ind_tp_proc_adj_adic                                                                    
+                 , ( radic.num_proc_adj_adic ) num_proc_adj_adic                                                                          
+                 , ( radic.cod_susp_adic ) cod_susp_adic                                                                                  
+                 , ( radic.vlr_n_ret_adic ) radic_vlr_n_ret_adic                                                                          
+                 , ( rprinc.ind_tp_proc_adj_princ ) ind_tp_proc_adj_princ                                                                 
+                 , ( rprinc.num_proc_adj_princ ) num_proc_adj_princ                                                                       
+                 , ( rprinc.cod_susp_princ ) cod_susp_princ                                                                               
+                 , ( rprinc.vlr_n_ret_princ ) rprinc_vlr_n_ret_princ                                                                      
+                 , ( rserv.tp_servico ) tp_servico                                                                                        
+                 , ( rserv.vlr_base_ret ) rserv_vlr_base_ret                                                                              
+                 , ( rserv.vlr_retencao ) vlr_retencao                                                                                    
+                 , ( rserv.vlr_ret_sub ) vlr_ret_sub                                                                                      
+                 , ( rserv.vlr_n_ret_princ ) rserv_vlr_n_ret_princ                                                                        
+                 , ( rserv.vlr_servicos_15 ) vlr_servicos_15                                                                              
+                 , ( rserv.vlr_servicos_20 ) vlr_servicos_20                                                                              
+                 , ( rserv.vlr_servicos_25 ) vlr_servicos_25                                                                              
+                 , ( rserv.vlr_ret_adic ) rserv_vlr_ret_adic                                                                              
+                 , ( rserv.vlr_n_ret_adic ) rserv_vlr_n_ret_adic                                                                          
+              FROM empresa
+                 , estabelecimento
+                 , reinf_pger_apur
+                 , x04_pessoa_fis_jur
+                 , reinf_pger_r2010_prest
+                 , reinf_pger_r2010_tom
+                 , reinf_pger_r2010_oc
+                 , reinf_pger_r2010_nf rnf
+                 , reinf_pger_r2010_tp_serv rserv
+                 , reinf_pger_r2010_proc_adic radic
+                 , reinf_pger_r2010_proc_princ rprinc
+                 , (SELECT   MAX ( dat_ocorrencia ) dat_ocorrencia
+                           , reinf_pger_r2010_prest.id_r2010_prest
+                           , reinf_pger_r2010_tom.id_r2010_tom
+                           , reinf_pger_apur.id_pger_apur
+                        FROM reinf_pger_r2010_oc
+                           , reinf_pger_r2010_prest
+                           , reinf_pger_r2010_tom
+                           , reinf_pger_apur
+                       WHERE reinf_pger_apur.id_pger_apur           = reinf_pger_r2010_tom.id_pger_apur
+                         AND reinf_pger_r2010_tom.id_r2010_tom      = reinf_pger_r2010_prest.id_r2010_tom
+                         AND reinf_pger_r2010_prest.id_r2010_prest  = reinf_pger_r2010_oc.id_r2010_prest
+                         AND reinf_pger_apur.cod_empresa            = pcod_empresa       -- parametro  
+                         AND reinf_pger_apur.dat_apur               = pdate              -- parametro
+                          AND reinf_pger_apur.ind_r2010             = 'S'
+--                       AND reinf_pger_apur.cod_versao >= 'v1_04_00'
+                         AND reinf_pger_apur.ind_tp_amb             = '2'
+                    GROUP BY reinf_pger_r2010_prest.id_r2010_prest
+                           , reinf_pger_r2010_tom.id_r2010_tom
+                           , reinf_pger_apur.id_pger_apur) max_oc
+                           , msafi.fin4816_prev_tmp_estab  estab1
+             WHERE 1=1 
+               AND  estab1.cod_estab                        = estabelecimento.cod_estab
+               AND  estab1.proc_id                          = p_proc_id
+               AND  reinf_pger_apur.dat_apur                = pdate
+               AND ( estabelecimento.cod_empresa            = reinf_pger_apur.cod_empresa )
+               AND ( estabelecimento.cod_estab              = reinf_pger_apur.cod_estab )
+               AND ( estabelecimento.cod_empresa            = empresa.cod_empresa )
+               AND ( reinf_pger_r2010_prest.cnpj_prestador  = x04_pessoa_fis_jur.cpf_cgc )
+               AND x04_pessoa_fis_jur.ident_fis_jur         = ( SELECT MAX ( x04.ident_fis_jur )
+                                                                  FROM x04_pessoa_fis_jur x04
+                                                                 WHERE x04.cpf_cgc = x04_pessoa_fis_jur.cpf_cgc
+                                                                 AND x04.valid_fis_jur <= pdate )  -- parametro 
+               AND ( reinf_pger_r2010_tom.id_pger_apur      = reinf_pger_apur.id_pger_apur )
+               AND ( reinf_pger_r2010_tom.id_r2010_tom      = reinf_pger_r2010_prest.id_r2010_tom )
+               AND ( reinf_pger_r2010_prest.id_r2010_prest  = reinf_pger_r2010_oc.id_r2010_prest )
+               AND ( reinf_pger_r2010_oc.id_r2010_oc        = rnf.id_r2010_oc )
+               AND ( reinf_pger_r2010_oc.dat_ocorrencia     = max_oc.dat_ocorrencia )
+               AND ( reinf_pger_r2010_prest.id_r2010_prest  = max_oc.id_r2010_prest )
+               AND ( reinf_pger_r2010_tom.id_r2010_tom      = max_oc.id_r2010_tom )
+               AND ( reinf_pger_apur.id_pger_apur           = max_oc.id_pger_apur )
+               AND rnf.id_r2010_nf                          = rserv.id_r2010_nf(+)
+               AND reinf_pger_r2010_oc.id_r2010_oc          = radic.id_r2010_oc(+)
+               AND reinf_pger_r2010_oc.id_r2010_oc          = rprinc.id_r2010_oc(+)
+               AND ( reinf_pger_apur.ind_r2010              = 'S' )
+               --AND ( reinf_pger_apur.cod_versao = 'v1_04_00' )
+               AND reinf_pger_apur.ind_tp_amb               = '2'    ;
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+
+
+
+ 
          
 
     FUNCTION parametros
@@ -747,30 +1065,35 @@ IS
                          g_cod_cei.delete;         
                          g_equalizacao.delete; 
                          
-            EXIT WHEN cr_rtf%NOTFOUND;
+                         
+                         vn_count_new := vn_count_new + SQL%ROWCOUNT;
+                         COMMIT;
+                                                  
+                            -- Registra o andamento do processo na v$session
+                            dbms_application_info.set_module ( cc_procedurename || '  ' || v_data, 'n:' || vn_count_new );
+                            dbms_application_info.set_client_info ( TO_CHAR ( SYSDATE , 'dd-mm-yyyy hh24:mi:ss' ) );
+                         
+                          EXIT WHEN cr_rtf%NOTFOUND;
             
-        END LOOP;
+                END LOOP;
+                COMMIT;
+             CLOSE cr_rtf;
 
-        COMMIT;
-
-        CLOSE cr_rtf;
-
-        COMMIT;
-
-      
         
         
+        
+
+
          --================================================
          -- Table -  Report previdenciario 
          --================================================
-        BEGIN
-          vn_count_new := 0;     
-          OPEN rc_prev (v_data, p_nm_empresa, p_proc_id ) ;
-
-         LOOP
-             --
-                dbms_application_info.set_module ( cc_procedurename
-                                                 , 'Executando o fetch previdenciario ...' );
+      vn_count_new := 0;    
+     BEGIN 
+      OPEN rc_prev (v_data, p_nm_empresa, p_proc_id ) ;
+        --
+        LOOP
+        --
+        dbms_application_info.set_module ( cc_procedurename, 'Executando o fetch previdenciario ...' );
 
                  FETCH rc_prev
                     BULK COLLECT INTO -- TABLE  TMP
@@ -820,9 +1143,9 @@ IS
                     
               
              
-             FORALL i IN g_num_item_prv.FIRST .. g_num_item_prv.LAST                    
-             INSERT /*+ APPEND */
-                INTO MSAFI.DPSP_TB_FIN4816_REINF_PREV_GTT (
+                FORALL i IN g_num_item_prv.FIRST .. g_num_item_prv.LAST                    
+                INSERT /*+ APPEND */
+                 INTO MSAFI.DPSP_TB_FIN4816_REINF_PREV_GTT (
                         TIPO, "Codigo Empresa", "Codigo Estabelecimento", 
                         "Data Emissão", "Data Fiscal", IDENT_FIS_JUR, 
                         IDENT_DOCTO, "Número da Nota Fiscal", "Docto/Série", 
@@ -933,21 +1256,216 @@ IS
                             
 
                           EXIT WHEN rc_prev%NOTFOUND;
+                          
+                          vn_count_new := vn_count_new + SQL%ROWCOUNT;
+                          COMMIT;
+                          
+                            -- Registra o andamento do processo na v$session
+                            dbms_application_info.set_module ( cc_procedurename || '  ' || v_data, 'n:' || vn_count_new );
+                            dbms_application_info.set_client_info ( TO_CHAR ( SYSDATE , 'dd-mm-yyyy hh24:mi:ss' ) );
                 
-                END LOOP;
-                  COMMIT;
-                    CLOSE rc_prev;
-
-                    
+         END LOOP;
+          COMMIT;
+         CLOSE rc_prev;
         
         END ; 
        
 
-        dbms_application_info.set_module ( cc_procedurename || '  ' || v_data , 'Carga definitiva' );
-        dbms_application_info.set_module ( cc_procedurename , 'END:' || vn_count_new );
+
         
+        
+        
+        
+         --================================================
+         -- Table -  Report Reinf 2010 
+         --================================================
+            vn_count_new := 0; 
+            BEGIN
+            OPEN rc_2010  (v_data, p_nm_empresa, p_proc_id ) ;
+            
+            LOOP
+            dbms_application_info.set_module ( cc_procedurename  , 'Executando o fetch report 2010 ...' );
+            
+           FETCH rc_2010
+            BULK COLLECT INTO 
+                 g_cod_empresa2
+               , g_cod_estab2
+               , g_dat_emissao2
+               , g_iden_fis_jur2
+               , g_num_docfis2
+               , g_cd_empresa
+               , g_rz_social_drogaria
+               , g_rz_social_client
+               , g_ntf
+               , g_data_emissao_nf
+               , g_data_fiscal2
+               , g_vlr_tributo
+               , g_observacao
+               , g_tp_servico_e_social
+               , g_vlr_bs_calc_retencao
+               , g_vlr_retencao
+               , g_proc_id
+               , g_ind_status
+               , g_cnpj_prestador
+               , g_ind_obra
+               , g_tp_inscricao
+               , g_nr_inscricao
+               , g_num_recibo
+               , g_ind_tp_amb
+               , g_vlr_bruto
+               , g_vlr_base_ret
+               , g_vlr_ret_princ
+               , g_vlr_ret_adic
+               , g_vlr_n_ret_princ
+               , g_vlr_n_ret_adic
+               , g_ind_cprb
+               , g_cod_versao_proc
+               , g_cod_versao_layout
+               , g_ind_proc_emissao
+               , g_id_evento
+               , g_ind_oper
+               , g_dat_ocorrencia
+               , g_cgc_cpf
+               , g_rz_social
+               , g_x04_razao_social
+               , g_id_r2010_oc
+               , g_nm_docto
+               , g_serie
+               , g_dat_emissao_nf
+               , g_dt_fiscal
+               , g_rnf_vlr_bruto
+               , g_obs
+               , g_id_r2010_nf
+               , g_ind_tp_proc_adj_adic
+               , g_num_proc_adj_adic
+               , g_cod_susp_adic
+               , g_radic_vlr_n_ret_adic
+               , g_ind_tp_proc_adj_princ
+               , g_num_proc_adj_princ
+               , g_cod_susp_princ
+               , g_rprinc_vlr_n_ret_princ
+               , g_tp_servico
+               , g_rserv_vlr_base_ret
+               , g_valor_retencao
+               , g_vlr_ret_sub
+               , g_rserv_vlr_n_ret_princ
+               , g_vlr_servicos_15
+               , g_vlr_servicos_20
+               , g_vlr_servicos_25
+               , g_rserv_vlr_ret_adic
+               , g_rserv_vlr_n_ret_adic
+                
+              LIMIT cc_limit;
+              
+              
+              
+              FORALL i IN g_cod_empresa2.FIRST .. g_cod_empresa2.LAST
+                INSERT /*+ APPEND */
+                INTO msafi.fin4816_reinf_2010_gtt
+                 (  cod_empresa  , cod_estab , dat_emissao              , iden_fis_jur          , num_docfis            , "Codigo Empresa"  , "Razão Social Drogaria"       , "Razão Social Cliente",
+                    "Número da Nota Fiscal"  , "Data de Emissão da NF"  , "Data Fiscal"         , "Valor do Tributo"    , "observacao"      , "Tipo de Serviço E-social"    , "Vlr. Base de Calc. Retenção",
+                    "Valor da Retenção"      , proc_id                  , ind_status            , cnpj_prestador        , ind_obra          , tp_inscricao                  , nr_inscricao                 , 
+                    num_recibo               , ind_tp_amb               , vlr_bruto             , vlr_base_ret          , vlr_ret_princ     , vlr_ret_adic                  , vlr_n_ret_princ              , 
+                    vlr_n_ret_adic           , ind_cprb                 , cod_versao_proc       , cod_versao_layout     , ind_proc_emissao  , id_evento                     , ind_oper                     , 
+                    dat_ocorrencia            , cgc                      , razao_social          , x04_razao_social      , id_r2010_oc       , num_docto                     , serie                        , 
+                    dat_emissao_nf           , data_fiscal              , rnf_vlr_bruto         , observacao            , id_r2010_nf       , ind_tp_proc_adj_adic          , num_proc_adj_adic            , 
+                    cod_susp_adic            , radic_vlr_n_ret_adic     , ind_tp_proc_adj_princ , num_proc_adj_princ    , cod_susp_princ    , rprinc_vlr_n_ret_princ        , tp_servico                   , 
+                    rserv_vlr_base_ret       , vlr_retencao             , vlr_ret_sub           , rserv_vlr_n_ret_princ , vlr_servicos_15   , vlr_servicos_20               , vlr_servicos_25              , 
+                    rserv_vlr_ret_adic, rserv_vlr_n_ret_adic )
+                                    --
+                VALUES(                       g_cod_empresa2        ( i )
+                                            , g_cod_estab2          ( i )
+                                            , g_dat_emissao2        ( i )
+                                            , g_iden_fis_jur2       ( i )
+                                            , g_num_docfis2         ( i )
+                                            , g_cd_empresa          ( i )
+                                            , g_rz_social_drogaria  ( i )
+                                            , g_rz_social_client    ( i )
+                                            , g_ntf                 ( i )
+                                            , g_data_emissao_nf     ( i )
+                                            , g_data_fiscal2        ( i )
+                                            , g_vlr_tributo         ( i )
+                                            , g_observacao          ( i )
+                                            , g_tp_servico_e_social ( i )
+                                            , g_vlr_bs_calc_retencao( i )
+                                            , g_vlr_retencao        ( i )
+                                            , g_proc_id             ( i )
+                                            , g_ind_status          ( i )
+                                            , g_cnpj_prestador      ( i )
+                                            , g_ind_obra            ( i )
+                                            , g_tp_inscricao        ( i )
+                                            , g_nr_inscricao        ( i )
+                                            , g_num_recibo          ( i )
+                                            , g_ind_tp_amb          ( i )
+                                            , g_vlr_bruto           ( i )
+                                            , g_vlr_base_ret        ( i )
+                                            , g_vlr_ret_princ       ( i )
+                                            , g_vlr_ret_adic        ( i )
+                                            , g_vlr_n_ret_princ     ( i )
+                                            , g_vlr_n_ret_adic      ( i )
+                                            , g_ind_cprb            ( i )
+                                            , g_cod_versao_proc     ( i )
+                                            , g_cod_versao_layout   ( i )
+                                            , g_ind_proc_emissao    ( i )
+                                            , g_id_evento           ( i )
+                                            , g_ind_oper            ( i )
+                                            , g_dat_ocorrencia      ( i )
+                                            , g_cgc_cpf             ( i )
+                                            , g_rz_social           ( i )
+                                            , g_x04_razao_social    ( i )
+                                            , g_id_r2010_oc         ( i )
+                                            , g_nm_docto            ( i )
+                                            , g_serie               ( i )
+                                            , g_dat_emissao_nf      ( i )
+                                            , g_dt_fiscal           ( i )
+                                            , g_rnf_vlr_bruto       ( i )
+                                            , g_obs                 ( i )
+                                            , g_id_r2010_nf         ( i )
+                                            , g_ind_tp_proc_adj_adic( i )
+                                            , g_num_proc_adj_adic   ( i )
+                                            , g_cod_susp_adic       ( i )
+                                            , g_radic_vlr_n_ret_adic( i )
+                                            , g_ind_tp_proc_adj_princ   ( i )
+                                            , g_num_proc_adj_princ      ( i )
+                                            , g_cod_susp_princ          ( i )
+                                            , g_rprinc_vlr_n_ret_princ  ( i )
+                                            , g_tp_servico              ( i )
+                                            , g_rserv_vlr_base_ret      ( i )
+                                            , g_valor_retencao          ( i )
+                                            , g_vlr_ret_sub             ( i )
+                                            , g_rserv_vlr_n_ret_princ   ( i )
+                                            , g_vlr_servicos_15         ( i )
+                                            , g_vlr_servicos_20         ( i )
+                                            , g_vlr_servicos_25         ( i )
+                                            , g_rserv_vlr_ret_adic      ( i )
+                                            , g_rserv_vlr_n_ret_adic    ( i ) );
+
+                         vn_count_new := vn_count_new + SQL%ROWCOUNT;
+                         COMMIT;
+                         
+                            -- Registra o andamento do processo na v$session
+                            dbms_application_info.set_module ( cc_procedurename || '  ' || v_data, 'n:' || vn_count_new );
+                            dbms_application_info.set_client_info ( TO_CHAR ( SYSDATE , 'dd-mm-yyyy hh24:mi:ss' ) );
+
+                         EXIT WHEN rc_2010%NOTFOUND;
+       
+                 END LOOP;
+                  COMMIT;
+                 CLOSE RC_2010;
+                  
+      END ; 
+
+
+
+
         
 
+
+
+
+
+        dbms_application_info.set_module ( cc_procedurename || '  ' || v_data , 'Carga definitiva r2010' );
+        dbms_application_info.set_module ( cc_procedurename , 'END:' || vn_count_new );
     END  carga;
     
     
@@ -2816,161 +3334,161 @@ IS
                  --  INSERT/SELECT  --  REINF2010
                  -- =======================================
 
-                    BEGIN
-                          loga('REINF2010: '||p_cod_empresa||' - '||  p_cod_estab || ' - '||p_data_inicial|| ' - '||p_data_final||' - '||3 )  ;           -- parametro
-                                     
-                       INSERT INTO msafi.fin4816_reinf_2010_gtt
-                          SELECT 
-                                --  pk        
-                                reinf_pger_apur.cod_empresa             as cod_empresa_pk
-                              , reinf_pger_apur.cod_estab               as cod_estab_pk
-                              , rnf.data_saida_rec_nf                   as dat_fiscal_pk                    
-                              , rnf.dat_emissao_nf                      as dat_emissao_pk
-                              , x04_pessoa_fis_jur.ident_fis_jur        as iden_fis_jur_pk 
-                              , rnf.num_docto                           as num_docfis_pk         
-                                -- relatorio 
-                             ,  empresa.cod_empresa                     AS "Codigo Empresa"         
-                             , estabelecimento.razao_social             AS "Razão Social Drogaria"
-                             , ( x04_pessoa_fis_jur.razao_social )      AS "Razão Social Cliente"
-                             ,  rnf.num_docto                           AS "Número da Nota Fiscal"
-                             ,  rnf.dat_emissao_nf                      AS "Data de Emissão da NF"
-                             ,  rnf.data_saida_rec_nf                   AS "Data Fiscal"
-                             ,  rserv.vlr_retencao                      AS "Valor do Tributo"
-                             ,  rnf.observacao                          AS "observacao"
-                             ,  rserv.tp_servico                        AS "Tipo de Serviço E-social"
-                             ,  rserv.vlr_base_ret                      AS "Vlr. Base de Calc. Retenção"
-                             ,  rserv.vlr_retencao                      AS "Valor da Retenção"
-                             , reinf_pger_r2010_oc.proc_id
-                             , reinf_pger_r2010_oc.ind_status
-                             , reinf_pger_r2010_prest.cnpj_prestador
-                             , reinf_pger_r2010_oc.ind_obra
-                             , reinf_pger_r2010_tom.tp_inscricao
-                             , reinf_pger_r2010_tom.nr_inscricao
-                             , reinf_pger_r2010_oc.num_recibo
-                             , reinf_pger_r2010_oc.ind_tp_amb
-                             , reinf_pger_r2010_oc.vlr_bruto
-                             , reinf_pger_r2010_oc.vlr_base_ret
-                             , reinf_pger_r2010_oc.vlr_ret_princ
-                             , reinf_pger_r2010_oc.vlr_ret_adic
-                             , reinf_pger_r2010_oc.vlr_n_ret_princ
-                             , reinf_pger_r2010_oc.vlr_n_ret_adic
-                             , reinf_pger_r2010_oc.ind_cprb
-                             , reinf_pger_r2010_oc.cod_versao_proc
-                             , reinf_pger_r2010_oc.cod_versao_layout
-                             , reinf_pger_r2010_oc.ind_proc_emissao
-                             , reinf_pger_r2010_oc.id_evento
-                             , reinf_pger_r2010_oc.ind_oper
-                             , reinf_pger_apur.cod_empresa
-                             , reinf_pger_apur.cod_estab
-                             , reinf_pger_r2010_oc.dat_ocorrencia
-                             , estabelecimento.cgc         
-                             , empresa.razao_social
-                             , ( x04_pessoa_fis_jur.razao_social ) x04_razao_social
-                             , reinf_pger_r2010_oc.id_r2010_oc
-                             , ( rnf.num_docto ) num_docto
-                             , ( rnf.serie ) serie
-                             , ( rnf.dat_emissao_nf ) dat_emissao_nf
-                             , ( rnf.data_saida_rec_nf ) data_fiscal
-                             , ( rnf.vlr_bruto ) rnf_vlr_bruto
-                             , ( rnf.observacao ) observacao
-                             , ( rnf.id_r2010_nf ) id_r2010_nf
-                             , ( radic.ind_tp_proc_adj_adic ) ind_tp_proc_adj_adic
-                             , ( radic.num_proc_adj_adic ) num_proc_adj_adic
-                             , ( radic.cod_susp_adic ) cod_susp_adic
-                             , ( radic.vlr_n_ret_adic ) radic_vlr_n_ret_adic
-                             , ( rprinc.ind_tp_proc_adj_princ ) ind_tp_proc_adj_princ
-                             , ( rprinc.num_proc_adj_princ ) num_proc_adj_princ
-                             , ( rprinc.cod_susp_princ ) cod_susp_princ
-                             , ( rprinc.vlr_n_ret_princ ) rprinc_vlr_n_ret_princ
-                             , ( rserv.tp_servico ) tp_servico
-                             , ( rserv.vlr_base_ret ) rserv_vlr_base_ret
-                             , ( rserv.vlr_retencao ) vlr_retencao
-                             , ( rserv.vlr_ret_sub ) vlr_ret_sub
-                             , ( rserv.vlr_n_ret_princ ) rserv_vlr_n_ret_princ
-                             , ( rserv.vlr_servicos_15 ) vlr_servicos_15
-                             , ( rserv.vlr_servicos_20 ) vlr_servicos_20
-                             , ( rserv.vlr_servicos_25 ) vlr_servicos_25
-                             , ( rserv.vlr_ret_adic ) rserv_vlr_ret_adic
-                             , ( rserv.vlr_n_ret_adic ) rserv_vlr_n_ret_adic
-                          FROM empresa
-                             , estabelecimento
-                             , reinf_pger_apur
-                             , x04_pessoa_fis_jur
-                             , reinf_pger_r2010_prest
-                             , reinf_pger_r2010_tom
-                             , reinf_pger_r2010_oc
-                             , reinf_pger_r2010_nf rnf
-                             , reinf_pger_r2010_tp_serv rserv
-                             , reinf_pger_r2010_proc_adic radic
-                             , reinf_pger_r2010_proc_princ rprinc
-                             , (SELECT   MAX ( dat_ocorrencia ) dat_ocorrencia
-                                       , reinf_pger_r2010_prest.id_r2010_prest
-                                       , reinf_pger_r2010_tom.id_r2010_tom
-                                       , reinf_pger_apur.id_pger_apur
-                                    FROM reinf_pger_r2010_oc
-                                       , reinf_pger_r2010_prest
-                                       , reinf_pger_r2010_tom
-                                       , reinf_pger_apur                                                  
-                                   WHERE 1=1 
-                                     AND reinf_pger_apur.id_pger_apur           = reinf_pger_r2010_tom.id_pger_apur
-                                     AND reinf_pger_r2010_tom.id_r2010_tom      = reinf_pger_r2010_prest.id_r2010_tom
-                                     AND reinf_pger_r2010_prest.id_r2010_prest  = reinf_pger_r2010_oc.id_r2010_prest
-                                     AND reinf_pger_apur.cod_empresa            =  p_cod_empresa              -- parametro
-                                     AND reinf_pger_apur.cod_estab              =  p_cod_estab                -- parametro
-                                     AND reinf_pger_apur.dat_apur               >= p_data_inicial             -- parametro
-                                     AND reinf_pger_apur.dat_apur               <= p_data_final               -- parametro
-                                     AND ( ( '' IS NOT NULL
-                                        AND reinf_pger_r2010_prest.cnpj_prestador = '' )
-                                       OR '' IS NULL )
-                                     AND reinf_pger_apur.ind_r2010 = 'S'
-                                   --  AND reinf_pger_apur.cod_versao = 'v1_04_00'
-                                     AND reinf_pger_apur.ind_tp_amb = '2'
-                                GROUP BY reinf_pger_r2010_prest.id_r2010_prest
-                                       , reinf_pger_r2010_tom.id_r2010_tom
-                                       , reinf_pger_apur.id_pger_apur) max_oc
-                         WHERE ( estabelecimento.cod_empresa = reinf_pger_apur.cod_empresa )
-                           AND ( estabelecimento.cod_estab = reinf_pger_apur.cod_estab )
-                           AND ( estabelecimento.cod_empresa = empresa.cod_empresa )
-                           AND ( reinf_pger_r2010_prest.cnpj_prestador = x04_pessoa_fis_jur.cpf_cgc )
-                           AND x04_pessoa_fis_jur.ident_fis_jur = (SELECT MAX ( x04.ident_fis_jur )
-                                                                     FROM x04_pessoa_fis_jur x04
-                                                                    WHERE x04.cpf_cgc = x04_pessoa_fis_jur.cpf_cgc
-                                                                      AND x04.valid_fis_jur <= p_data_final)        -- parametro 
-                           AND ( reinf_pger_r2010_tom.id_pger_apur = reinf_pger_apur.id_pger_apur )
-                           AND ( reinf_pger_r2010_tom.id_r2010_tom = reinf_pger_r2010_prest.id_r2010_tom )
-                           AND ( reinf_pger_r2010_prest.id_r2010_prest = reinf_pger_r2010_oc.id_r2010_prest )
-                           AND ( reinf_pger_r2010_oc.id_r2010_oc = rnf.id_r2010_oc )
-                           AND ( reinf_pger_r2010_oc.dat_ocorrencia = max_oc.dat_ocorrencia )
-                           AND ( reinf_pger_r2010_prest.id_r2010_prest = max_oc.id_r2010_prest )
-                           AND ( reinf_pger_r2010_tom.id_r2010_tom = max_oc.id_r2010_tom )
-                           AND ( reinf_pger_apur.id_pger_apur = max_oc.id_pger_apur )
-                           AND rnf.id_r2010_nf = rserv.id_r2010_nf(+)
-                           AND reinf_pger_r2010_oc.id_r2010_oc = radic.id_r2010_oc(+)
-                           AND reinf_pger_r2010_oc.id_r2010_oc = rprinc.id_r2010_oc(+)
-                           --
-                           AND reinf_pger_apur.cod_empresa            =  p_cod_empresa              -- parametro
-                           AND reinf_pger_apur.cod_estab              =  p_cod_estab                -- parametro
-                           AND reinf_pger_apur.dat_apur               >= p_data_inicial             -- parametro
-                           AND reinf_pger_apur.dat_apur               <= p_data_final               -- parametro
-                           --                 
-                           AND ( ( '' IS NOT NULL
-                              AND reinf_pger_r2010_prest.cnpj_prestador = '' )
-                             OR '' IS NULL )
-                           AND ( reinf_pger_apur.ind_r2010 = 'S' )
-                           --AND ( reinf_pger_apur.cod_versao = 'v1_04_00' )
-                           AND reinf_pger_apur.ind_tp_amb = '2'
-                           --AND rnf.num_docto = '000008508' ;
-                           
-                            ;               
-            
-                          EXCEPTION
-                           WHEN DUP_VAL_ON_INDEX THEN
-                            raise;
-                           WHEN OTHERS THEN
-                           p_status := -3;    
-                             lib_proc.add_log('SQLERRM: ' || SQLERRM, 1);  
-                           raise;
-                   END ;
+--                    BEGIN
+--                          loga('REINF2010: '||p_cod_empresa||' - '||  p_cod_estab || ' - '||p_data_inicial|| ' - '||p_data_final||' - '||3 )  ;           -- parametro
+--                                     
+--                       INSERT INTO msafi.fin4816_reinf_2010_gtt
+--                          SELECT 
+--                                --  pk        
+--                                reinf_pger_apur.cod_empresa             as cod_empresa_pk
+--                              , reinf_pger_apur.cod_estab               as cod_estab_pk
+--                              , rnf.data_saida_rec_nf                   as dat_fiscal_pk                    
+--                              , rnf.dat_emissao_nf                      as dat_emissao_pk
+--                              , x04_pessoa_fis_jur.ident_fis_jur        as iden_fis_jur_pk 
+--                              , rnf.num_docto                           as num_docfis_pk         
+--                                -- relatorio 
+--                             ,  empresa.cod_empresa                     AS "Codigo Empresa"         
+--                             , estabelecimento.razao_social             AS "Razão Social Drogaria"
+--                             , ( x04_pessoa_fis_jur.razao_social )      AS "Razão Social Cliente"
+--                             ,  rnf.num_docto                           AS "Número da Nota Fiscal"
+--                             ,  rnf.dat_emissao_nf                      AS "Data de Emissão da NF"
+--                             ,  rnf.data_saida_rec_nf                   AS "Data Fiscal"
+--                             ,  rserv.vlr_retencao                      AS "Valor do Tributo"
+--                             ,  rnf.observacao                          AS "observacao"
+--                             ,  rserv.tp_servico                        AS "Tipo de Serviço E-social"
+--                             ,  rserv.vlr_base_ret                      AS "Vlr. Base de Calc. Retenção"
+--                             ,  rserv.vlr_retencao                      AS "Valor da Retenção"
+--                             , reinf_pger_r2010_oc.proc_id
+--                             , reinf_pger_r2010_oc.ind_status
+--                             , reinf_pger_r2010_prest.cnpj_prestador
+--                             , reinf_pger_r2010_oc.ind_obra
+--                             , reinf_pger_r2010_tom.tp_inscricao
+--                             , reinf_pger_r2010_tom.nr_inscricao
+--                             , reinf_pger_r2010_oc.num_recibo
+--                             , reinf_pger_r2010_oc.ind_tp_amb
+--                             , reinf_pger_r2010_oc.vlr_bruto
+--                             , reinf_pger_r2010_oc.vlr_base_ret
+--                             , reinf_pger_r2010_oc.vlr_ret_princ
+--                             , reinf_pger_r2010_oc.vlr_ret_adic
+--                             , reinf_pger_r2010_oc.vlr_n_ret_princ
+--                             , reinf_pger_r2010_oc.vlr_n_ret_adic
+--                             , reinf_pger_r2010_oc.ind_cprb
+--                             , reinf_pger_r2010_oc.cod_versao_proc
+--                             , reinf_pger_r2010_oc.cod_versao_layout
+--                             , reinf_pger_r2010_oc.ind_proc_emissao
+--                             , reinf_pger_r2010_oc.id_evento
+--                             , reinf_pger_r2010_oc.ind_oper
+--                             , reinf_pger_apur.cod_empresa
+--                             , reinf_pger_apur.cod_estab
+--                             , reinf_pger_r2010_oc.dat_ocorrencia
+--                             , estabelecimento.cgc         
+--                             , empresa.razao_social
+--                             , ( x04_pessoa_fis_jur.razao_social ) x04_razao_social
+--                             , reinf_pger_r2010_oc.id_r2010_oc
+--                             , ( rnf.num_docto ) num_docto
+--                             , ( rnf.serie ) serie
+--                             , ( rnf.dat_emissao_nf ) dat_emissao_nf
+--                             , ( rnf.data_saida_rec_nf ) data_fiscal
+--                             , ( rnf.vlr_bruto ) rnf_vlr_bruto
+--                             , ( rnf.observacao ) observacao
+--                             , ( rnf.id_r2010_nf ) id_r2010_nf
+--                             , ( radic.ind_tp_proc_adj_adic ) ind_tp_proc_adj_adic
+--                             , ( radic.num_proc_adj_adic ) num_proc_adj_adic
+--                             , ( radic.cod_susp_adic ) cod_susp_adic
+--                             , ( radic.vlr_n_ret_adic ) radic_vlr_n_ret_adic
+--                             , ( rprinc.ind_tp_proc_adj_princ ) ind_tp_proc_adj_princ
+--                             , ( rprinc.num_proc_adj_princ ) num_proc_adj_princ
+--                             , ( rprinc.cod_susp_princ ) cod_susp_princ
+--                             , ( rprinc.vlr_n_ret_princ ) rprinc_vlr_n_ret_princ
+--                             , ( rserv.tp_servico ) tp_servico
+--                             , ( rserv.vlr_base_ret ) rserv_vlr_base_ret
+--                             , ( rserv.vlr_retencao ) vlr_retencao
+--                             , ( rserv.vlr_ret_sub ) vlr_ret_sub
+--                             , ( rserv.vlr_n_ret_princ ) rserv_vlr_n_ret_princ
+--                             , ( rserv.vlr_servicos_15 ) vlr_servicos_15
+--                             , ( rserv.vlr_servicos_20 ) vlr_servicos_20
+--                             , ( rserv.vlr_servicos_25 ) vlr_servicos_25
+--                             , ( rserv.vlr_ret_adic ) rserv_vlr_ret_adic
+--                             , ( rserv.vlr_n_ret_adic ) rserv_vlr_n_ret_adic
+--                          FROM empresa
+--                             , estabelecimento
+--                             , reinf_pger_apur
+--                             , x04_pessoa_fis_jur
+--                             , reinf_pger_r2010_prest
+--                             , reinf_pger_r2010_tom
+--                             , reinf_pger_r2010_oc
+--                             , reinf_pger_r2010_nf rnf
+--                             , reinf_pger_r2010_tp_serv rserv
+--                             , reinf_pger_r2010_proc_adic radic
+--                             , reinf_pger_r2010_proc_princ rprinc
+--                             , (SELECT   MAX ( dat_ocorrencia ) dat_ocorrencia
+--                                       , reinf_pger_r2010_prest.id_r2010_prest
+--                                       , reinf_pger_r2010_tom.id_r2010_tom
+--                                       , reinf_pger_apur.id_pger_apur
+--                                    FROM reinf_pger_r2010_oc
+--                                       , reinf_pger_r2010_prest
+--                                       , reinf_pger_r2010_tom
+--                                       , reinf_pger_apur                                                  
+--                                   WHERE 1=1 
+--                                     AND reinf_pger_apur.id_pger_apur           = reinf_pger_r2010_tom.id_pger_apur
+--                                     AND reinf_pger_r2010_tom.id_r2010_tom      = reinf_pger_r2010_prest.id_r2010_tom
+--                                     AND reinf_pger_r2010_prest.id_r2010_prest  = reinf_pger_r2010_oc.id_r2010_prest
+--                                     AND reinf_pger_apur.cod_empresa            =  p_cod_empresa              -- parametro
+--                                     AND reinf_pger_apur.cod_estab              =  p_cod_estab                -- parametro
+--                                     AND reinf_pger_apur.dat_apur               >= p_data_inicial             -- parametro
+--                                     AND reinf_pger_apur.dat_apur               <= p_data_final               -- parametro
+--                                     AND ( ( '' IS NOT NULL
+--                                        AND reinf_pger_r2010_prest.cnpj_prestador = '' )
+--                                       OR '' IS NULL )
+--                                     AND reinf_pger_apur.ind_r2010 = 'S'
+--                                   --  AND reinf_pger_apur.cod_versao = 'v1_04_00'
+--                                     AND reinf_pger_apur.ind_tp_amb = '2'
+--                                GROUP BY reinf_pger_r2010_prest.id_r2010_prest
+--                                       , reinf_pger_r2010_tom.id_r2010_tom
+--                                       , reinf_pger_apur.id_pger_apur) max_oc
+--                         WHERE ( estabelecimento.cod_empresa = reinf_pger_apur.cod_empresa )
+--                           AND ( estabelecimento.cod_estab = reinf_pger_apur.cod_estab )
+--                           AND ( estabelecimento.cod_empresa = empresa.cod_empresa )
+--                           AND ( reinf_pger_r2010_prest.cnpj_prestador = x04_pessoa_fis_jur.cpf_cgc )
+--                           AND x04_pessoa_fis_jur.ident_fis_jur = (SELECT MAX ( x04.ident_fis_jur )
+--                                                                     FROM x04_pessoa_fis_jur x04
+--                                                                    WHERE x04.cpf_cgc = x04_pessoa_fis_jur.cpf_cgc
+--                                                                      AND x04.valid_fis_jur <= p_data_final)        -- parametro 
+--                           AND ( reinf_pger_r2010_tom.id_pger_apur = reinf_pger_apur.id_pger_apur )
+--                           AND ( reinf_pger_r2010_tom.id_r2010_tom = reinf_pger_r2010_prest.id_r2010_tom )
+--                           AND ( reinf_pger_r2010_prest.id_r2010_prest = reinf_pger_r2010_oc.id_r2010_prest )
+--                           AND ( reinf_pger_r2010_oc.id_r2010_oc = rnf.id_r2010_oc )
+--                           AND ( reinf_pger_r2010_oc.dat_ocorrencia = max_oc.dat_ocorrencia )
+--                           AND ( reinf_pger_r2010_prest.id_r2010_prest = max_oc.id_r2010_prest )
+--                           AND ( reinf_pger_r2010_tom.id_r2010_tom = max_oc.id_r2010_tom )
+--                           AND ( reinf_pger_apur.id_pger_apur = max_oc.id_pger_apur )
+--                           AND rnf.id_r2010_nf = rserv.id_r2010_nf(+)
+--                           AND reinf_pger_r2010_oc.id_r2010_oc = radic.id_r2010_oc(+)
+--                           AND reinf_pger_r2010_oc.id_r2010_oc = rprinc.id_r2010_oc(+)
+--                           --
+--                           AND reinf_pger_apur.cod_empresa            =  p_cod_empresa              -- parametro
+--                           AND reinf_pger_apur.cod_estab              =  p_cod_estab                -- parametro
+--                           AND reinf_pger_apur.dat_apur               >= p_data_inicial             -- parametro
+--                           AND reinf_pger_apur.dat_apur               <= p_data_final               -- parametro
+--                           --                 
+--                           AND ( ( '' IS NOT NULL
+--                              AND reinf_pger_r2010_prest.cnpj_prestador = '' )
+--                             OR '' IS NULL )
+--                           AND ( reinf_pger_apur.ind_r2010 = 'S' )
+--                           --AND ( reinf_pger_apur.cod_versao = 'v1_04_00' )
+--                           AND reinf_pger_apur.ind_tp_amb = '2'
+--                           --AND rnf.num_docto = '000008508' ;
+--                           
+--                            ;               
+--            
+--                          EXCEPTION
+--                           WHEN DUP_VAL_ON_INDEX THEN
+--                            raise;
+--                           WHEN OTHERS THEN
+--                           p_status := -3;    
+--                             lib_proc.add_log('SQLERRM: ' || SQLERRM, 1);  
+--                           raise;
+--                   END ;
 
                     
          
@@ -3524,151 +4042,151 @@ END prc_reinf_conf_retencao;
                         , v_cont_estab
                         , SYSDATE );
 
-            COMMIT;
+             COMMIT;
             
             
-            INSERT INTO MSAFI.FIN4816_REINF_2010_GTT
-            SELECT 
-                    --  pk        
-                    reinf_pger_apur.cod_empresa             as cod_empresa_pk
-                  , reinf_pger_apur.cod_estab               as cod_estab_pk
-                  , rnf.data_saida_rec_nf                   as dat_fiscal_pk                    
-                  , rnf.dat_emissao_nf                      as dat_emissao_pk
-                  , x04_pessoa_fis_jur.ident_fis_jur        as iden_fis_jur_pk 
-                  , rnf.num_docto                           as num_docfis_pk         
-                    -- relatorio 
-                 ,  empresa.cod_empresa                     AS "Codigo Empresa"         
-                 , estabelecimento.razao_social             AS "Razão Social Drogaria"
-                 , ( x04_pessoa_fis_jur.razao_social )      AS "Razão Social Cliente"
-                 ,  rnf.num_docto                           AS "Número da Nota Fiscal"
-                 ,  rnf.dat_emissao_nf                      AS "Data de Emissão da NF"
-                 ,  rnf.data_saida_rec_nf                   AS "Data Fiscal"
-                 ,  rserv.vlr_retencao                      AS "Valor do Tributo"
-                 ,  rnf.observacao                          AS "observacao"
-                 ,  rserv.tp_servico                        AS "Tipo de Serviço E-social"
-                 ,  rserv.vlr_base_ret                      AS "Vlr. Base de Calc. Retenção"
-                 ,  rserv.vlr_retencao                      AS "Valor da Retenção"
-                 , reinf_pger_r2010_oc.proc_id
-                 , reinf_pger_r2010_oc.ind_status
-                 , reinf_pger_r2010_prest.cnpj_prestador
-                 , reinf_pger_r2010_oc.ind_obra
-                 , reinf_pger_r2010_tom.tp_inscricao
-                 , reinf_pger_r2010_tom.nr_inscricao
-                 , reinf_pger_r2010_oc.num_recibo
-                 , reinf_pger_r2010_oc.ind_tp_amb
-                 , reinf_pger_r2010_oc.vlr_bruto
-                 , reinf_pger_r2010_oc.vlr_base_ret
-                 , reinf_pger_r2010_oc.vlr_ret_princ
-                 , reinf_pger_r2010_oc.vlr_ret_adic
-                 , reinf_pger_r2010_oc.vlr_n_ret_princ
-                 , reinf_pger_r2010_oc.vlr_n_ret_adic
-                 , reinf_pger_r2010_oc.ind_cprb
-                 , reinf_pger_r2010_oc.cod_versao_proc
-                 , reinf_pger_r2010_oc.cod_versao_layout
-                 , reinf_pger_r2010_oc.ind_proc_emissao
-                 , reinf_pger_r2010_oc.id_evento
-                 , reinf_pger_r2010_oc.ind_oper
-                 , reinf_pger_apur.cod_empresa
-                 , reinf_pger_apur.cod_estab
-                 , reinf_pger_r2010_oc.dat_ocorrencia
-                 , estabelecimento.cgc         
-                 , empresa.razao_social
-                 , ( x04_pessoa_fis_jur.razao_social ) x04_razao_social
-                 , reinf_pger_r2010_oc.id_r2010_oc
-                 , ( rnf.num_docto ) num_docto
-                 , ( rnf.serie ) serie
-                 , ( rnf.dat_emissao_nf ) dat_emissao_nf
-                 , ( rnf.data_saida_rec_nf ) data_fiscal
-                 , ( rnf.vlr_bruto ) rnf_vlr_bruto
-                 , ( rnf.observacao ) observacao
-                 , ( rnf.id_r2010_nf ) id_r2010_nf
-                 , ( radic.ind_tp_proc_adj_adic ) ind_tp_proc_adj_adic
-                 , ( radic.num_proc_adj_adic ) num_proc_adj_adic
-                 , ( radic.cod_susp_adic ) cod_susp_adic
-                 , ( radic.vlr_n_ret_adic ) radic_vlr_n_ret_adic
-                 , ( rprinc.ind_tp_proc_adj_princ ) ind_tp_proc_adj_princ
-                 , ( rprinc.num_proc_adj_princ ) num_proc_adj_princ
-                 , ( rprinc.cod_susp_princ ) cod_susp_princ
-                 , ( rprinc.vlr_n_ret_princ ) rprinc_vlr_n_ret_princ
-                 , ( rserv.tp_servico ) tp_servico
-                 , ( rserv.vlr_base_ret ) rserv_vlr_base_ret
-                 , ( rserv.vlr_retencao ) vlr_retencao
-                 , ( rserv.vlr_ret_sub ) vlr_ret_sub
-                 , ( rserv.vlr_n_ret_princ ) rserv_vlr_n_ret_princ
-                 , ( rserv.vlr_servicos_15 ) vlr_servicos_15
-                 , ( rserv.vlr_servicos_20 ) vlr_servicos_20
-                 , ( rserv.vlr_servicos_25 ) vlr_servicos_25
-                 , ( rserv.vlr_ret_adic ) rserv_vlr_ret_adic
-                 , ( rserv.vlr_n_ret_adic ) rserv_vlr_n_ret_adic
-              FROM empresa
-                 , estabelecimento
-                 , reinf_pger_apur
-                 , x04_pessoa_fis_jur
-                 , reinf_pger_r2010_prest
-                 , reinf_pger_r2010_tom
-                 , reinf_pger_r2010_oc
-                 , reinf_pger_r2010_nf rnf
-                 , reinf_pger_r2010_tp_serv rserv
-                 , reinf_pger_r2010_proc_adic radic
-                 , reinf_pger_r2010_proc_princ rprinc
-                 , (SELECT   MAX ( dat_ocorrencia ) dat_ocorrencia
-                           , reinf_pger_r2010_prest.id_r2010_prest
-                           , reinf_pger_r2010_tom.id_r2010_tom
-                           , reinf_pger_apur.id_pger_apur
-                        FROM reinf_pger_r2010_oc
-                           , reinf_pger_r2010_prest
-                           , reinf_pger_r2010_tom
-                           , reinf_pger_apur
-                       WHERE reinf_pger_apur.id_pger_apur = reinf_pger_r2010_tom.id_pger_apur
-                         AND reinf_pger_r2010_tom.id_r2010_tom = reinf_pger_r2010_prest.id_r2010_tom
-                         AND reinf_pger_r2010_prest.id_r2010_prest = reinf_pger_r2010_oc.id_r2010_prest
-                         AND reinf_pger_apur.cod_empresa IN ( mcod_empresa )               -- parametro  pdata_inicial,  pdata_final
-                         AND reinf_pger_apur.cod_estab IN (  pcod_estab ( v_estab ) )              -- parametro
-                         AND reinf_pger_apur.dat_apur >= pdata_inicial              -- parametro
-                         AND reinf_pger_apur.dat_apur <= pdata_final                -- parametro
-                         AND ( ( '' IS NOT NULL
-                            AND reinf_pger_r2010_prest.cnpj_prestador = '' )
-                           OR '' IS NULL )
-                         AND reinf_pger_apur.ind_r2010 = 'S'
-                       --  AND reinf_pger_apur.cod_versao = 'v1_04_00'
-                         AND reinf_pger_apur.ind_tp_amb = '2'
-                    GROUP BY reinf_pger_r2010_prest.id_r2010_prest
-                           , reinf_pger_r2010_tom.id_r2010_tom
-                           , reinf_pger_apur.id_pger_apur) max_oc
-             WHERE ( estabelecimento.cod_empresa = reinf_pger_apur.cod_empresa )
-               AND ( estabelecimento.cod_estab = reinf_pger_apur.cod_estab )
-               AND ( estabelecimento.cod_empresa = empresa.cod_empresa )
-               AND ( reinf_pger_r2010_prest.cnpj_prestador = x04_pessoa_fis_jur.cpf_cgc )
-               AND x04_pessoa_fis_jur.ident_fis_jur = (SELECT MAX ( x04.ident_fis_jur )
-                                                         FROM x04_pessoa_fis_jur x04
-                                                        WHERE x04.cpf_cgc = x04_pessoa_fis_jur.cpf_cgc
-                                                          AND x04.valid_fis_jur <= '31/12/2018')        -- parametro 
-               AND ( reinf_pger_r2010_tom.id_pger_apur = reinf_pger_apur.id_pger_apur )
-               AND ( reinf_pger_r2010_tom.id_r2010_tom = reinf_pger_r2010_prest.id_r2010_tom )
-               AND ( reinf_pger_r2010_prest.id_r2010_prest = reinf_pger_r2010_oc.id_r2010_prest )
-               AND ( reinf_pger_r2010_oc.id_r2010_oc = rnf.id_r2010_oc )
-               AND ( reinf_pger_r2010_oc.dat_ocorrencia = max_oc.dat_ocorrencia )
-               AND ( reinf_pger_r2010_prest.id_r2010_prest = max_oc.id_r2010_prest )
-               AND ( reinf_pger_r2010_tom.id_r2010_tom = max_oc.id_r2010_tom )
-               AND ( reinf_pger_apur.id_pger_apur = max_oc.id_pger_apur )
-               AND rnf.id_r2010_nf = rserv.id_r2010_nf(+)
-               AND reinf_pger_r2010_oc.id_r2010_oc = radic.id_r2010_oc(+)
-               AND reinf_pger_r2010_oc.id_r2010_oc = rprinc.id_r2010_oc(+)
-               
-               AND reinf_pger_apur.cod_empresa IN ( mcod_empresa )           -- parametro  pdata_inicial,  pdata_final
-               AND reinf_pger_apur.cod_estab IN (  pcod_estab ( v_estab ) )  -- parametro
-               AND reinf_pger_apur.dat_apur >= pdata_inicial              -- parametro
-               AND reinf_pger_apur.dat_apur <= pdata_final                -- parametro
-              
-                AND ( ( '' IS NOT NULL
-                AND reinf_pger_r2010_prest.cnpj_prestador = '' )
-                 OR '' IS NULL )
-               AND ( reinf_pger_apur.ind_r2010 = 'S' )
-               --AND ( reinf_pger_apur.cod_versao = 'v1_04_00' )
-               AND reinf_pger_apur.ind_tp_amb = '2'
-               --AND rnf.num_docto = '000008508' 
-            
-            ;
+--            INSERT INTO MSAFI.FIN4816_REINF_2010_GTT
+--            SELECT 
+--                    --  pk        
+--                    reinf_pger_apur.cod_empresa             as cod_empresa_pk
+--                  , reinf_pger_apur.cod_estab               as cod_estab_pk
+--                  , rnf.data_saida_rec_nf                   as dat_fiscal_pk                    
+--                  , rnf.dat_emissao_nf                      as dat_emissao_pk
+--                  , x04_pessoa_fis_jur.ident_fis_jur        as iden_fis_jur_pk 
+--                  , rnf.num_docto                           as num_docfis_pk         
+--                    -- relatorio 
+--                 ,  empresa.cod_empresa                     AS "Codigo Empresa"         
+--                 , estabelecimento.razao_social             AS "Razão Social Drogaria"
+--                 , ( x04_pessoa_fis_jur.razao_social )      AS "Razão Social Cliente"
+--                 ,  rnf.num_docto                           AS "Número da Nota Fiscal"
+--                 ,  rnf.dat_emissao_nf                      AS "Data de Emissão da NF"
+--                 ,  rnf.data_saida_rec_nf                   AS "Data Fiscal"
+--                 ,  rserv.vlr_retencao                      AS "Valor do Tributo"
+--                 ,  rnf.observacao                          AS "observacao"
+--                 ,  rserv.tp_servico                        AS "Tipo de Serviço E-social"
+--                 ,  rserv.vlr_base_ret                      AS "Vlr. Base de Calc. Retenção"
+--                 ,  rserv.vlr_retencao                      AS "Valor da Retenção"
+--                 , reinf_pger_r2010_oc.proc_id
+--                 , reinf_pger_r2010_oc.ind_status
+--                 , reinf_pger_r2010_prest.cnpj_prestador
+--                 , reinf_pger_r2010_oc.ind_obra
+--                 , reinf_pger_r2010_tom.tp_inscricao
+--                 , reinf_pger_r2010_tom.nr_inscricao
+--                 , reinf_pger_r2010_oc.num_recibo
+--                 , reinf_pger_r2010_oc.ind_tp_amb
+--                 , reinf_pger_r2010_oc.vlr_bruto
+--                 , reinf_pger_r2010_oc.vlr_base_ret
+--                 , reinf_pger_r2010_oc.vlr_ret_princ
+--                 , reinf_pger_r2010_oc.vlr_ret_adic
+--                 , reinf_pger_r2010_oc.vlr_n_ret_princ
+--                 , reinf_pger_r2010_oc.vlr_n_ret_adic
+--                 , reinf_pger_r2010_oc.ind_cprb
+--                 , reinf_pger_r2010_oc.cod_versao_proc
+--                 , reinf_pger_r2010_oc.cod_versao_layout
+--                 , reinf_pger_r2010_oc.ind_proc_emissao
+--                 , reinf_pger_r2010_oc.id_evento
+--                 , reinf_pger_r2010_oc.ind_oper
+--                 , reinf_pger_apur.cod_empresa
+--                 , reinf_pger_apur.cod_estab
+--                 , reinf_pger_r2010_oc.dat_ocorrencia
+--                 , estabelecimento.cgc         
+--                 , empresa.razao_social
+--                 , ( x04_pessoa_fis_jur.razao_social ) x04_razao_social
+--                 , reinf_pger_r2010_oc.id_r2010_oc
+--                 , ( rnf.num_docto ) num_docto
+--                 , ( rnf.serie ) serie
+--                 , ( rnf.dat_emissao_nf ) dat_emissao_nf
+--                 , ( rnf.data_saida_rec_nf ) data_fiscal
+--                 , ( rnf.vlr_bruto ) rnf_vlr_bruto
+--                 , ( rnf.observacao ) observacao
+--                 , ( rnf.id_r2010_nf ) id_r2010_nf
+--                 , ( radic.ind_tp_proc_adj_adic ) ind_tp_proc_adj_adic
+--                 , ( radic.num_proc_adj_adic ) num_proc_adj_adic
+--                 , ( radic.cod_susp_adic ) cod_susp_adic
+--                 , ( radic.vlr_n_ret_adic ) radic_vlr_n_ret_adic
+--                 , ( rprinc.ind_tp_proc_adj_princ ) ind_tp_proc_adj_princ
+--                 , ( rprinc.num_proc_adj_princ ) num_proc_adj_princ
+--                 , ( rprinc.cod_susp_princ ) cod_susp_princ
+--                 , ( rprinc.vlr_n_ret_princ ) rprinc_vlr_n_ret_princ
+--                 , ( rserv.tp_servico ) tp_servico
+--                 , ( rserv.vlr_base_ret ) rserv_vlr_base_ret
+--                 , ( rserv.vlr_retencao ) vlr_retencao
+--                 , ( rserv.vlr_ret_sub ) vlr_ret_sub
+--                 , ( rserv.vlr_n_ret_princ ) rserv_vlr_n_ret_princ
+--                 , ( rserv.vlr_servicos_15 ) vlr_servicos_15
+--                 , ( rserv.vlr_servicos_20 ) vlr_servicos_20
+--                 , ( rserv.vlr_servicos_25 ) vlr_servicos_25
+--                 , ( rserv.vlr_ret_adic ) rserv_vlr_ret_adic
+--                 , ( rserv.vlr_n_ret_adic ) rserv_vlr_n_ret_adic
+--              FROM empresa
+--                 , estabelecimento
+--                 , reinf_pger_apur
+--                 , x04_pessoa_fis_jur
+--                 , reinf_pger_r2010_prest
+--                 , reinf_pger_r2010_tom
+--                 , reinf_pger_r2010_oc
+--                 , reinf_pger_r2010_nf rnf
+--                 , reinf_pger_r2010_tp_serv rserv
+--                 , reinf_pger_r2010_proc_adic radic
+--                 , reinf_pger_r2010_proc_princ rprinc
+--                 , (SELECT   MAX ( dat_ocorrencia ) dat_ocorrencia
+--                           , reinf_pger_r2010_prest.id_r2010_prest
+--                           , reinf_pger_r2010_tom.id_r2010_tom
+--                           , reinf_pger_apur.id_pger_apur
+--                        FROM reinf_pger_r2010_oc
+--                           , reinf_pger_r2010_prest
+--                           , reinf_pger_r2010_tom
+--                           , reinf_pger_apur
+--                       WHERE reinf_pger_apur.id_pger_apur = reinf_pger_r2010_tom.id_pger_apur
+--                         AND reinf_pger_r2010_tom.id_r2010_tom = reinf_pger_r2010_prest.id_r2010_tom
+--                         AND reinf_pger_r2010_prest.id_r2010_prest = reinf_pger_r2010_oc.id_r2010_prest
+--                         AND reinf_pger_apur.cod_empresa IN ( mcod_empresa )               -- parametro  pdata_inicial,  pdata_final
+--                         AND reinf_pger_apur.cod_estab IN (  pcod_estab ( v_estab ) )              -- parametro
+--                         AND reinf_pger_apur.dat_apur >= pdata_inicial              -- parametro
+--                         AND reinf_pger_apur.dat_apur <= pdata_final                -- parametro
+--                         AND ( ( '' IS NOT NULL
+--                            AND reinf_pger_r2010_prest.cnpj_prestador = '' )
+--                           OR '' IS NULL )
+--                         AND reinf_pger_apur.ind_r2010 = 'S'
+--                       --  AND reinf_pger_apur.cod_versao = 'v1_04_00'
+--                         AND reinf_pger_apur.ind_tp_amb = '2'
+--                    GROUP BY reinf_pger_r2010_prest.id_r2010_prest
+--                           , reinf_pger_r2010_tom.id_r2010_tom
+--                           , reinf_pger_apur.id_pger_apur) max_oc
+--             WHERE ( estabelecimento.cod_empresa = reinf_pger_apur.cod_empresa )
+--               AND ( estabelecimento.cod_estab = reinf_pger_apur.cod_estab )
+--               AND ( estabelecimento.cod_empresa = empresa.cod_empresa )
+--               AND ( reinf_pger_r2010_prest.cnpj_prestador = x04_pessoa_fis_jur.cpf_cgc )
+--               AND x04_pessoa_fis_jur.ident_fis_jur = (SELECT MAX ( x04.ident_fis_jur )
+--                                                         FROM x04_pessoa_fis_jur x04
+--                                                        WHERE x04.cpf_cgc = x04_pessoa_fis_jur.cpf_cgc
+--                                                          AND x04.valid_fis_jur <= '31/12/2018')        -- parametro 
+--               AND ( reinf_pger_r2010_tom.id_pger_apur = reinf_pger_apur.id_pger_apur )
+--               AND ( reinf_pger_r2010_tom.id_r2010_tom = reinf_pger_r2010_prest.id_r2010_tom )
+--               AND ( reinf_pger_r2010_prest.id_r2010_prest = reinf_pger_r2010_oc.id_r2010_prest )
+--               AND ( reinf_pger_r2010_oc.id_r2010_oc = rnf.id_r2010_oc )
+--               AND ( reinf_pger_r2010_oc.dat_ocorrencia = max_oc.dat_ocorrencia )
+--               AND ( reinf_pger_r2010_prest.id_r2010_prest = max_oc.id_r2010_prest )
+--               AND ( reinf_pger_r2010_tom.id_r2010_tom = max_oc.id_r2010_tom )
+--               AND ( reinf_pger_apur.id_pger_apur = max_oc.id_pger_apur )
+--               AND rnf.id_r2010_nf = rserv.id_r2010_nf(+)
+--               AND reinf_pger_r2010_oc.id_r2010_oc = radic.id_r2010_oc(+)
+--               AND reinf_pger_r2010_oc.id_r2010_oc = rprinc.id_r2010_oc(+)
+--               
+--               AND reinf_pger_apur.cod_empresa IN ( mcod_empresa )           -- parametro  pdata_inicial,  pdata_final
+--               AND reinf_pger_apur.cod_estab IN (  pcod_estab ( v_estab ) )  -- parametro
+--               AND reinf_pger_apur.dat_apur >= pdata_inicial              -- parametro
+--               AND reinf_pger_apur.dat_apur <= pdata_final                -- parametro
+--              
+--                AND ( ( '' IS NOT NULL
+--                AND reinf_pger_r2010_prest.cnpj_prestador = '' )
+--                 OR '' IS NULL )
+--               AND ( reinf_pger_apur.ind_r2010 = 'S' )
+--               --AND ( reinf_pger_apur.cod_versao = 'v1_04_00' )
+--               AND reinf_pger_apur.ind_tp_amb = '2'
+--               --AND rnf.num_docto = '000008508' 
+--            
+--            ;
             
         END LOOP;
         
