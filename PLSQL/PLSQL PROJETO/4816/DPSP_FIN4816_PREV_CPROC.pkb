@@ -14,7 +14,7 @@ IS
 
       i number := 0;
       
-   
+    
   
         -- =======================================
         -- Type  report fiscal / cursor 
@@ -601,7 +601,7 @@ IS
           
           
             --================================================
-            -- CARGA NA TABELA DO report fiscal 
+            -- Table -  report fiscal 
             --================================================
         
             OPEN cr_rtf   (v_data, p_nm_empresa, p_proc_id ) ;
@@ -761,7 +761,7 @@ IS
         
         
          --================================================
-         -- CARGA NA TABELA DO report previdenciario 
+         -- Table -  Report previdenciario 
          --================================================
         BEGIN
           vn_count_new := 0;     

@@ -4,7 +4,7 @@ select *  FROM MSAFI.FIN4816_REINF_2010_GTT
 
 
 
---INSERT INTO MSAFI.FIN4816_REINF_2010_GTT
+INSERT INTO MSAFI.FIN4816_REINF_2010_GTT
 SELECT 
         --  pk        
         reinf_pger_apur.cod_empresa             as cod_empresa_pk
@@ -133,8 +133,8 @@ SELECT
    AND reinf_pger_r2010_oc.id_r2010_oc = rprinc.id_r2010_oc(+)
    AND ( reinf_pger_apur.cod_empresa IN ( 'DSP' ) )         -- parametro
    AND ( reinf_pger_apur.cod_estab IN ( 'DSP004' ) )        -- parametro 
-   AND ( reinf_pger_apur.dat_apur >= '01/12/2018'           -- parametro 
-   AND reinf_pger_apur.dat_apur <= '31/12/2018' )           -- parametro
+   AND reinf_pger_apur.dat_apur >= '01/12/2018'             -- parametro
+   AND reinf_pger_apur.dat_apur <= '31/12/2018'             -- parametro
    AND ( ( '' IS NOT NULL
       AND reinf_pger_r2010_prest.cnpj_prestador = '' )
      OR '' IS NULL )
