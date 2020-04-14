@@ -731,29 +731,224 @@ IS
   
   
   
-  CURSOR cr_excel_analitico
-  IS
-  SELECT  
-     rpf.cod_empresa                          AS    "Codigo da Empresa"
-   , rpf.cod_estab                            AS    "Codigo do Estabelecimento"
-   , TO_CHAR(rpf.DATA_EMISSAO, 'MM/YYYY')     AS    "Periodo de Emissão"
-   , rpf.CGC                                  AS    "CNPJ Drogaria "
-   , rpf.num_docfis                           AS    "Numero da Nota Fiscal"
-   , rpf.tipo_docto                           AS    "Tipo de Documento"
-   , rpf.data_emissao                         AS    "Data Emissão"
-   , rpf.cgc_fornecedor                       AS    "CNPJ Fonecedor"
-   , rpf.uf                                   AS    "UF"
-   , rpf.valor_total                          AS    "Valor Total da Nota"
-   , rpf.vlr_base_inss                        AS    "Base de Calculo INSS"
-   , rpf.vlr_inss                             AS    "Valor do INSS"
-   , rpf.codigo_fisjur                        AS    "Codigo Pessoa Fisica/juridica"
-   , INITCAP(rpf.razao_social)                AS    "Razão Social" 
-   , INITCAP(rpf.municipio_prestador)         AS    "Municipio Prestador" 
-   , rpf.cod_servico                          AS    "Codigo de Serviço"
-   , rpf.cod_cei                              AS    "Codigo CEI"
-   , NULL                                     AS    "Existe na DWT"
-  FROM msafi.fin4816_report_fiscal_gtt  rpf   ;
-  
+                  CURSOR rc_excel
+                  IS
+                  SELECT  
+                     rpf.cod_empresa                          AS    "Codigo da Empresa"
+                   , rpf.cod_estab                            AS    "Codigo do Estabelecimento"
+                   , TO_CHAR(rpf.DATA_EMISSAO, 'MM/YYYY')     AS    "Periodo de Emissão"
+                   , rpf.CGC                                  AS    "CNPJ Drogaria"
+                   , rpf.num_docfis                           AS    "Numero da Nota Fiscal"
+                   , rpf.tipo_docto                           AS    "Tipo de Documento"
+                   , rpf.data_emissao                         AS    "Data Emissão"
+                   , rpf.cgc_fornecedor                       AS    "CNPJ Fonecedor"
+                   , rpf.uf                                   AS    "UF"
+                   , rpf.valor_total                          AS    "Valor Total da Nota"
+                   , rpf.vlr_base_inss                        AS    "Base de Calculo INSS"
+                   , rpf.vlr_inss                             AS    "Valor do INSS"
+                   , rpf.codigo_fisjur                        AS    "Codigo Pessoa Fisica/juridica"
+                   , INITCAP(rpf.razao_social)                AS    "Razão Social" 
+                   , INITCAP(rpf.municipio_prestador)         AS    "Municipio Prestador" 
+                   , rpf.cod_servico                          AS    "Codigo de Serviço"
+                   , rpf.cod_cei                              AS    "Codigo CEI"
+                   ,  NVL(( 
+                      SELECT 'S'
+                       FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                      WHERE   1=1 
+                       AND    rprev."Codigo Empresa"            = rpf.COD_EMPRESA
+                       AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                       AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                       AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                       AND    rprev.num_item                    = rpf.num_item
+                      ),'N')                                                                            AS    "DWT"
+                      ---   campos do Report Previdenciario 
+                    , (  SELECT  rprev."Codigo Estabelecimento"
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  empresa  
+                           
+                           
+                     , (  SELECT  rprev."Codigo Estabelecimento"
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Codigo Estabelecimento"  
+                     
+                    , (  SELECT  rprev."Codigo Pessoa Fisica/Juridica" 
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  cod_pessoa_fis_jur                         
+                     
+
+                      , ( SELECT  rprev."Razão Social Cliente"
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Razão Social Cliente"   
+
+                      
+                      , ( SELECT  rprev."CNPJ Cliente" 
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "CNPJ Cliente"   
+
+                      , ( SELECT  rprev."Número da Nota Fiscal" 
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Nro. Nota Fiscal" 
+                           
+                      , ( SELECT  rprev."Emissão" 
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Dt. Emissao"    
+                      
+                        , ( SELECT  rprev."Data Fiscal" 
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Dt. Fiscal" 
+                           
+                       , ( SELECT  rprev.vlr_tot_nota
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Vlr. Total da Nota" 
+                           
+                       , ( SELECT  rprev."Vlr Base Calc. Retenção"
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Vlr Base Calc. Retenção"
+                                
+                       ,( SELECT  rprev.vlr_aliq_inss
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Vlr. Aliquota INSS"
+                           
+                        ,( SELECT  rprev."Vlr.Trib INSS RETIDO"
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Vlr.Trib INSS RETIDO"
+                           
+                       ,( SELECT  rprev."Razão Social Drogaria"
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Razão Social Drogaria" 
+                           
+                        ,( SELECT  rprev.cgc
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "CNPJ Drogarias"                           
+                           
+                      ,( SELECT  rprev.cod_docto
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Descr. Tp. Documento"
+                           
+                       ,( SELECT  rprev."Tipo de Serviço E-social" 
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Tp.Serv. E-social" 
+                           
+                      ,( SELECT  rprev.dsc_tipo_serv_esocial 
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Descr. Tp. Serv E-social" 
+                           
+                      ,( SELECT  rprev."Valor do Servico" 
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Vlr. do Servico"
+                           
+                       ,( SELECT  rprev.codigo_serv_prod 
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Cod. Serv. Mastersaf"
+                           
+                       ,( SELECT  rprev.desc_serv_prod 
+                           FROM msafi.dpsp_tb_fin4816_reinf_prev_gtt  rprev
+                          WHERE   1=1 
+                           AND    rprev."Codigo Empresa"            = rpf.cod_empresa
+                           AND    rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                           AND    rprev."Data Fiscal"               = rpf.data_fiscal
+                           AND    rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                           AND    rprev.num_item                    = rpf.num_item)                     AS  "Descr. Serv. Mastersaf"   
+                           
+                  FROM msafi.fin4816_report_fiscal_gtt  rpf  
+                    ORDER BY 
+                  cod_empresa, cod_estab, data_fiscal, movto_e_s,  num_docfis, serie_docfis, sub_serie_docfis, num_item ;
+                  
   
   
   
@@ -1504,201 +1699,150 @@ IS
         dbms_application_info.set_module ( cc_procedurename , 'END:' || vn_count_new );
     END  carga;
     
-    
-    
-    
-  PROCEDURE load_excel_analitico (p_proc_instance IN VARCHAR2) IS
-  
-    v_sql    VARCHAR2(20000);
-    v_text01 VARCHAR2(20000);
-    v_class  VARCHAR2(1) := 'a';
-    c_conc   SYS_REFCURSOR;
-    p_lojas  VARCHAR2(6);
-  
-   
-
-    CURSOR RCX 
-    IS 
-     SELECT a.*
-      FROM  msafi.fin4816_prev_final_gtt  a
-     ORDER BY ID;
-      
-    x  number ;
-  BEGIN
-        EXECUTE IMMEDIATE   'ALTER SESSION SET NLS_DATE_FORMAT = ''DD/MM/YYYY''';
-        EXECUTE IMMEDIATE   'ALTER SESSION SET NLS_NUMERIC_CHARACTERS= '',.'' ';
-        
-        
-     
-        
-         BEGIN
-         
-         --   SELECT * FROM msafi.fin4816_prev_gtt
-         --   SELECT * FROM msafi.fin4816_prev_final_gtt
-         
-            INSERT INTO msafi.fin4816_prev_final_gtt
-             SELECT 
-                  NULL
-                , cod_empresa         , cod_estab         ,TO_CHAR(data_emissao, 'MM/YYYY') data_emissao , cgc                  , num_docto         , tipo_docto
-                , data_emissao        , data_fiscal       , cgc_fornecedor           , uf                   , valor_total       , vlr_base_inss
-                , vlr_inss            , codigo_fisjur     , razao_social             , municipio_prestador   , cod_servico
-                , null, null, null, null , null, null, null, null, null, null, null, null, null, null, 'A'
-             FROM msafi.fin4816_prev_gtt
-              WHERE vlr_inss > 0
-              
-              ;
-         COMMIT ;
-        
-        
-        
-             DECLARE
-              CURSOR RC
-                IS
-              SELECT  MIN(ID) ID , col32
-               FROM msafi.fin4816_prev_final_gtt  a
-               GROUP BY col32
-              ORDER BY ID;
-
-            BEGIN
-
-                FOR x IN rc LOOP
-                     UPDATE msafi.fin4816_prev_final_gtt a
-                       SET a.col31 = 'R'
-                     WHERE a.id = x.id
-                     AND   a.col32 = 'A';
-                     
-                     UPDATE msafi.fin4816_prev_final_gtt a
-                      SET  a.col31 = 'R'
-                     WHERE a.id   = x.id
-                     AND   a.col32 = 'B';
-                     
-                    COMMIT;
-                END LOOP;
-
-            END;
-        
-        
-        
-        
-        
-        END;  
-  
-          
-  
-    i := 11;
-    loga('>>> Relatorio Previdenciario ' || p_proc_instance, FALSE);  
-    lib_proc.add_tipo(p_proc_instance,i,mcod_empresa || '_analitico_reinf_' ||to_char(sysdate,'MMYYYY') || '.XLS',2);
-  
-    COMMIT;
-  
-        lib_proc.add(dsp_planilha.header, ptipo => i);
-        lib_proc.add(dsp_planilha.tabela_inicio, ptipo => i);  
-       -- lib_proc.add(dsp_planilha.linha(p_conteudo => dsp_planilha.campo('Report_Fiscal',p_custom => 'COLSPAN=31'),p_class => 'h'),ptipo => i);
-    
-    
  
-  
---        lib_proc.add(dsp_planilha.linha(p_conteudo => 
---                     dsp_planilha.campo('COD_EMPRESA')       || --             
---                     dsp_planilha.campo('COD_ESTAB')         || --             
---                     dsp_planilha.campo('PERIODO_EMISSAO')   || --             
---                     dsp_planilha.campo('CGC')               || --             
---                     dsp_planilha.campo('NUM_DOCTO')         || --             
---                     dsp_planilha.campo('TIPO_DOCTO')        || --             
---                     dsp_planilha.campo('DATA_EMISSAO')      || --             
---                     dsp_planilha.campo('DATA_FISCAL')       || --             
---                     dsp_planilha.campo('CGC_FORNECEDOR')    || --             
---                     dsp_planilha.campo('UF')                || --             
---                     dsp_planilha.campo('VALOR_TOTAL')       || --             
---                     dsp_planilha.campo('VLR_BASE_INSS')     || --             
---                     dsp_planilha.campo('VLR_INSS')          || --             
---                     dsp_planilha.campo('CODIGO_FISJUR')     || --             
---                     dsp_planilha.campo('RAZAO_SOCIAL')      || --             
---                     dsp_planilha.campo('MUNICIPIO_PRESTADOR')|| --            
---                     dsp_planilha.campo('COD_SERVICO')          --             
---                                            , p_class => 'h'), ptipo => i);             
-  
-    
-   
-    
-     
-      
-        FOR ii IN rcx  LOOP
-        
-          IF v_class = 'a'
-          THEN
-            v_class := 'b';
-          ELSE
-            v_class := 'a';
-          END IF;
-        
-            IF  ii.col31 = 'R'  AND ii.col32   = 'A' THEN
-            lib_proc.add(dsp_planilha.linha(p_conteudo => dsp_planilha.campo('Report_Fiscal',p_custom => 'COLSPAN=31'),p_class => 'h'),ptipo => i);
-            
-            
-            lib_proc.add(dsp_planilha.linha(p_conteudo => 
-                     dsp_planilha.campo('COD_EMPRESA')       || --             
-                     dsp_planilha.campo('COD_ESTAB')         || --             
-                     dsp_planilha.campo('PERIODO_EMISSAO')   || --             
-                     dsp_planilha.campo('CGC_ESTAB')         || --             
-                     dsp_planilha.campo('NUM_DOCTO')         || --             
-                     dsp_planilha.campo('TIPO_DOCTO')        || --             
-                     dsp_planilha.campo('DATA_EMISSAO')      || --             
-                     dsp_planilha.campo('DATA_FISCAL')       || --             
-                     dsp_planilha.campo('CGC_FORNECEDOR')    || --             
-                     dsp_planilha.campo('UF')                || --             
-                     dsp_planilha.campo('VALOR_TOTAL')       || --             
-                     dsp_planilha.campo('VLR_BASE_INSS')     || --             
-                     dsp_planilha.campo('VLR_INSS')          || --             
-                     dsp_planilha.campo('CODIGO_FISJUR')     || --             
-                     dsp_planilha.campo('RAZAO_SOCIAL')      || --             
-                     dsp_planilha.campo('MUNICIPIO_PRESTADOR')|| --            
-                     dsp_planilha.campo('COD_SERVICO')          --             
-                                            , p_class => 'h'), ptipo => i); 
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                                    
-             ELSIF  ii.col31   = 'R'   AND  ii.col32   = 'B'  THEN
-             lib_proc.add(dsp_planilha.linha(p_conteudo => dsp_planilha.campo('Report_Previdenciario',p_custom => 'COLSPAN=31'),p_class => 'h'),ptipo => i);
-             END IF; 
-           
 
-          v_text01 := dsp_planilha.linha(p_conteudo => 
-                      dsp_planilha.campo(ii.col1)           ||                  -- cod_empresa    
-                      dsp_planilha.campo(ii.col2)           ||                  -- cod_estab
-                      dsp_planilha.campo(ii.col3)           ||                  -- periodo_emiss                      
-                      dsp_planilha.campo(dsp_planilha.texto(TO_CHAR(ii.col4))) ||-- cgc
-                      dsp_planilha.campo(ii.col5)           ||                  --  num_docto
-                      dsp_planilha.campo(ii.col6)           ||                  --  tipo_docto
-                      dsp_planilha.campo(ii.col7)           ||                  --  data_emissao
-                      dsp_planilha.campo(ii.col8)           ||                  --  data_fiscal
-                      dsp_planilha.campo(dsp_planilha.texto(TO_CHAR(ii.col9))) ||-- cgc_fornecedo
-                      dsp_planilha.campo(ii.col10)          ||                   -- uf
-                      dsp_planilha.campo(ii.col11)          ||                   -- valor_total
-                      dsp_planilha.campo(ii.col12)          ||                   -- vlr_base_inss
-                      dsp_planilha.campo(ii.col13)          ||                   -- vlr_inss
-                      dsp_planilha.campo(ii.col14)          ||                   -- codigo_fisjur
-                      dsp_planilha.campo(ii.col15)          ||                   -- razao_social
-                      dsp_planilha.campo(ii.col16)          ||                   -- municipio_pre
-                      dsp_planilha.campo(ii.col17)                               -- cod_servico
-                                           ,p_class => v_class);
+  
+  
+  PROCEDURE load_excel( VP_MPROC_ID IN NUMBER,  V_DATA_INICIAL IN DATE, V_DATA_FINAL IN DATE) IS
+                                                                                              
+                V_SQL                   VARCHAR2(20000);
+                V_TEXT01            VARCHAR2(20000);
+                V_CLASS              VARCHAR2(1):= 'a';
+                C_CONC    SYS_REFCURSOR;
+                V_DATA_INICIAL_P VARCHAR2(30);
+  
+  
+  
         
-           msaf.lib_proc.add(v_text01, ptipo => i);
-    
-      END LOOP;
-  
-    lib_proc.add(dsp_planilha.tabela_fim, ptipo => i);
-  
-  END load_excel_analitico;
-  
-  
-  
-  
-  
+     BEGIN
+
+         
+        
+        V_DATA_INICIAL_P := TO_CHAR(V_DATA_INICIAL,'MM-YYYY');
+        
+        LOGA(V_DATA_INICIAL_P);
+
+        LIB_PROC.ADD_TIPO(VP_MPROC_ID, 99, MCOD_EMPRESA || '_REL_PREVIDENCIARIO_'|| V_DATA_INICIAL_P ||'_'||'.XLS', 2);            
+        
+        LIB_PROC.ADD(DSP_PLANILHA.HEADER, PTIPO => 99);
+        LIB_PROC.ADD(DSP_PLANILHA.TABELA_INICIO, PTIPO => 99);
+        
+        LIB_PROC.ADD(DSP_PLANILHA.LINHA(P_CONTEUDO => DSP_PLANILHA.CAMPO('Report Fiscal', P_CUSTOM => 'COLSPAN=18') || --
+                                        DSP_PLANILHA.CAMPO('Relatorio Previdenciario', P_CUSTOM => 'COLSPAN=19 BGCOLOR=BLUE') || --
+                                        DSP_PLANILHA.CAMPO('relatorio Event R-2010',P_CUSTOM => 'COLSPAN=20 BGCOLOR=GREEN'), P_CLASS => 'h'), PTIPO => 99);  
+                                                      
+        LIB_PROC.ADD(DSP_PLANILHA.LINHA(P_CONTEUDO => DSP_PLANILHA.CAMPO('Codigo da Empresa')               ||  -- 1                   
+                                                      DSP_PLANILHA.CAMPO('Codigo do Estabelecimento')       ||  -- 2      
+                                                      DSP_PLANILHA.CAMPO('Periodo de Emissão')              ||  -- 3 
+                                                      DSP_PLANILHA.CAMPO('CNPJ Drogaria')                   ||  -- 4           
+                                                      DSP_PLANILHA.CAMPO('Numero da Nota Fiscal')           ||  -- 5              
+                                                      DSP_PLANILHA.CAMPO('Tipo de Documento')               ||  -- 6                  
+                                                      DSP_PLANILHA.CAMPO('Data Emissão')                    ||  -- 7    
+                                                      DSP_PLANILHA.CAMPO('CNPJ_Fonecedor')                  ||  -- 8                     
+                                                      DSP_PLANILHA.CAMPO('UF')                              ||  -- 9                                 
+                                                      DSP_PLANILHA.CAMPO('Valor Total da Nota')             ||  -- 10   
+                                                      DSP_PLANILHA.CAMPO('Base de Calculo INSS')            ||  -- 11  
+                                                      DSP_PLANILHA.CAMPO('Valor do INSS')                   ||  -- 12                      
+                                                      DSP_PLANILHA.CAMPO('Codigo Pessoa Fisica/juridica')   ||  -- 13      
+                                                      DSP_PLANILHA.CAMPO('Razão Social')                    ||  -- 14                       
+                                                      DSP_PLANILHA.CAMPO('Municipio Prestador')             ||  -- 15                  
+                                                      DSP_PLANILHA.CAMPO('Codigo de Serviço')               ||  -- 16                                                   
+                                                      DSP_PLANILHA.CAMPO('Codigo CEI')                      ||  -- 17                         
+                                                      DSP_PLANILHA.CAMPO('Equalização|S-N')                 ||  -- 18 
+                                                      --  Previdenciario
+                                                      DSP_PLANILHA.CAMPO('Cod. da Empresa')                 ||   --19 
+                                                      DSP_PLANILHA.CAMPO('Cod. do Estabelecimento')         ||   --21 
+                                                      DSP_PLANILHA.CAMPO('Cod. Pessoa Fisica/Juridica')     ||   --22 
+                                                      DSP_PLANILHA.CAMPO('Razão Social Cliente    ')        ||   --23 
+                                                      DSP_PLANILHA.CAMPO('CNPJ Cliente(s)')                 ||   --24 
+                                                      DSP_PLANILHA.CAMPO('Nr. da Nota Fiscal')              ||   --25 
+                                                      DSP_PLANILHA.CAMPO('Data Emissão.')                   ||   --26 
+                                                      DSP_PLANILHA.CAMPO('Data Fiscal.')                    ||   --26 *
+                                                      DSP_PLANILHA.CAMPO('Vlr. Total da Nota')              ||   --27 
+                                                      DSP_PLANILHA.CAMPO('Vlr Base de Calculo INSS')        ||   --28                                                       
+                                                      DSP_PLANILHA.CAMPO('Vlr. Aliquota INSS')              ||   --29 
+                                                      DSP_PLANILHA.CAMPO('Vlr INSS Retido')                 ||   --30 
+                                                      DSP_PLANILHA.CAMPO('Razão Social Drogaria')           ||   --31 
+                                                      DSP_PLANILHA.CAMPO('CNPJ-s Drogaria')                 ||   --32 
+                                                      DSP_PLANILHA.CAMPO('Descrição do Tipo de Documento')  ||   --33                                                       
+                                                      DSP_PLANILHA.CAMPO('Cod. Tipo de Serviço E-social')   ||   --34 
+                                                      DSP_PLANILHA.CAMPO('Descr. Tipo de Serviço E-social') ||   --35 
+                                                      DSP_PLANILHA.CAMPO('Vlr. do Serviço')                 ||   --36 
+                                                      DSP_PLANILHA.CAMPO('Cod. de Serviço Mastersaf')       ||   --37 
+                                                      DSP_PLANILHA.CAMPO('Descr. Codigo de Serv. Mastersaf')     --38 
+                                                      
+                                                      
+                                                    , P_CLASS => 'h'), PTIPO => 99);          
+                                                    
+                                                                                                                                
+       
+                                                                                                                             
+                   FOR  I IN  RC_EXCEL 
+                    LOOP                                                                                                                   
+
+                              IF V_CLASS = 'a' THEN                                                                                                                          
+                                V_CLASS := 'b';                                                                                                                             
+                               ELSE                                                                                                                                          
+                                V_CLASS := 'a';                                                                                                                             
+                              END IF;                                                                                                                                     
+                             
+                                V_TEXT01 := DSP_PLANILHA.LINHA( P_CONTEUDO =>     
+                                                                 DSP_PLANILHA.CAMPO(i."Codigo da Empresa")                                  ||    -- 1        
+                                                                 DSP_PLANILHA.CAMPO(i."Codigo do Estabelecimento")                          ||    -- 2                 
+                                                                 DSP_PLANILHA.CAMPO(i."Periodo de Emissão")                                 ||    -- 3        
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."CNPJ Drogaria"))                  ||    -- 4        
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Numero da Nota Fiscal"))          ||    -- 5   
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Tipo de Documento"))              ||    -- 6   
+                                                                 DSP_PLANILHA.CAMPO(i."Data Emissão")                                       ||    -- 7   
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."CNPJ Fonecedor"))                 ||    -- 8   
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."UF"))                             ||    -- 9   
+                                                                 DSP_PLANILHA.CAMPO(i."Valor Total da Nota")                                ||    -- 10  
+                                                                 DSP_PLANILHA.CAMPO(i."Base de Calculo INSS")                               ||    -- 11  
+                                                                 DSP_PLANILHA.CAMPO(i."Valor do INSS")                                      ||    -- 12  
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Codigo Pessoa Fisica/juridica"))  ||    -- 13  
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Razão Social"))                   ||    -- 14  
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Municipio Prestador" ))           ||    -- 15  
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Codigo de Serviço" ))             ||    -- 16  
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Codigo CEI" ))                    ||    -- 17 
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."DWT" ))                           ||    -- 18
+                                                                 
+                                                                 ---  Relatório Previdenciario
+                                                                 DSP_PLANILHA.CAMPO(i.empresa)                                              ||    -- 19 
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Codigo Estabelecimento"  ))       ||    -- 20
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i.cod_pessoa_fis_jur  ))             ||    -- 21
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Razão Social Cliente"   ))        ||    -- 22                                                     
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."CNPJ Cliente"   ))                ||    -- 23
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Nro. Nota Fiscal"   ))            ||    -- 24
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Dt. Emissao"   ))                 ||    -- 25
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Dt. Fiscal"   ))                  ||    -- 26
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Vlr. Total da Nota"   ))          ||    -- 27
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Vlr Base Calc. Retenção"   ))     ||    -- 28
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Vlr. Aliquota INSS"   ))          ||    -- 29
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Vlr.Trib INSS RETIDO"   ))        ||    -- 30
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Razão Social Drogaria"    ))      ||    -- 31
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."CNPJ Drogarias"    ))             ||    -- 32
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Descr. Tp. Documento"    ))       ||    -- 33
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Tp.Serv. E-social"    ))          ||    -- 34
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Descr. Tp. Serv E-social"   ))    ||    -- 35
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Vlr. do Servico"  ))              ||    -- 36
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Cod. Serv. Mastersaf"  ))         ||    -- 37
+                                                                 DSP_PLANILHA.CAMPO(DSP_PLANILHA.TEXTO(i."Descr. Serv. Mastersaf"  ))       
+                                                                   
+                                 , P_CLASS => V_CLASS);                                                                                                       
+                                 LIB_PROC.ADD(V_TEXT01, PTIPO => 99);                                                                                                           
+                                                                                                                                                          
+                                                                           
+                                                              
+                    
+                              
+        END LOOP;
+          
+        COMMIT;
+       
+        
+        LIB_PROC.ADD(DSP_PLANILHA.TABELA_FIM, PTIPO => 99); 
+                                                                                         
+END  LOAD_EXCEL;
   
   
   
@@ -1851,14 +1995,14 @@ IS
 
                 dbms_parallel_execute.drop_task ( p_task );
 
-        --===================================
-         ---  EXCEL ( )
+       
          
 
-        load_excel_analitico (mproc_id);
+           
+       
+            load_excel( vp_mproc_id => mproc_id,  v_data_inicial => pdata_inicial , v_data_final => pdata_final)  ; 
 
-
-         loga ( '---FIM DO PROCESSAMENTO---', FALSE );
+           loga ( '---FIM DO PROCESSAMENTO---', FALSE );
 
         lib_proc.close;
         RETURN mproc_id;
