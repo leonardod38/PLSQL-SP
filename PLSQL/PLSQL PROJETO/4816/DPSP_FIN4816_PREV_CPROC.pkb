@@ -1123,7 +1123,7 @@ IS
         cc_procedurename CONSTANT VARCHAR2 ( 30 ) := 'INSERT FIN4816_PREV';
 
         cc_limit NUMBER ( 7 ) := 10000;
-        vn_count_new NUMBER := 0;
+        vn_count_new NUMBER   := 0;
      
         l_status number ;
      
@@ -1728,13 +1728,13 @@ IS
         LIB_PROC.ADD(DSP_PLANILHA.TABELA_INICIO, PTIPO => 99);
         
         LIB_PROC.ADD(DSP_PLANILHA.LINHA(P_CONTEUDO => DSP_PLANILHA.CAMPO('Report Fiscal', P_CUSTOM => 'COLSPAN=18') || --
-                                        DSP_PLANILHA.CAMPO('Relatorio Previdenciario', P_CUSTOM => 'COLSPAN=19 BGCOLOR=BLUE') || --
-                                        DSP_PLANILHA.CAMPO('relatorio Event R-2010',P_CUSTOM => 'COLSPAN=20 BGCOLOR=GREEN'), P_CLASS => 'h'), PTIPO => 99);  
+                                        DSP_PLANILHA.CAMPO('Relatorio Previdenciario', P_CUSTOM => 'COLSPAN=20 BGCOLOR=BLUE') || --
+                                        DSP_PLANILHA.CAMPO('Relatorio Evento R-2010',P_CUSTOM => 'COLSPAN=21 BGCOLOR=GREEN'), P_CLASS => 'h'), PTIPO => 99);  
                                                       
         LIB_PROC.ADD(DSP_PLANILHA.LINHA(P_CONTEUDO => DSP_PLANILHA.CAMPO('Codigo da Empresa')               ||  -- 1                   
                                                       DSP_PLANILHA.CAMPO('Codigo do Estabelecimento')       ||  -- 2      
                                                       DSP_PLANILHA.CAMPO('Periodo de Emissão')              ||  -- 3 
-                                                      DSP_PLANILHA.CAMPO('CNPJ Drogaria')                   ||  -- 4           
+                                                      DSP_PLANILHA.CAMPO('CNPJ Drogaria')                   ||  -- 4            
                                                       DSP_PLANILHA.CAMPO('Numero da Nota Fiscal')           ||  -- 5              
                                                       DSP_PLANILHA.CAMPO('Tipo de Documento')               ||  -- 6                  
                                                       DSP_PLANILHA.CAMPO('Data Emissão')                    ||  -- 7    
