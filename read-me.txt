@@ -1,0 +1,277 @@
+--------------------------------
+--> Configuração branch
+--------------------------------
+C:\Users\leonardo.b.lima\Desktop\site>git push -u origin master
+Everything up-to-date
+Branch 'master' set up to track remote branch 'master' from 'origin'.
+
+
+---------------------
+---> comando diario 
+---------------------
+> cd C:\Users\leonardo.b.lima\Desktop\site>
+> git add *.sql 
+> git status 
+> git commit -m " PLSQL 07042020-12:23  DPSP_FIN4816 -> DEV "
+> git clone https://github.com/leonardod38/PLSQL-SP.git
+
+
+
+
+
+
+
+git version 
+
+> git config --global user.name Leonardo
+> git config --global user.email leonardod38@gmail.com
+
+1. global 
+2. local 
+3. sistema
+
+* verificar a quais são as configurações.
+> git config --global --list
+
+
+* repositorio vazio --  ao criar uma pasta executa o comando -- << init >>  
+> git init 
+> git status 
+> git add "PACKAGE BODY chunk.txt"
+
+
+
+
+**  commit 
+> git commit -m  "c0 - primeiro commit"
+
+
+
+** configurar o editor 
+> git  config --global core editor "code --wait" 
+
+
+**  commit / stge 
+git commit -am 
+
+
+** coloca em stage   
+> git add .  
+> gitl commit -m   "c5 - Alterando e comitando, alterando o paragrafo" 
+
+
+
+**  log  -- os ultimos logs 
+git log -1  ou -2 ou - 3 
+git log --oneline 
+git log -3 --oneline
+git log --parents --oneline
+
+> git log --parents --oneline
+e9d3c1b 0103f82 (HEAD -> master) c5 - Alterando e comitando, alterando o paragrafo
+0103f82 cf86947 c4 inserindo  nova altera<C3><A7><C3><A3>o
+cf86947 3a82d56 retira o numbero lateral
+3a82d56 9a3ec68 c4 - automatizando vscode
+9a3ec68 74ad307 c2 - alterando a data de criacao
+74ad307 3ea7ea6 c1 - alterando a data de criacao
+3ea7ea6 c0 - primeiro commit
+
+
+
+> git status -u 
+> git add .
+> git commit -m "c6 - inser logo na home"
+> git log --oneline
+
+
+
+
+
+
+
+> git status 
+> git add . 
+> git commit -m "c7 criando o arquivo gitignore " 
+> git status 
+
+
+
+
+> git commit -am "c7 alterando o gitignore - somente extendo exemplo: *.txt no arquivo" 
+> git status
+
+
+
+<<<  aplicando a diferença >>> 
+> git status 
+> **  file já alterado 
+> git diff 
+> git add home.html  ** por exemplo ***
+> git diff 
+
+> git diff --cached   ** em cached o presente alterado
+> git diff --staged   ** em staged o que foi aplicado
+
+
+
+
+
+<<<  file altered >>>
+> git status
+> git diff --cached
+> git diff --staged 
+> git commit -m "c9 acrescentou lista em HTML"
+> git log --oneline -3
+
+
+
+
+-----------------------
+  <<<  desfazendo >>
+-----------------------
+C:\Users\leonardo.b.lima\Desktop\site>git status
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   home.html
+
+
+
+-----------------------
+  <<<  soft  >>
+-----------------------
+
+
+C:\Users\leonardo.b.lima\Desktop\site>git log --oneline -2
+d1425ff (HEAD -> master) c10 inserindo um novo curso
+b503bc1 c9 acrescentou lista em HTML
+
+C:\Users\leonardo.b.lima\Desktop\site>git reset -- soft b503bc1
+
+
+
+
+-----------------------
+  <<<  delete HARD  >>
+-----------------------
+
+C:\Users\leonardo.b.lima\Desktop\site>git commit -m "c10"
+[master 84fc7c8] c10
+ 1 file changed, 4 insertions(+)
+
+C:\Users\leonardo.b.lima\Desktop\site>git status
+On branch master
+nothing to commit, working tree clean
+
+C:\Users\leonardo.b.lima\Desktop\site>git log --oneline -2
+84fc7c8 (HEAD -> master) c10
+d1425ff c10 inserindo um novo curso
+
+C:\Users\leonardo.b.lima\Desktop\site>git reset --hard d1425ff
+HEAD is now at d1425ff c10 inserindo um novo curso
+
+C:\Users\leonardo.b.lima\Desktop\site>git status
+On branch master
+nothing to commit, working tree clean
+
+
+
+
+---------------------------------
+  <<<  revert  with history  >>
+---------------------------------
+
+C:\Users\leonardo.b.lima\Desktop\site>git log --oneline -2
+450333c (HEAD -> master) c10 - Inserindo um novo curso CSS
+d1425ff c10 inserindo um novo curso
+
+C:\Users\leonardo.b.lima\Desktop\site>git revert 450333c --no-edit
+[master 539a354] Revert "c10 - Inserindo um novo curso CSS"
+ Date: Fri Apr 3 18:48:15 2020 -0300
+ 1 file changed, 1 deletion(-)
+
+539a354 (HEAD -> master) Revert "c10 - Inserindo um novo curso CSS"
+450333c c10 - Inserindo um novo curso CSS
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+C:\Users\leonardo.b.lima\Desktop\site>git remote add origin https://github.com/leonardod38/PLSQL-SP.git
+C:\Users\leonardo.b.lima\Desktop\site>git push origin master
+
+	
+ >git commit -m "PLSQL 03042020-20:21 - Move query retencao"
+ 
+
+
+
+
+
+
+
+
+
+
+C:\Users\leonardo.b.lima\Desktop\site>git push origin master
+
+C:\Users\leonardo.b.lima\Desktop\site>
+
+C:\Users\leonardo.b.lima\Desktop\site>git push origin lyt_plsql
+Enumerating objects: 11, done.
+Counting objects: 100% (11/11), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (6/6), 462 bytes | 462.00 KiB/s, done.
+Total 6 (delta 3), reused 0 (delta 0)
+remote: Resolving deltas: 100% (3/3), completed with 3 local objects.
+remote:
+remote: Create a pull request for 'lyt_plsql' on GitHub by visiting:
+remote:      https://github.com/leonardod38/PLSQL-SP/pull/new/lyt_plsql
+remote:
+To https://github.com/leonardod38/PLSQL-SP.git
+ * [new branch]      lyt_plsql -> lyt_plsql
+
+C:\Users\leonardo.b.lima\Desktop\site>git checkout master
+Switched to branch 'master'
+
+C:\Users\leonardo.b.lima\Desktop\site>
+C:\Users\leonardo.b.lima\Desktop\site>
+C:\Users\leonardo.b.lima\Desktop\site>
+C:\Users\leonardo.b.lima\Desktop\site>
+C:\Users\leonardo.b.lima\Desktop\site>git commit -m "PLSQL 03042020-21:12 - TESTANDO O BRANCH"
+On branch master
+nothing to commit, working tree clean
+
+C:\Users\leonardo.b.lima\Desktop\site>git push origin master
+Everything up-to-date
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
