@@ -2,13 +2,29 @@ Prompt Table TB_FIN4816_PREV_TMP_ESTAB;
 --
 -- TB_FIN4816_PREV_TMP_ESTAB  (Table) 
 --
-CREATE GLOBAL TEMPORARY TABLE msafi.tb_fin4816_prev_tmp_estab
+CREATE TABLE TB_FIN4816_PREV_TMP_ESTAB
 (
   PROC_ID    INTEGER,
   COD_ESTAB  VARCHAR2(6 BYTE),
   NR_GRUPO   INTEGER,
   DT_CARGA   VARCHAR2(20 BYTE)
 )
-ON COMMIT PRESERVE ROWS
+LOGGING 
+ROW STORE COMPRESS BASIC
 NOCACHE
+MONITORING
+/
+
+
+--  There is no statement for index MSAFI.SYS_C00161621.
+--  The object is created when the parent object is created.
+
+-- 
+-- Non Foreign Key Constraints for Table TB_FIN4816_PREV_TMP_ESTAB 
+-- 
+Prompt Non-Foreign Key Constraints on Table TB_FIN4816_PREV_TMP_ESTAB;
+ALTER TABLE TB_FIN4816_PREV_TMP_ESTAB ADD (
+  PRIMARY KEY
+  (PROC_ID)
+  ENABLE VALIDATE)
 /
