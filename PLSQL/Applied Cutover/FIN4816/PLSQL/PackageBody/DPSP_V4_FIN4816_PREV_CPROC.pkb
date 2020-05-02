@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY  MSAF.dpsp_v3_fin4816_prev_cproc
+CREATE OR REPLACE PACKAGE BODY MSAF.dpsp_v4_fin4816_prev_cproc
 IS
     mproc_id NUMBER;
     mnm_usuario usuario_estab.cod_usuario%TYPE;
@@ -6,8 +6,8 @@ IS
 
     --Tipo, Nome e Descrição do Customizado
     mnm_tipo VARCHAR2 ( 100 ) := 'Relatorio Previdenciario';
-    mnm_cproc VARCHAR2 ( 100 ) := '3.Relatorio de apoio';
-    mds_cproc VARCHAR2 ( 100 ) := 'Validacao das Inf. Reinf V3';
+    mnm_cproc VARCHAR2 ( 100 ) := '4.Relatorio de apoio';
+    mds_cproc VARCHAR2 ( 100 ) := 'Validacao das Inf. Reinf V4';
 
     v_sel_data_fim VARCHAR2 ( 260 )
         := 'SELECT TRUNC( TO_DATE( :1 ,''DD/MM/YYYY'') + ROWNUM - 1) AS DATA_FIM, TRUNC( TO_DATE( :1 ,''DD/MM/YYYY'') + ROWNUM - 1) AS DATA_FIM FROM DUAL CONNECT BY ROWNUM <= LAST_DAY( TO_DATE( :1 ,''DD/MM/YYYY'') ) - TO_DATE( :1 ,''DD/MM/YYYY'') + 1 ORDER BY 1 DESC ';
@@ -2268,267 +2268,632 @@ IS
         IS 
         
         
-        TYPE array_fiscal IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt%ROWTYPE;
-        l_data_fiscal array_fiscal;
-
-        TYPE array_reinf IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt%ROWTYPE;
-        l_data_reinf array_reinf;
-
-        TYPE array_r2010 IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt%ROWTYPE;
-        l_data_r2010 array_r2010;
-
-        TYPE array_apoio IS TABLE OF msafi.tb_fin4816_rel_apoio_fiscal%ROWTYPE;
-        l_data_rel_apoio array_apoio;  
-        
-     CURSOR cr_rtf 
-       IS
-        SELECT   x09_itens_serv.cod_empresa AS cod_empresa -- Codigo da Empresa
-               , x09_itens_serv.cod_estab AS cod_estab -- Codigo do Estabelecimento
-               , x09_itens_serv.data_fiscal AS data_fiscal -- Data Fiscal
-               , x09_itens_serv.movto_e_s AS movto_e_s
-               , x09_itens_serv.norm_dev AS norm_dev
-               , x09_itens_serv.ident_docto AS ident_docto
-               , x09_itens_serv.ident_fis_jur AS ident_fis_jur
-               , x09_itens_serv.num_docfis AS num_docfis
-               , x09_itens_serv.serie_docfis AS serie_docfis
-               , x09_itens_serv.sub_serie_docfis AS sub_serie_docfis
-               , x09_itens_serv.ident_servico AS ident_servico
-               , x09_itens_serv.num_item AS num_item
-               , x07_docto_fiscal.data_emissao AS perido_emissao -- Periodo de Emissão
-               , estabelecimento.cgc AS cgc -- CNPJ Drogaria
-               , x07_docto_fiscal.num_docfis AS num_docto -- Numero da Nota Fiscal
-               , x2005_tipo_docto.cod_docto AS tipo_docto -- Tipo de Documento
-               , x07_docto_fiscal.data_emissao AS data_emissao -- Data Emissão
-               , x04_pessoa_fis_jur.cpf_cgc AS cgc_fornecedor -- CNPJ_Fonecedor
-               , estado.cod_estado AS uf -- uf
-               , x09_itens_serv.vlr_tot AS valor_total -- Valor Total da Nota
-               , x09_itens_serv.vlr_base_inss AS base_inss -- Base de Calculo INSS
-               , x09_itens_serv.vlr_inss_retido AS valor_inss -- Valor do INSS
-               , x04_pessoa_fis_jur.cod_fis_jur AS cod_fis_jur -- Codigo Pessoa Fisica/juridica
-               , x04_pessoa_fis_jur.razao_social AS razao_social -- Razão Social
-               , municipio.descricao AS municipio_prestador -- Municipio Prestador
-               , x2018_servicos.cod_servico AS cod_servico -- Codigo de Serviço
-               , x07_docto_fiscal.cod_cei AS cod_cei -- Codigo CEI
-               , NULL AS equalizacao -- Equalização
-            FROM x07_docto_fiscal
-               , x2005_tipo_docto
-               , x04_pessoa_fis_jur
-               , x09_itens_serv
-               , estabelecimento
-               , estado
-               , x2018_servicos
-               , municipio
-               , msafi.tb_fin4816_prev_tmp_estab estab
-           WHERE 1 = 1
-             AND x09_itens_serv.cod_empresa = estabelecimento.cod_empresa
-             AND x09_itens_serv.cod_estab = estabelecimento.cod_estab
-             AND x09_itens_serv.cod_estab = estab.cod_estab
-             AND estab.proc_id          = pproc_id
-             AND x09_itens_serv.cod_empresa = x07_docto_fiscal.cod_empresa
-             AND x09_itens_serv.cod_estab = x07_docto_fiscal.cod_estab
-             AND x09_itens_serv.data_fiscal = x07_docto_fiscal.data_fiscal
-             AND x07_docto_fiscal.data_emissao between   p_data_inicial  and p_data_final
-             --AND   x09_itens_serv.vlr_inss_retido           > 0
-             AND x09_itens_serv.movto_e_s = x07_docto_fiscal.movto_e_s
-             AND x09_itens_serv.norm_dev = x07_docto_fiscal.norm_dev
-             AND x09_itens_serv.ident_docto = x07_docto_fiscal.ident_docto
-             AND x09_itens_serv.ident_fis_jur = x07_docto_fiscal.ident_fis_jur
-             AND x09_itens_serv.num_docfis = x07_docto_fiscal.num_docfis
-             AND x09_itens_serv.serie_docfis = x07_docto_fiscal.serie_docfis
-             AND x09_itens_serv.sub_serie_docfis = x07_docto_fiscal.sub_serie_docfis
-             -- estado /municio
-             AND estado.ident_estado = x04_pessoa_fis_jur.ident_estado
-             AND municipio.ident_estado = estado.ident_estado
-             AND municipio.cod_municipio = x04_pessoa_fis_jur.cod_municipio
-             --  X2018_SERVICOS
-             AND x2018_servicos.ident_servico = x09_itens_serv.ident_servico
-             AND ( x2005_tipo_docto.ident_docto = x07_docto_fiscal.ident_docto )
-             AND ( x04_pessoa_fis_jur.ident_fis_jur = x07_docto_fiscal.ident_fis_jur )
-             AND ( x07_docto_fiscal.movto_e_s IN ( 1
-                                                 , 2
-                                                 , 3
-                                                 , 4
-                                                 , 5 ) )
-             AND ( ( x07_docto_fiscal.situacao <> 'S' )
-               OR ( x07_docto_fiscal.situacao IS NULL ) )
-             AND ( x07_docto_fiscal.cod_estab = estab.cod_estab ) -- COD_ESTAB
-             AND ( x07_docto_fiscal.cod_empresa = mcod_empresa )
-             AND ( x07_docto_fiscal.cod_class_doc_fis = '2' )
-             AND ( ( x07_docto_fiscal.ident_cfo IS NULL )
-               OR ( NOT ( EXISTS
-                             (SELECT 1
-                                FROM x2012_cod_fiscal x2012
-                                   , prt_cfo_uf_msaf pcum
-                                   , estabelecimento est
-                               WHERE x2012.ident_cfo = x07_docto_fiscal.ident_cfo
-                                 AND est.cod_empresa = x07_docto_fiscal.cod_empresa
-                                 AND est.cod_estab = x07_docto_fiscal.cod_estab
-                                 AND pcum.cod_empresa = est.cod_empresa
-                                 AND pcum.cod_param = 415 --
-                                 AND pcum.ident_estado = est.ident_estado
-                                 AND pcum.cod_cfo = x2012.cod_cfo)
-                     AND EXISTS
-                             (SELECT 1
-                                FROM ict_par_icms_uf ipiu
-                                   , estabelecimento esta
-                               WHERE ipiu.ident_estado = esta.ident_estado
-                                 AND esta.cod_empresa = x07_docto_fiscal.cod_empresa
-                                 AND esta.cod_estab = x07_docto_fiscal.cod_estab
-                                 AND ipiu.dsc_param = '64'
-                                 AND ipiu.ind_tp_par = 'S') ) ) )
-        ORDER BY x09_itens_serv.cod_empresa
-               , x09_itens_serv.cod_estab
-               , x09_itens_serv.data_fiscal
-               , x09_itens_serv.movto_e_s
-               , x09_itens_serv.norm_dev
-               , x09_itens_serv.ident_docto
-               , x09_itens_serv.ident_fis_jur
-               , x09_itens_serv.num_docfis
-               , x09_itens_serv.serie_docfis
-               , x09_itens_serv.sub_serie_docfis
-               , x09_itens_serv.ident_servico
-               , x09_itens_serv.num_item;
+          --================================================
+           -- Table -  Report Fiscal
+          --================================================
+           
+               TYPE typ1_cod_empresa         IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.cod_empresa          %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_cod_estab           IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.cod_estab            %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_data_fiscal         IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.data_fiscal          %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_movto_e_s           IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.movto_e_s            %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_norm_dev            IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.norm_dev             %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_ident_docto         IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.ident_docto          %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_ident_fis_jur       IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.ident_fis_jur        %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_num_docfis          IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.num_docfis           %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_serie_docfis        IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.serie_docfis         %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_sub_serie_docfis    IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.sub_serie_docfis     %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_ident_servico       IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.ident_servico        %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_num_item            IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.num_item             %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_periodo_emissao     IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.periodo_emissao      %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_cgc                 IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.cgc                  %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_num_docto           IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.num_docto            %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_tipo_docto          IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.tipo_docto           %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_data_emissao        IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.data_emissao         %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_cgc_fornecedor      IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.cgc_fornecedor       %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_uf                  IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.uf                   %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_valor_total         IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.valor_total          %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_vlr_base_inss       IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.vlr_base_inss        %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_vlr_inss            IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.vlr_inss             %TYPE INDEX BY PLS_INTEGER;
+               TYPE typ1_codigo_fisjur       IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.codigo_fisjur        %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_razao_social        IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.razao_social         %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_municipio_prestador IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.municipio_prestador  %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_cod_servico         IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.cod_servico          %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_cod_cei             IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.cod_cei              %TYPE INDEX BY PLS_INTEGER;   
+               TYPE typ1_equalizacao         IS TABLE OF msafi.tb_fin4816_report_fiscal_gtt.equalizacao          %TYPE INDEX BY PLS_INTEGER;   
+           
+                    v1_cod_empresa                          typ1_cod_empresa        ;
+                    v1_cod_estab                            typ1_cod_estab          ;
+                    v1_data_fiscal                          typ1_data_fiscal        ;
+                    v1_movto_e_s                            typ1_movto_e_s          ;
+                    v1_norm_dev                             typ1_norm_dev           ;
+                    v1_ident_docto                          typ1_ident_docto        ;
+                    v1_ident_fis_jur                        typ1_ident_fis_jur      ;
+                    v1_num_docfis                           typ1_num_docfis         ;
+                    v1_serie_docfis                         typ1_serie_docfis       ;
+                    v1_sub_serie_docfis                     typ1_sub_serie_docfis   ;
+                    v1_ident_servico                        typ1_ident_servico      ;
+                    v1_num_item                             typ1_num_item           ;
+                    v1_periodo_emissao                      typ1_periodo_emissao    ;
+                    v1_cgc                                  typ1_cgc                ;
+                    v1_num_docto                            typ1_num_docto          ;
+                    v1_tipo_docto                           typ1_tipo_docto         ;
+                    v1_data_emissao                         typ1_data_emissao       ;
+                    v1_cgc_fornecedor                       typ1_cgc_fornecedor     ;
+                    v1_uf                                   typ1_uf                 ;
+                    v1_valor_total                          typ1_valor_total        ;
+                    v1_vlr_base_inss                        typ1_vlr_base_inss      ;
+                    v1_vlr_inss                             typ1_vlr_inss           ;
+                    v1_codigo_fisjur                        typ1_codigo_fisjur      ;
+                    v1_razao_social                         typ1_razao_social       ;
+                    v1_municipio_prestador                  typ1_municipio_prestador;
+                    v1_cod_servico                          typ1_cod_servico        ;
+                    v1_cod_cei                              typ1_cod_cei            ;
+                    v1_equalizacao                          typ1_equalizacao        ;
                
-               
-               
-         CURSOR rc_prev 
-         IS
-         SELECT 'S' AS tipo
-             , reinf.cod_empresa AS "Codigo Empresa"
-             , reinf.cod_estab AS "Codigo Estabelecimento"
-             , reinf.data_emissao AS "Data Emissão"
-             , reinf.data_fiscal AS "Data Fiscal"
-             , reinf.ident_fis_jur
-             , reinf.ident_docto
-             , reinf.num_docfis AS "Número da Nota Fiscal"
-             --
-             , reinf.num_docfis || '/' || reinf.serie_docfis AS "Docto/Série"
-             , reinf.data_emissao AS "Emissão"
-             --
-             , reinf.serie_docfis
-             , reinf.sub_serie_docfis
-             , reinf.num_item
-             , reinf.cod_usuario
-             , x04.cod_fis_jur AS "Codigo Pessoa Fisica/Juridica"
-             , INITCAP ( x04.razao_social ) AS "Razão Social Cliente"
-             , x04.ind_fis_jur
-             , x04.cpf_cgc AS "CNPJ Cliente"
-             , reinf.cod_class_doc_fis
-             , reinf.vlr_tot_nota
-             , reinf.vlr_base_inss AS "Vlr Base Calc. Retenção"
-             , reinf.vlr_aliq_inss
-             , reinf.vlr_inss_retido AS "Vlr.Trib INSS RETIDO"
-             , reinf.vlr_inss_retido AS "Valor da Retenção"
-             , reinf.vlr_contab_compl
-             , reinf.ind_tipo_proc
-             , reinf.num_proc_jur
-             , estab.razao_social
-             , estab.cgc
-             , x2005.descricao AS "Documento"
-             , prt_tipo.cod_tipo_serv_esocial AS "Tipo de Serviço E-social"
-             , prt_tipo.dsc_tipo_serv_esocial
-             , INITCAP ( empresa.razao_social ) AS "Razão Social Drogaria"
-             , reinf.vlr_servico AS "Valor do Servico"
-             , reinf.num_proc_adj_adic
-             , reinf.ind_tp_proc_adj_adic
-             , x2018.cod_servico AS codigo_serv_prod
-             , INITCAP ( x2018.descricao ) AS desc_serv_prod
-             , x2005.cod_docto
-             , NULL AS "Observação"
-             , NULL AS dsc_param
-        FROM msafi.tb_fin4816_reinf_conf_prev_gtt reinf     
-             , msafi.tb_fin4816_prev_tmp_estab estab1
-             , x04_pessoa_fis_jur x04
-             , estabelecimento estab
-             , x2005_tipo_docto x2005
-             , prt_tipo_serv_esocial prt_tipo
-             , x2018_servicos x2018
-             , empresa
-         WHERE 1 = 1
-           AND reinf.cod_estab      = estab1.cod_estab -- parametro
-           AND estab1.proc_id       = pproc_id -- parametro
-           AND reinf.cod_empresa    = mcod_empresa -- parametro
-           AND reinf.data_emissao    between   p_data_inicial  and p_data_final
-           ---
-           AND reinf.ident_fis_jur  = x04.ident_fis_jur
-           AND reinf.cod_empresa    = estab.cod_empresa
-           AND reinf.cod_estab      = estab.cod_estab
-           AND reinf.ident_docto    = x2005.ident_docto
-           AND reinf.ident_tipo_serv_esocial = prt_tipo.ident_tipo_serv_esocial /*(+)*/
-           AND reinf.cod_empresa    = empresa.cod_empresa
-           AND LENGTH ( TRIM ( x04.cpf_cgc ) ) > 11
-           AND reinf.ident_servico  = x2018.ident_servico
-        UNION
-        SELECT 'R' AS tipo
-             , reinf.cod_empresa AS "Codigo Empresa"
-             , reinf.cod_estab AS "Codigo Estabelecimento"
-             , reinf.data_emissao AS "Data Emissão"
-             , reinf.data_fiscal AS "Data Fiscal"
-             , reinf.ident_fis_jur
-             , reinf.ident_docto
-             , reinf.num_docfis AS "Número da Nota Fiscal"
-             --
-             , reinf.num_docfis || '/' || reinf.serie_docfis AS "Docto/Série"
-             , reinf.data_emissao AS "Emissão"
-             --
-             , reinf.serie_docfis
-             , reinf.sub_serie_docfis
-             , reinf.num_item
-             , reinf.cod_usuario
-             , x04.cod_fis_jur AS "Codigo Pessoa Fisica/Juridica"
-             , INITCAP ( x04.razao_social ) AS "Razão Social Cliente"
-             , x04.ind_fis_jur
-             , x04.cpf_cgc AS "CNPJ Cliente"
-             , reinf.cod_class_doc_fis
-             , reinf.vlr_tot_nota
-             , reinf.vlr_base_inss AS "Vlr Base Calc. Retenção"
-             , reinf.vlr_aliq_inss
-             , reinf.vlr_inss_retido AS "Vlr.Trib INSS RETIDO"
-             , reinf.vlr_inss_retido AS "Valor da Retenção"
-             , reinf.vlr_contab_compl
-             , reinf.ind_tipo_proc
-             , reinf.num_proc_jur
-             , estab.razao_social
-             , estab.cgc
-             , x2005.descricao AS "Documento"
-             , NULL
-             , NULL
-             , INITCAP ( empresa.razao_social ) AS "Razão Social Drogaria"
-             , reinf.vlr_servico AS "Valor do Servico"
-             , reinf.num_proc_adj_adic
-             , reinf.ind_tp_proc_adj_adic
-             , x2018.cod_servico AS codigo_serv_prod
-             , INITCAP ( x2018.descricao ) AS desc_serv_prod
-             , x2005.cod_docto
-             , NULL AS "Observação"
-             , prt_repasse.dsc_param
-        FROM   msafi.tb_fin4816_reinf_conf_prev_gtt reinf
-             , msafi.tb_fin4816_prev_tmp_estab estab1
-             , x04_pessoa_fis_jur x04
-             , estabelecimento estab
-             , x2005_tipo_docto x2005
-             , prt_par2_msaf prt_repasse
-             , x2018_servicos x2018
-             , empresa
-         WHERE 1 = 1
-           AND reinf.cod_estab      = estab1.cod_estab -- parametro
-           AND estab1.proc_id       = pproc_id -- parametro
-           AND reinf.cod_empresa    = mcod_empresa -- parametro
-           AND reinf.data_emissao    between   p_data_inicial  and p_data_final
-           --
-           AND reinf.ident_fis_jur = x04.ident_fis_jur
-           AND reinf.cod_empresa = estab.cod_empresa
-           AND reinf.cod_estab = estab.cod_estab
-           AND reinf.ident_docto = x2005.ident_docto
-           AND reinf.cod_param = prt_repasse.cod_param
-           AND reinf.cod_empresa = empresa.cod_empresa
-           AND LENGTH ( TRIM ( x04.cpf_cgc ) ) > 11
-           AND reinf.ident_servico = x2018.ident_servico;
+
+
+                 CURSOR cr_rtf 
+                       IS
+                     SELECT  x09_itens_serv.cod_empresa AS cod_empresa -- Codigo da Empresa
+                           , x09_itens_serv.cod_estab AS cod_estab -- Codigo do Estabelecimento
+                           , x09_itens_serv.data_fiscal AS data_fiscal -- Data Fiscal
+                           , x09_itens_serv.movto_e_s AS movto_e_s
+                           , x09_itens_serv.norm_dev AS norm_dev
+                           , x09_itens_serv.ident_docto AS ident_docto
+                           , x09_itens_serv.ident_fis_jur AS ident_fis_jur
+                           , x09_itens_serv.num_docfis AS num_docfis
+                           , x09_itens_serv.serie_docfis AS serie_docfis
+                           , x09_itens_serv.sub_serie_docfis AS sub_serie_docfis
+                           , x09_itens_serv.ident_servico AS ident_servico
+                           , x09_itens_serv.num_item AS num_item
+                           , x07_docto_fiscal.data_emissao AS perido_emissao -- Periodo de Emissão
+                           , estabelecimento.cgc AS cgc -- CNPJ Drogaria
+                           , x07_docto_fiscal.num_docfis AS num_docto -- Numero da Nota Fiscal
+                           , x2005_tipo_docto.cod_docto AS tipo_docto -- Tipo de Documento
+                           , x07_docto_fiscal.data_emissao AS data_emissao -- Data Emissão
+                           , x04_pessoa_fis_jur.cpf_cgc AS cgc_fornecedor -- CNPJ_Fonecedor
+                           , estado.cod_estado AS uf -- uf
+                           , x09_itens_serv.vlr_tot AS valor_total -- Valor Total da Nota
+                           , x09_itens_serv.vlr_base_inss AS base_inss -- Base de Calculo INSS
+                           , x09_itens_serv.vlr_inss_retido AS valor_inss -- Valor do INSS
+                           , x04_pessoa_fis_jur.cod_fis_jur AS cod_fis_jur -- Codigo Pessoa Fisica/juridica
+                           , x04_pessoa_fis_jur.razao_social AS razao_social -- Razão Social
+                           , municipio.descricao AS municipio_prestador -- Municipio Prestador
+                           , x2018_servicos.cod_servico AS cod_servico -- Codigo de Serviço
+                           , x07_docto_fiscal.cod_cei AS cod_cei -- Codigo CEI
+                           , NULL AS equalizacao -- Equalização
+                        FROM x07_docto_fiscal
+                           , x2005_tipo_docto
+                           , x04_pessoa_fis_jur
+                           , x09_itens_serv
+                           , estabelecimento
+                           , estado
+                           , x2018_servicos
+                           , municipio
+                           , msafi.tb_fin4816_prev_tmp_estab estab
+                       WHERE 1 = 1
+                         AND x09_itens_serv.cod_empresa = estabelecimento.cod_empresa
+                         AND x09_itens_serv.cod_estab = estabelecimento.cod_estab
+                         AND x09_itens_serv.cod_estab = estab.cod_estab
+                         AND estab.proc_id          = pproc_id
+                         AND x09_itens_serv.cod_empresa = x07_docto_fiscal.cod_empresa
+                         AND x09_itens_serv.cod_estab = x07_docto_fiscal.cod_estab
+                         AND x09_itens_serv.data_fiscal = x07_docto_fiscal.data_fiscal
+                         AND x07_docto_fiscal.data_emissao between   p_data_inicial  and p_data_final
+                         --AND   x09_itens_serv.vlr_inss_retido           > 0
+                         AND x09_itens_serv.movto_e_s = x07_docto_fiscal.movto_e_s
+                         AND x09_itens_serv.norm_dev = x07_docto_fiscal.norm_dev
+                         AND x09_itens_serv.ident_docto = x07_docto_fiscal.ident_docto
+                         AND x09_itens_serv.ident_fis_jur = x07_docto_fiscal.ident_fis_jur
+                         AND x09_itens_serv.num_docfis = x07_docto_fiscal.num_docfis
+                         AND x09_itens_serv.serie_docfis = x07_docto_fiscal.serie_docfis
+                         AND x09_itens_serv.sub_serie_docfis = x07_docto_fiscal.sub_serie_docfis
+                         -- estado /municio
+                         AND estado.ident_estado = x04_pessoa_fis_jur.ident_estado
+                         AND municipio.ident_estado = estado.ident_estado
+                         AND municipio.cod_municipio = x04_pessoa_fis_jur.cod_municipio
+                         --  X2018_SERVICOS
+                         AND x2018_servicos.ident_servico = x09_itens_serv.ident_servico
+                         AND ( x2005_tipo_docto.ident_docto = x07_docto_fiscal.ident_docto )
+                         AND ( x04_pessoa_fis_jur.ident_fis_jur = x07_docto_fiscal.ident_fis_jur )
+                         AND ( x07_docto_fiscal.movto_e_s IN ( 1
+                                                             , 2
+                                                             , 3
+                                                             , 4
+                                                             , 5 ) )
+                         AND ( ( x07_docto_fiscal.situacao <> 'S' )
+                           OR ( x07_docto_fiscal.situacao IS NULL ) )
+                         AND ( x07_docto_fiscal.cod_estab = estab.cod_estab ) -- COD_ESTAB
+                         AND ( x07_docto_fiscal.cod_empresa = mcod_empresa )
+                         AND ( x07_docto_fiscal.cod_class_doc_fis = '2' )
+                         AND ( ( x07_docto_fiscal.ident_cfo IS NULL )
+                           OR ( NOT ( EXISTS
+                                         (SELECT 1
+                                            FROM x2012_cod_fiscal x2012
+                                               , prt_cfo_uf_msaf pcum
+                                               , estabelecimento est
+                                           WHERE x2012.ident_cfo = x07_docto_fiscal.ident_cfo
+                                             AND est.cod_empresa = x07_docto_fiscal.cod_empresa
+                                             AND est.cod_estab = x07_docto_fiscal.cod_estab
+                                             AND pcum.cod_empresa = est.cod_empresa
+                                             AND pcum.cod_param = 415 --
+                                             AND pcum.ident_estado = est.ident_estado
+                                             AND pcum.cod_cfo = x2012.cod_cfo)
+                                 AND EXISTS
+                                         (SELECT 1
+                                            FROM ict_par_icms_uf ipiu
+                                               , estabelecimento esta
+                                           WHERE ipiu.ident_estado = esta.ident_estado
+                                             AND esta.cod_empresa = x07_docto_fiscal.cod_empresa
+                                             AND esta.cod_estab = x07_docto_fiscal.cod_estab
+                                             AND ipiu.dsc_param = '64'
+                                             AND ipiu.ind_tp_par = 'S') ) ) )
+                    ORDER BY x09_itens_serv.cod_empresa
+                           , x09_itens_serv.cod_estab
+                           , x09_itens_serv.data_fiscal
+                           , x09_itens_serv.movto_e_s
+                           , x09_itens_serv.norm_dev
+                           , x09_itens_serv.ident_docto
+                           , x09_itens_serv.ident_fis_jur
+                           , x09_itens_serv.num_docfis
+                           , x09_itens_serv.serie_docfis
+                           , x09_itens_serv.sub_serie_docfis
+                           , x09_itens_serv.ident_servico
+                           , x09_itens_serv.num_item;
+
+
+
+
+
+
+             --================================================
+             -- Table -  Previsão Dos Retidos 
+             --================================================  
+              TYPE  typ2_tipe	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.tipo                             %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_cde	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Codigo Empresa"                 %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_cd_estab   IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Codigo Estabelecimento"         %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_dt_emiss   IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Data Emissão"                   %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_dt_fiscal  IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Data Fiscal"                    %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_fisjur	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.ident_fis_jur                    %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_docto	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.ident_docto                      %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_ntf	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Número da Nota Fiscal"          %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_serie	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Docto/Série"                    %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_emissao    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Emissão"                        %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_seried	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.serie_docfis                     %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_sserie	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.sub_serie_docfis                 %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_item	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.num_item                         %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_cd_user    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.cod_usuario                      %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_pessjur	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Codigo Pessoa Fisica/Juridica"  %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_rzs	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Razão Social Cliente"           %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_indfisjur	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.ind_fis_jur                      %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_cnpj_cl	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."CNPJ Cliente"                   %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_class	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.cod_class_doc_fis                %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_tot_nt	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.vlr_tot_nota                     %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_bs_cal	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Vlr Base Calc. Retenção"        %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_aliq	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.vlr_aliq_inss                    %TYPE INDEX BY PLS_INTEGER;
+			  TYPE	typ2_vlr_inss	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Vlr.Trib INSS RETIDO"           %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_vlr_ret	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Valor da Retenção"              %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_vlr_ctbil	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.vlr_contab_compl                 %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_proc	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.ind_tipo_proc                    %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_proc_jur	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.num_proc_jur                     %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_rzs1	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.razao_social                     %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE  typ2_value	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.cgc                              %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_doc	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Documento"                      %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_esocial	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Tipo de Serviço E-social"       %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_tpsocial	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.dsc_tipo_serv_esocial            %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_rzs2	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Razão Social Drogaria"          %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_vlr_serv	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Valor do Servico"               %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_num_proc	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.num_proc_adj_adic                %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_adj	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.ind_tp_proc_adj_adic             %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_cd_serv	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.codigo_serv_prod                 %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_desc_serv	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.desc_serv_prod                   %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_cd_docto	IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.cod_docto                        %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_obs	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt."Observação"                     %TYPE INDEX BY PLS_INTEGER;  
+			  TYPE	typ2_desc	    IS TABLE OF msafi.tb_fin4816_reinf_prev_gtt.dsc_param                        %TYPE INDEX BY PLS_INTEGER;  
+
+                   v2_tipe	                       typ2_tipe        ;  
+                   v2_cde	                       typ2_cde	        ;
+                   v2_cd_estab                     typ2_cd_estab    ;
+                   v2_dt_emiss                     typ2_dt_emiss    ;
+                   v2_dt_fiscal                    typ2_dt_fiscal   ;
+                   v2_fisjur	                   typ2_fisjur      ;
+                   v2_docto	                       typ2_docto	    ;
+                   v2_ntf	                       typ2_ntf	        ;
+                   v2_serie	                       typ2_serie	    ;
+                   v2_emissao                      typ2_emissao     ;
+                   v2_seried	                   typ2_seried	    ;
+                   v2_sserie	                   typ2_sserie	    ;
+                   v2_item	                       typ2_item	    ;
+                   v2_cd_user                      typ2_cd_user     ;
+                   v2_pessjur                      typ2_pessjur     ;
+                   v2_rzs	                       typ2_rzs	        ;
+                   v2_indfisjur                    typ2_indfisjur   ;
+                   v2_cnpj_cl                      typ2_cnpj_cl     ;
+                   v2_class	                       typ2_class	    ;
+                   v2_tot_nt	                   typ2_tot_nt	    ;
+                   v2_bs_cal	                   typ2_bs_cal	    ;
+                   v2_aliq	                       typ2_aliq	    ;
+                   v2_vlr_inss                     typ2_vlr_inss    ;
+                   v2_vlr_ret                      typ2_vlr_ret     ;
+                   v2_vlr_ctbil                    typ2_vlr_ctbil   ;
+                   v2_proc	                       typ2_proc	    ;
+                   v2_proc_jur                     typ2_proc_jur    ;
+                   v2_rzs1	                       typ2_rzs1	    ;
+                   v2_value	                       typ2_value	    ;
+                   v2_doc	                       typ2_doc	        ;
+                   v2_esocial                      typ2_esocial     ;
+                   v2_tpsocial                     typ2_tpsocial    ;
+                   v2_rzs2	                       typ2_rzs2	    ;
+                   v2_vlr_serv                     typ2_vlr_serv    ;
+                   v2_num_proc                     typ2_num_proc    ;
+                   v2_adj	                       typ2_adj	        ;
+                   v2_cd_serv                      typ2_cd_serv     ;
+                   v2_desc_serv                    typ2_desc_serv   ;
+                   v2_cd_docto                     typ2_cd_docto    ;
+                   v2_obs	                       typ2_obs	        ;
+                   v2_desc	                       typ2_desc	    ;
+                    
+                    
+                    
+           
+             CURSOR rc_prev 
+                 IS
+                 SELECT 'S' AS tipo
+                     , reinf.cod_empresa AS "Codigo Empresa"
+                     , reinf.cod_estab AS "Codigo Estabelecimento"
+                     , reinf.data_emissao AS "Data Emissão"
+                     , reinf.data_fiscal AS "Data Fiscal"
+                     , reinf.ident_fis_jur
+                     , reinf.ident_docto
+                     , reinf.num_docfis AS "Número da Nota Fiscal"
+                     --
+                     , reinf.num_docfis || '/' || reinf.serie_docfis AS "Docto/Série"
+                     , reinf.data_emissao AS "Emissão"
+                     --
+                     , reinf.serie_docfis
+                     , reinf.sub_serie_docfis
+                     , reinf.num_item
+                     , reinf.cod_usuario
+                     , x04.cod_fis_jur AS "Codigo Pessoa Fisica/Juridica"
+                     , INITCAP ( x04.razao_social ) AS "Razão Social Cliente"
+                     , x04.ind_fis_jur
+                     , x04.cpf_cgc AS "CNPJ Cliente"
+                     , reinf.cod_class_doc_fis
+                     , reinf.vlr_tot_nota
+                     , reinf.vlr_base_inss AS "Vlr Base Calc. Retenção"
+                     , reinf.vlr_aliq_inss
+                     , reinf.vlr_inss_retido AS "Vlr.Trib INSS RETIDO"
+                     , reinf.vlr_inss_retido AS "Valor da Retenção"
+                     , reinf.vlr_contab_compl
+                     , reinf.ind_tipo_proc
+                     , reinf.num_proc_jur
+                     , estab.razao_social
+                     , estab.cgc
+                     , x2005.descricao AS "Documento"
+                     , prt_tipo.cod_tipo_serv_esocial AS "Tipo de Serviço E-social"
+                     , prt_tipo.dsc_tipo_serv_esocial
+                     , INITCAP ( empresa.razao_social ) AS "Razão Social Drogaria"
+                     , reinf.vlr_servico AS "Valor do Servico"
+                     , reinf.num_proc_adj_adic
+                     , reinf.ind_tp_proc_adj_adic
+                     , x2018.cod_servico AS codigo_serv_prod
+                     , INITCAP ( x2018.descricao ) AS desc_serv_prod
+                     , x2005.cod_docto
+                     , NULL AS "Observação"
+                     , NULL AS dsc_param
+                FROM msafi.tb_fin4816_reinf_conf_prev_gtt reinf     
+                     , msafi.tb_fin4816_prev_tmp_estab estab1
+                     , x04_pessoa_fis_jur x04
+                     , estabelecimento estab
+                     , x2005_tipo_docto x2005
+                     , prt_tipo_serv_esocial prt_tipo
+                     , x2018_servicos x2018
+                     , empresa
+                 WHERE 1 = 1
+                   AND reinf.cod_estab      = estab1.cod_estab -- parametro
+                   AND estab1.proc_id       = pproc_id -- parametro
+                   AND reinf.cod_empresa    = mcod_empresa -- parametro
+                   AND reinf.data_emissao    between   p_data_inicial  and p_data_final
+                   ---
+                   AND reinf.ident_fis_jur  = x04.ident_fis_jur
+                   AND reinf.cod_empresa    = estab.cod_empresa
+                   AND reinf.cod_estab      = estab.cod_estab
+                   AND reinf.ident_docto    = x2005.ident_docto
+                   AND reinf.ident_tipo_serv_esocial = prt_tipo.ident_tipo_serv_esocial /*(+)*/
+                   AND reinf.cod_empresa    = empresa.cod_empresa
+                   AND LENGTH ( TRIM ( x04.cpf_cgc ) ) > 11
+                   AND reinf.ident_servico  = x2018.ident_servico
+                UNION
+                 SELECT 
+                     'R' AS tipo
+                     , reinf.cod_empresa AS "Codigo Empresa"
+                     , reinf.cod_estab AS "Codigo Estabelecimento"
+                     , reinf.data_emissao AS "Data Emissão"
+                     , reinf.data_fiscal AS "Data Fiscal"
+                     , reinf.ident_fis_jur
+                     , reinf.ident_docto
+                     , reinf.num_docfis AS "Número da Nota Fiscal"
+                     --
+                     , reinf.num_docfis || '/' || reinf.serie_docfis AS "Docto/Série"
+                     , reinf.data_emissao AS "Emissão"
+                     --
+                     , reinf.serie_docfis
+                     , reinf.sub_serie_docfis
+                     , reinf.num_item
+                     , reinf.cod_usuario
+                     , x04.cod_fis_jur AS "Codigo Pessoa Fisica/Juridica"
+                     , INITCAP ( x04.razao_social ) AS "Razão Social Cliente"
+                     , x04.ind_fis_jur
+                     , x04.cpf_cgc AS "CNPJ Cliente"
+                     , reinf.cod_class_doc_fis
+                     , reinf.vlr_tot_nota
+                     , reinf.vlr_base_inss AS "Vlr Base Calc. Retenção"
+                     , reinf.vlr_aliq_inss
+                     , reinf.vlr_inss_retido AS "Vlr.Trib INSS RETIDO"
+                     , reinf.vlr_inss_retido AS "Valor da Retenção"
+                     , reinf.vlr_contab_compl
+                     , reinf.ind_tipo_proc
+                     , reinf.num_proc_jur
+                     , estab.razao_social
+                     , estab.cgc
+                     , x2005.descricao AS "Documento"
+                     , NULL
+                     , NULL
+                     , INITCAP ( empresa.razao_social ) AS "Razão Social Drogaria"
+                     , reinf.vlr_servico AS "Valor do Servico"
+                     , reinf.num_proc_adj_adic
+                     , reinf.ind_tp_proc_adj_adic
+                     , x2018.cod_servico AS codigo_serv_prod
+                     , INITCAP ( x2018.descricao ) AS desc_serv_prod
+                     , x2005.cod_docto
+                     , NULL AS "Observação"
+                     , prt_repasse.dsc_param
+                FROM   msafi.tb_fin4816_reinf_conf_prev_gtt reinf
+                     , msafi.tb_fin4816_prev_tmp_estab estab1
+                     , x04_pessoa_fis_jur x04
+                     , estabelecimento estab
+                     , x2005_tipo_docto x2005
+                     , prt_par2_msaf prt_repasse
+                     , x2018_servicos x2018
+                     , empresa
+                 WHERE 1 = 1
+                   AND reinf.cod_estab      = estab1.cod_estab -- parametro
+                   AND estab1.proc_id       = pproc_id -- parametro
+                   AND reinf.cod_empresa    = mcod_empresa -- parametro
+                   AND reinf.data_emissao    between   p_data_inicial  and p_data_final
+                   --
+                   AND reinf.ident_fis_jur = x04.ident_fis_jur
+                   AND reinf.cod_empresa = estab.cod_empresa
+                   AND reinf.cod_estab = estab.cod_estab
+                   AND reinf.ident_docto = x2005.ident_docto
+                   AND reinf.cod_param = prt_repasse.cod_param
+                   AND reinf.cod_empresa = empresa.cod_empresa
+                   AND LENGTH ( TRIM ( x04.cpf_cgc ) ) > 11
+                   AND reinf.ident_servico = x2018.ident_servico;
+             
+             
+           
+      
            
            
-        CURSOR rc_2010 
-         IS
-        SELECT --  pk
+           
+                 --================================================
+                 -- Table -  Reinf - Event - R-2010
+                 --================================================     
+                TYPE typ3_cod_empresa      	   	        IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.cod_empresa      				%TYPE INDEX BY PLS_INTEGER;  	              
+				TYPE typ3_cod_estab                     IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.cod_estab                     %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_dat_emissao                   IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.dat_emissao                   %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_iden_fis_jur                  IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.iden_fis_jur                  %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_num_docfis                    IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.num_docfis                    %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_cd				            IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt."Codigo Empresa"              %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_rzsd       					IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt."Razão Social Drogaria"       %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_rzsc        					IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt."Razão Social Cliente"        %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_ntf       					IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt."Número da Nota Fiscal"       %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_dt_emissao                    IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt."Data de Emissão da NF"       %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_dt_fiscal                     IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt."Data Fiscal"                 %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_tributo                   IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt."Valor do Tributo"            %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_obs                  			IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt."observacao"                  %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_tp_esocial                    IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt."Tipo de Serviço E-social"    %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_base_ret					IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt."Vlr. Base de Calc. Retenção" %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_retencao                  IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt."Valor da Retenção"           %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_proc_id                       IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.proc_id                       %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_ind_status                    IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.ind_status                    %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_cnpj_prestador                IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.cnpj_prestador                %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_ind_obra                      IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.ind_obra                      %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_tp_inscricao                  IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.tp_inscricao                  %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_nr_inscricao                  IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.nr_inscricao                  %TYPE INDEX BY PLS_INTEGER; 
+				TYPE typ3_num_recibo                    IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.num_recibo                    %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_ind_tp_amb                    IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.ind_tp_amb                    %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_bruto                     IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.vlr_bruto                     %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_base_ret1                 IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.vlr_base_ret                  %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_ret_princ                 IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.vlr_ret_princ                 %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_ret_adic                  IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.vlr_ret_adic                  %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_n_ret_princ               IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.vlr_n_ret_princ               %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_n_ret_adic                IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.vlr_n_ret_adic                %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_ind_cprb                      IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.ind_cprb                      %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_cod_versao_proc               IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.cod_versao_proc               %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_cod_versao_layout             IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.cod_versao_layout             %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_ind_proc_emissao              IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.ind_proc_emissao              %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_id_evento                     IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.id_evento                     %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_ind_oper                      IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.ind_oper                      %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_dat_ocorrencia                IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.dat_ocorrencia                %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_cgc                           IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.cgc                           %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_razao_social                  IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.razao_social                  %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_x04_razao_social              IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.x04_razao_social              %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_id_r2010_oc                   IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.id_r2010_oc                   %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_num_docto                     IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.num_docto                     %TYPE INDEX BY PLS_INTEGER;    
+				TYPE typ3_serie                         IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.serie                         %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_dat_emissao_nf                IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.dat_emissao_nf                %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_data_fiscal                   IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.data_fiscal                   %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_rnf_vlr_bruto                 IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.rnf_vlr_bruto                 %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_observacao                    IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.observacao                    %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_id_r2010_nf                   IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.id_r2010_nf                   %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_ind_tp_proc_adj_adic          IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.ind_tp_proc_adj_adic          %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_num_proc_adj_adic             IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.num_proc_adj_adic             %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_cod_susp_adic                 IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.cod_susp_adic                 %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_radic_vlr_n_ret_adic          IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.radic_vlr_n_ret_adic          %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_ind_tp_proc_adj_princ         IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.ind_tp_proc_adj_princ         %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_num_proc_adj_princ            IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.num_proc_adj_princ            %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_cod_susp_princ                IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.cod_susp_princ                %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_rprinc_vlr_n_ret_princ        IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.rprinc_vlr_n_ret_princ        %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_tp_servico                    IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.tp_servico                    %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_rserv_vlr_base_ret            IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.rserv_vlr_base_ret            %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_retencao1                  IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.vlr_retencao                  %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_ret_sub                   IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.vlr_ret_sub                   %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_rserv_vlr_n_ret_princ         IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.rserv_vlr_n_ret_princ         %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_servicos_15               IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.vlr_servicos_15               %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_vlr_servicos_20               IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.vlr_servicos_20               %TYPE INDEX BY PLS_INTEGER; 
+				TYPE typ3_vlr_servicos_25               IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.vlr_servicos_25               %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_rserv_vlr_ret_adic            IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.rserv_vlr_ret_adic            %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_rserv_vlr_n_ret_adic          IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.rserv_vlr_n_ret_adic          %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_rnk                           IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.rnk                           %TYPE INDEX BY PLS_INTEGER;   
+				TYPE typ3_id_pger_apur                  IS TABLE OF msafi.tb_fin4816_reinf_2010_gtt.id_pger_apur                  %TYPE INDEX BY PLS_INTEGER;   
+                    
+                  v3_cod_empresa             typ3_cod_empresa            ; 
+				  v3_cod_estab               typ3_cod_estab              ;
+				  v3_dat_emissao             typ3_dat_emissao            ;
+				  v3_iden_fis_jur            typ3_iden_fis_jur           ;
+				  v3_num_docfis              typ3_num_docfis             ;
+				  v3_cd				         typ3_cd				     ;
+				  v3_rzsd       			 typ3_rzsd       			 ;
+				  v3_rzsc        			 typ3_rzsc        			 ;
+				  v3_ntf       				 typ3_ntf       			 ;
+				  v3_dt_emissao              typ3_dt_emissao             ;
+				  v3_dt_fiscal               typ3_dt_fiscal              ;
+				  v3_vlr_tributo             typ3_vlr_tributo            ;
+				  v3_obs                  	 typ3_obs                  	 ;
+				  v3_tp_esocial              typ3_tp_esocial             ;
+				  v3_vlr_base_ret			 typ3_vlr_base_ret		 	 ;
+				  v3_vlr_retencao            typ3_vlr_retencao           ;
+				  v3_proc_id                 typ3_proc_id                ;
+				  v3_ind_status              typ3_ind_status             ;
+				  v3_cnpj_prestador          typ3_cnpj_prestador         ;
+				  v3_ind_obra                typ3_ind_obra               ;
+				  v3_tp_inscricao            typ3_tp_inscricao           ;
+				  v3_nr_inscricao            typ3_nr_inscricao           ;
+				  v3_num_recibo              typ3_num_recibo             ;
+				  v3_ind_tp_amb              typ3_ind_tp_amb             ;
+				  v3_vlr_bruto               typ3_vlr_bruto              ;
+				  v3_vlr_base_ret1           typ3_vlr_base_ret1          ;   -- v3_vlr_base_ret
+				  v3_vlr_ret_princ           typ3_vlr_ret_princ          ;
+				  v3_vlr_ret_adic            typ3_vlr_ret_adic           ;
+				  v3_vlr_n_ret_princ         typ3_vlr_n_ret_princ        ;
+				  v3_vlr_n_ret_adic          typ3_vlr_n_ret_adic         ;
+				  v3_ind_cprb                typ3_ind_cprb               ;
+				  v3_cod_versao_proc         typ3_cod_versao_proc        ;
+				  v3_cod_versao_layout       typ3_cod_versao_layout      ;
+				  v3_ind_proc_emissao        typ3_ind_proc_emissao       ;
+				  v3_id_evento               typ3_id_evento              ;
+				  v3_ind_oper                typ3_ind_oper               ;
+				  v3_dat_ocorrencia          typ3_dat_ocorrencia         ;
+				  v3_cgc                     typ3_cgc                    ;
+				  v3_razao_social            typ3_razao_social           ;
+				  v3_x04_razao_social        typ3_x04_razao_social       ;
+				  v3_id_r2010_oc             typ3_id_r2010_oc            ;
+				  v3_num_docto               typ3_num_docto              ;
+				  v3_serie                   typ3_serie                  ;
+				  v3_dat_emissao_nf          typ3_dat_emissao_nf         ;
+				  v3_data_fiscal             typ3_data_fiscal            ;
+				  v3_rnf_vlr_bruto           typ3_rnf_vlr_bruto          ;
+				  v3_observacao              typ3_observacao             ;
+				  v3_id_r2010_nf             typ3_id_r2010_nf            ;
+				  v3_ind_tp_proc_adj_adic    typ3_ind_tp_proc_adj_adic   ;
+				  v3_num_proc_adj_adic       typ3_num_proc_adj_adic      ;
+				  v3_cod_susp_adic           typ3_cod_susp_adic          ;
+				  v3_radic_vlr_n_ret_adic    typ3_radic_vlr_n_ret_adic   ;
+				  v3_ind_tp_proc_adj_princ   typ3_ind_tp_proc_adj_princ  ;
+				  v3_num_proc_adj_princ      typ3_num_proc_adj_princ     ;
+				  v3_cod_susp_princ          typ3_cod_susp_princ         ;
+				  v3_rprinc_vlr_n_ret_princ  typ3_rprinc_vlr_n_ret_princ ;
+				  v3_tp_servico              typ3_tp_servico             ;
+				  v3_rserv_vlr_base_ret      typ3_rserv_vlr_base_ret     ;
+				  v3_vlr_retencao1           typ3_vlr_retencao1          ;  -- v3_vlr_retencao
+				  v3_vlr_ret_sub             typ3_vlr_ret_sub            ;
+				  v3_rserv_vlr_n_ret_princ   typ3_rserv_vlr_n_ret_princ  ;
+				  v3_vlr_servicos_15         typ3_vlr_servicos_15        ;
+				  v3_vlr_servicos_20         typ3_vlr_servicos_20        ;
+				  v3_vlr_servicos_25         typ3_vlr_servicos_25        ;
+				  v3_rserv_vlr_ret_adic      typ3_rserv_vlr_ret_adic     ;
+				  v3_rserv_vlr_n_ret_adic    typ3_rserv_vlr_n_ret_adic   ;
+				  v3_rnk                     typ3_rnk                    ;
+				  v3_id_pger_apur            typ3_id_pger_apur           ;
+			
+           
+           
+     CURSOR rc_2010 
+        IS
+        SELECT
+           cod_empresa
+          , cod_estab
+          , dat_emissao
+          , iden_fis_jur
+          , num_docfis
+          , "Codigo Empresa"
+          , "Razão Social Drogaria"
+          , "Razão Social Cliente"
+          , "Número da Nota Fiscal"
+          , "Data de Emissão da NF"
+          , "Data Fiscal"
+          , "Valor do Tributo"
+          , "observacao"
+          , "Tipo de Serviço E-social"
+          , "Vlr. Base de Calc. Retenção"
+          , "Valor da Retenção"
+          , proc_id
+          , ind_status
+          , cnpj_prestador
+          , ind_obra
+          , tp_inscricao
+          , nr_inscricao
+          , num_recibo
+          , ind_tp_amb
+          , vlr_bruto
+          , vlr_base_ret
+          , vlr_ret_princ
+          , vlr_ret_adic
+          , vlr_n_ret_princ
+          , vlr_n_ret_adic
+          , ind_cprb
+          , cod_versao_proc
+          , cod_versao_layout
+          , ind_proc_emissao
+          , id_evento
+          , ind_oper
+          , dat_ocorrencia
+          , cgc
+          , razao_social
+          , x04_razao_social
+          , id_r2010_oc
+          , num_docto
+          , serie
+          , dat_emissao_nf
+          , data_fiscal
+          , rnf_vlr_bruto
+          , observacao
+          , id_r2010_nf
+          , ind_tp_proc_adj_adic
+          , num_proc_adj_adic
+          , cod_susp_adic
+          , radic_vlr_n_ret_adic
+          , ind_tp_proc_adj_princ
+          , num_proc_adj_princ
+          , cod_susp_princ
+          , rprinc_vlr_n_ret_princ
+          , tp_servico
+          , rserv_vlr_base_ret
+          , vlr_retencao
+          , vlr_ret_sub
+          , rserv_vlr_n_ret_princ
+          , vlr_servicos_15
+          , vlr_servicos_20
+          , vlr_servicos_25
+          , rserv_vlr_ret_adic
+          , rserv_vlr_n_ret_adic
+          , rnk
+          , id_pger_apur
+  from ( 
+  
+    SELECT
                reinf_pger_apur.cod_empresa AS cod_empresa
              , reinf_pger_apur.cod_estab AS cod_estab
              , rnf.dat_emissao_nf AS dat_emissao
@@ -2660,403 +3025,662 @@ IS
            AND reinf_pger_r2010_oc.id_r2010_oc = rprinc.id_r2010_oc(+)
            AND ( reinf_pger_apur.ind_r2010 = 'S' )
            --AND ( reinf_pger_apur.cod_versao = 'v1_04_00' )
-           AND reinf_pger_apur.ind_tp_amb = '2';
+           AND reinf_pger_apur.ind_tp_amb = '2' ) 
+           WHERE  rnk = 2 ;
         
 
 
 
 
-        CURSOR rc_apoio_fiscal
-         IS 
-            SELECT   
-                  rpf.cod_empresa AS "Codigo da Empresa"
-                , rpf.cod_estab AS "Codigo do Estabelecimento"
-                , TO_CHAR ( rpf.data_emissao
-                          , 'MM/YYYY' )
-                      AS "Periodo de Emissão"
-                , rpf.cgc AS "CNPJ Drogaria"
-                , rpf.num_docfis AS "Numero da Nota Fiscal"
-                , rpf.tipo_docto AS "Tipo de Documento"
-                , rpf.data_emissao AS "Data Emissão"
-                , rpf.cgc_fornecedor AS "CNPJ Fonecedor"
-                , rpf.uf AS "UF"
-                , rpf.valor_total AS "Valor Total da Nota"
-                , rpf.vlr_base_inss AS "Base de Calculo INSS"
-                , rpf.vlr_inss AS "Valor do INSS"
-                , rpf.codigo_fisjur AS "Codigo Pessoa Fisica/juridica"
-                , INITCAP ( rpf.razao_social ) AS "Razão Social"
-                , INITCAP ( rpf.municipio_prestador ) AS "Municipio Prestador"
-                , rpf.cod_servico AS "Codigo de Serviço"
-                , rpf.cod_cei AS "Codigo CEI"
-                , NVL ( ( SELECT 'S' 
-                            FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                           WHERE 1 = 1
-                             AND rprev."Codigo Empresa" = rpf.cod_empresa
-                             AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                             AND rprev."Data Fiscal" = rpf.data_fiscal
-                             AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                             AND rprev.num_item = rpf.num_item )
-                      , 'N' )
-                      AS "DWT"
-                ---   campos do Report Previdenciario
-                , ( SELECT rprev."Codigo Estabelecimento"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS empresa
-                , ( SELECT rprev."Codigo Estabelecimento"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Codigo Estabelecimento"
-                , ( SELECT rprev."Codigo Pessoa Fisica/Juridica"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS cod_pessoa_fis_jur
-                , ( SELECT rprev."Razão Social Cliente"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Razão Social Cliente"
-                , ( SELECT rprev."CNPJ Cliente"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "CNPJ Cliente"
-                , ( SELECT rprev."Número da Nota Fiscal"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Nro. Nota Fiscal"
-                , ( SELECT rprev."Emissão"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Dt. Emissao"
-                , ( SELECT rprev."Data Fiscal"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Dt. Fiscal"
-                , ( SELECT rprev.vlr_tot_nota
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Vlr. Total da Nota"
-                , ( SELECT rprev."Vlr Base Calc. Retenção"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Vlr Base Calc. Retenção"
-                , ( SELECT rprev.vlr_aliq_inss
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Vlr. Aliquota INSS"
-                , ( SELECT rprev."Vlr.Trib INSS RETIDO"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Vlr.Trib INSS RETIDO"
-                , ( SELECT rprev."Razão Social Drogaria"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Razão Social Drogaria"
-                , ( SELECT rprev.cgc
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "CNPJ Drogarias"
-                , ( SELECT rprev.cod_docto
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Descr. Tp. Documento"
-                , ( SELECT rprev."Tipo de Serviço E-social"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Tp.Serv. E-social"
-                , ( SELECT rprev.dsc_tipo_serv_esocial
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Descr. Tp. Serv E-social"
-                , ( SELECT rprev."Valor do Servico"
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Vlr. do Servico"
-                , ( SELECT rprev.codigo_serv_prod
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Cod. Serv. Mastersaf"
-                , ( SELECT rprev.desc_serv_prod
-                      FROM msafi.tb_fin4816_reinf_prev_gtt rprev 
-                     WHERE 1 = 1
-                       AND rprev."Codigo Empresa" = rpf.cod_empresa
-                       AND rprev."Codigo Estabelecimento" = rpf.cod_estab
-                       AND rprev."Data Fiscal" = rpf.data_fiscal
-                       AND rprev."Número da Nota Fiscal" = rpf.num_docfis
-                       AND rprev.num_item = rpf.num_item )
-                      AS "Descr. Serv. Mastersaf"
-                ---
-                -- REINF  EVENTO R2010
-                ---
-                , ( SELECT r2010.cod_empresa
-                      FROM msafi.tb_fin4816_reinf_2010_gtt r2010
-                     WHERE 1 = 1
-                       AND r2010.cod_empresa = rpf.cod_empresa
-                     --  AND r2010.cod_estab = rpf.cod_estab
-                       AND r2010.dat_emissao = rpf.data_emissao
-                       AND r2010.data_fiscal = rpf.data_fiscal
-                       AND r2010.num_docfis = rpf.num_docfis
-                       AND r2010.rnk = 1 )
-                      AS "Codigo Empresa"
-                , ( SELECT INITCAP ( r2010."Razão Social Drogaria" )
-                      FROM msafi.tb_fin4816_reinf_2010_gtt r2010
-                     WHERE 1 = 1
-                       AND r2010.cod_empresa = rpf.cod_empresa
-                     --  AND r2010.cod_estab = rpf.cod_estab
-                       AND r2010.dat_emissao = rpf.data_emissao
-                       AND r2010.data_fiscal = rpf.data_fiscal
-                       AND r2010.num_docfis = rpf.num_docfis
-                       AND r2010.rnk = 1 )
-                      AS "Razão Social Drogaria."
-                , ( SELECT INITCAP ( r2010."Razão Social Cliente" )
-                      FROM msafi.tb_fin4816_reinf_2010_gtt r2010
-                     WHERE 1 = 1
-                       AND r2010.cod_empresa = rpf.cod_empresa
-                      -- AND r2010.cod_estab = rpf.cod_estab
-                       AND r2010.dat_emissao = rpf.data_emissao
-                       AND r2010.data_fiscal = rpf.data_fiscal
-                       AND r2010.num_docfis = rpf.num_docfis
-                       AND r2010.rnk = 1 )
-                      AS "Razão Social Cliente."
-                , ( SELECT ( r2010."Número da Nota Fiscal" )
-                      FROM msafi.tb_fin4816_reinf_2010_gtt r2010
-                     WHERE 1 = 1
-                       AND r2010.cod_empresa = rpf.cod_empresa
-                      -- AND r2010.cod_estab = rpf.cod_estab
-                       AND r2010.dat_emissao = rpf.data_emissao
-                       AND r2010.data_fiscal = rpf.data_fiscal
-                       AND r2010.num_docfis = rpf.num_docfis
-                       AND r2010.rnk = 1 )
-                      AS "Número da Nota Fiscal."
-                , ( SELECT ( r2010."Data de Emissão da NF" )
-                      FROM msafi.tb_fin4816_reinf_2010_gtt r2010
-                     WHERE 1 = 1
-                       AND r2010.cod_empresa = rpf.cod_empresa
-                      -- AND r2010.cod_estab = rpf.cod_estab
-                       AND r2010.dat_emissao = rpf.data_emissao
-                       AND r2010.data_fiscal = rpf.data_fiscal
-                       AND r2010.num_docfis = rpf.num_docfis
-                       AND r2010.rnk = 1 )
-                      AS "Data de Emissão da NF."
-                --
-                , ( SELECT ( r2010."Data Fiscal" )
-                      FROM msafi.tb_fin4816_reinf_2010_gtt r2010
-                     WHERE 1 = 1
-                       AND r2010.cod_empresa = rpf.cod_empresa
-                      -- AND r2010.cod_estab = rpf.cod_estab
-                       AND r2010.dat_emissao = rpf.data_emissao
-                       AND r2010.data_fiscal = rpf.data_fiscal
-                       AND r2010.num_docfis = rpf.num_docfis
-                       AND r2010.rnk = 1 )
-                      AS "Data Fiscal."
-                --
-                , ( SELECT ( r2010."Valor do Tributo" )
-                      FROM msafi.tb_fin4816_reinf_2010_gtt r2010
-                     WHERE 1 = 1
-                       AND r2010.cod_empresa = rpf.cod_empresa
-                       --AND r2010.cod_estab = rpf.cod_estab
-                       AND r2010.dat_emissao = rpf.data_emissao
-                       AND r2010.data_fiscal = rpf.data_fiscal
-                       AND r2010.num_docfis = rpf.num_docfis
-                       AND r2010.rnk = 1 )
-                      AS "Valor do Tributo."
-                , ( SELECT INITCAP ( r2010."observacao" )
-                      FROM msafi.tb_fin4816_reinf_2010_gtt r2010
-                     WHERE 1 = 1
-                       AND r2010.cod_empresa = rpf.cod_empresa
-                      --- AND r2010.cod_estab = rpf.cod_estab
-                       AND r2010.dat_emissao = rpf.data_emissao
-                       AND r2010.data_fiscal = rpf.data_fiscal
-                       AND r2010.num_docfis = rpf.num_docfis
-                       AND r2010.rnk = 1 )
-                      AS "Observação."
-                , ( SELECT INITCAP ( r2010."Tipo de Serviço E-social" )
-                      FROM msafi.tb_fin4816_reinf_2010_gtt r2010
-                     WHERE 1 = 1
-                       AND r2010.cod_empresa = rpf.cod_empresa
-                      -- AND r2010.cod_estab = rpf.cod_estab
-                       AND r2010.dat_emissao = rpf.data_emissao
-                       AND r2010.data_fiscal = rpf.data_fiscal
-                       AND r2010.num_docfis = rpf.num_docfis
-                       AND r2010.rnk = 1 )
-                      AS "Tipo de Serviço E-social."
-                , ( SELECT ( r2010."Vlr. Base de Calc. Retenção" )
-                      FROM msafi.tb_fin4816_reinf_2010_gtt r2010
-                     WHERE 1 = 1
-                       AND r2010.cod_empresa = rpf.cod_empresa
-                       -- AND r2010.cod_estab = rpf.cod_estab
-                       AND r2010.dat_emissao = rpf.data_emissao
-                       AND r2010.data_fiscal = rpf.data_fiscal
-                       AND r2010.num_docfis = rpf.num_docfis
-                       AND r2010.rnk = 1 )
-                      AS "Vlr. Base de Calc. Retenção."
-                , ( SELECT ( r2010."Valor da Retenção" )
-                      FROM msafi.tb_fin4816_reinf_2010_gtt r2010
-                     WHERE 1 = 1
-                       AND r2010.cod_empresa = rpf.cod_empresa
-                      -- AND r2010.cod_estab = rpf.cod_estab
-                       AND r2010.dat_emissao = rpf.data_emissao
-                       AND r2010.data_fiscal = rpf.data_fiscal
-                       AND r2010.num_docfis = rpf.num_docfis
-                       AND r2010.rnk = 1 )
-                      AS "Valor da Retenção."
-             FROM msafi.tb_fin4816_report_fiscal_gtt rpf
-           ORDER BY   cod_empresa
-                    , cod_estab
-                    , data_fiscal
-                    , movto_e_s
-                    , num_docfis
-                    , serie_docfis
-                    , sub_serie_docfis
-                    , num_item
-                          ;
 
-        BEGIN
-    
-             --================================================
-             -- Table -  Report Fiscal
-             --================================================
-             OPEN cr_rtf ;
-             LOOP
-             FETCH cr_rtf BULK COLLECT INTO l_data_fiscal LIMIT 100;                                 
-             FORALL i IN 1..l_data_fiscal.COUNT
-             INSERT INTO msafi.tb_fin4816_report_fiscal_gtt VALUES l_data_fiscal(i);
-             EXIT WHEN cr_rtf%NOTFOUND;
-             END LOOP;                           
-             CLOSE cr_rtf;
+			 --==============================================================================
+                 -- Table  End - Inclui Três relatorios -   fiscal/retido/evento - r-2010
+             --============================================================================== 	
+            TYPE typ4_value1	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Codigo da Empresa"              %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value2	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Codigo do Estabelecimento"      %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value3	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Periodo de Emissão"             %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value4	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."CNPJ Drogaria"                  %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value5	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Numero da Nota Fiscal"          %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value6	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Tipo de Documento"              %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value7	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Data Emissão"                   %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value8	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."CNPJ Fonecedor"                 %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value9	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL.UF                               %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value10	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Valor Total da Nota"            %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value11	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Base de Calculo INSS"           %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value12	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Valor do INSS"                  %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value13	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Codigo Pessoa Fisica/juridica"  %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value14	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Razão Social"                   %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value15	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Municipio Prestador"            %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value16	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Codigo de Serviço"              %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value17	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Codigo CEI"                     %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value18	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL.DWT                              %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value19	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL.EMPRESA                          %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value20	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Codigo Estabelecimento"         %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value21	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL.COD_PESSOA_FIS_JUR               %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value22	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Razão Social Cliente"           %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value23	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."CNPJ Cliente"                   %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value24	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Nro. Nota Fiscal"               %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value25	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Dt. Emissao"                    %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value26	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Dt. Fiscal"                     %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value27	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Vlr. Total da Nota"             %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value28	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Vlr Base Calc. Retenção"        %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value29	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Vlr. Aliquota INSS"             %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value30	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Vlr.Trib INSS RETIDO"           %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value31	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Razão Social Drogaria"          %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value32	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."CNPJ Drogarias"                 %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value33	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Descr. Tp. Documento"           %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value34	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Tp.Serv. E-social"              %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value35	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Descr. Tp. Serv E-social"       %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value36	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Vlr. do Servico"                %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value37	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Cod. Serv. Mastersaf"           %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value38	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Descr. Serv. Mastersaf"         %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value39	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Codigo Empresa"                 %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value40	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Razão Social Drogaria."         %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value41	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Razão Social Cliente."          %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value42	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Número da Nota Fiscal."         %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value43	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Data de Emissão da NF."         %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value44	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Data Fiscal."                   %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value45	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Valor do Tributo."              %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value46	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Observação."                    %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value47	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Tipo de Serviço E-social."      %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value48	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Vlr. Base de Calc. Retenção."   %TYPE INDEX BY PLS_INTEGER;
+            TYPE typ4_value49	 IS TABLE OF msafi.TB_FIN4816_REL_APOIO_FISCAL."Valor da Retenção."             %TYPE INDEX BY PLS_INTEGER;							
+                
+                V4_value1			  typ4_value1 ;    --"Codigo da Empresa"            
+				V4_value2             typ4_value2 ;    --"Codigo do Estabelecimento"    
+				V4_value3             typ4_value3 ;    --"Periodo de Emissão"           
+				V4_value4             typ4_value4 ;    --"CNPJ Drogaria"                
+                V4_value5             typ4_value5 ;    --"Numero da Nota Fiscal"        
+                V4_value6             typ4_value6 ;    --"Tipo de Documento"            
+                V4_value7             typ4_value7 ;    --"Data Emissão"                 
+                V4_value8             typ4_value8 ;    --"CNPJ Fonecedor"               
+                V4_value9             typ4_value9 ;    --UF                             
+                V4_value10            typ4_value10;    --"Valor Total da Nota"          
+                V4_value11            typ4_value11;    --"Base de Calculo INSS"         
+                V4_value12            typ4_value12;    --"Valor do INSS"                
+                V4_value13            typ4_value13;    --"Codigo Pessoa Fisica/juridica"
+                V4_value14            typ4_value14;    --"Razão Social"                 
+                V4_value15            typ4_value15;    --"Municipio Prestador"          
+                V4_value16            typ4_value16;    --"Codigo de Serviço"            
+                V4_value17            typ4_value17;    --"Codigo CEI"                   
+                V4_value18            typ4_value18;    --DWT                            
+                V4_value19            typ4_value19;    --EMPRESA                        
+                V4_value20            typ4_value20;    --"Codigo Estabelecimento"       
+                V4_value21            typ4_value21;    --COD_PESSOA_FIS_JUR             
+                V4_value22            typ4_value22;    --"Razão Social Cliente"         
+                V4_value23            typ4_value23;    --"CNPJ Cliente"                 
+                V4_value24            typ4_value24;    --"Nro. Nota Fiscal"             
+                V4_value25            typ4_value25;    --"Dt. Emissao"                  
+                V4_value26            typ4_value26;    --"Dt. Fiscal"                   
+                V4_value27            typ4_value27;    --"Vlr. Total da Nota"           
+                V4_value28            typ4_value28;    --"Vlr Base Calc. Retenção"      
+                V4_value29            typ4_value29;    --"Vlr. Aliquota INSS"           
+                V4_value30            typ4_value30;    --"Vlr.Trib INSS RETIDO"         
+                V4_value31            typ4_value31;    --"Razão Social Drogaria"        
+                V4_value32            typ4_value32;    --"CNPJ Drogarias"               
+                V4_value33            typ4_value33;    --"Descr. Tp. Documento"         
+                V4_value34            typ4_value34;    --"Tp.Serv. E-social"            
+                V4_value35            typ4_value35;    --"Descr. Tp. Serv E-social"     
+                V4_value36            typ4_value36;    --"Vlr. do Servico"              
+                V4_value37            typ4_value37;    --"Cod. Serv. Mastersaf"         
+                V4_value38            typ4_value38;    --"Descr. Serv. Mastersaf"       
+                V4_value39            typ4_value39;    --"Codigo Empresa"               
+                V4_value40            typ4_value40;    --"Razão Social Drogaria."       
+                V4_value41            typ4_value41;    --"Razão Social Cliente."        
+                V4_value42            typ4_value42;    --"Número da Nota Fiscal."       
+                V4_value43            typ4_value43;    --"Data de Emissão da NF."       
+                V4_value44            typ4_value44;    --"Data Fiscal."                 
+                V4_value45            typ4_value45;    --"Valor do Tributo."            
+                V4_value46            typ4_value46;    --"Observação."                  
+                V4_value47            typ4_value47;    --"Tipo de Serviço E-social."    
+                V4_value48            typ4_value48;    --"Vlr. Base de Calc. Retenção." 
+                V4_value49            typ4_value49;    --"Valor da Retenção."  
+
+
+             CURSOR rc_apoio_fiscal
+             IS 
+             SELECT DISTINCT *
+             FROM (  SELECT       
+                  rpf.cod_empresa                                                   AS "Codigo da Empresa"
+                , rpf.cod_estab                                                     AS "Codigo do Estabelecimento"
+                , TO_CHAR(rpf.data_emissao, 'MM/YYYY')                              AS "Periodo de Emissão"
+                , rpf.cgc                                                           AS "CNPJ Drogaria"
+                , rpf.num_docfis                                                    AS "Numero da Nota Fiscal"
+                , rpf.tipo_docto                                                    AS "Tipo de Documento"
+                , rpf.data_emissao                                                  AS "Data Emissão"
+                , rpf.cgc_fornecedor                                                AS "CNPJ Fonecedor"
+                , rpf.uf                                                            AS "UF"
+                , rpf.valor_total                                                   AS "Valor Total da Nota"
+                , rpf.vlr_base_inss                                                 AS "Base de Calculo INSS"
+                , rpf.vlr_inss                                                      AS "Valor do INSS"
+                , rpf.codigo_fisjur                                                 AS "Codigo Pessoa Fisica/juridica"
+                , INITCAP ( rpf.razao_social )                                      AS "Razão Social"
+                , INITCAP ( rpf.municipio_prestador )                               AS "Municipio Prestador"
+                , rpf.cod_servico                                                   AS "Codigo de Serviço"
+                , rpf.cod_cei                                                       AS "Codigo CEI"  
+                , NVL2(rprev."Codigo Empresa",'S','N')                              DWT 
+                ---  RETIDOS 
+                ,rprev."Codigo Estabelecimento"                                     AS empresa
+                ,rprev."Codigo Estabelecimento"                                     AS "Codigo Estabelecimento"
+                ,rprev."Codigo Pessoa Fisica/Juridica"                              AS cod_pessoa_fis_jur
+                ,rprev."Razão Social Cliente"                                       AS "Razão Social Cliente"
+                ,rprev."CNPJ Cliente"                                               AS "CNPJ Cliente" 
+                ,rprev."Número da Nota Fiscal"                                      AS "Nro. Nota Fiscal"
+                ,rprev."Emissão"                                                    AS "Dt. Emissao" 
+                ,rprev."Data Fiscal"                                                AS "Dt. Fiscal"    
+                ,rprev.vlr_tot_nota                                                 AS "Vlr. Total da Nota"
+                ,rprev."Vlr Base Calc. Retenção"                                    AS "Vlr Base Calc. Retenção"
+                ,rprev.vlr_aliq_inss                                                AS "Vlr. Aliquota INSS"
+                ,rprev."Vlr.Trib INSS RETIDO"                                       AS "Vlr.Trib INSS RETIDO"    
+                ,rprev."Razão Social Drogaria"                                      AS "Razão Social Drogaria"
+                ,rprev.cgc                                                          AS "CNPJ Drogarias"
+                ,rprev.cod_docto                                                    AS "Descr. Tp. Documento"                         
+                ,rprev."Tipo de Serviço E-social"                                   AS "Tp.Serv. E-social"
+                ,rprev.dsc_tipo_serv_esocial                                        AS "Descr. Tp. Serv E-social"
+                ,rprev."Valor do Servico"                                           AS "Vlr. do Servico"    
+                ,rprev.codigo_serv_prod                                             AS "Cod. Serv. Mastersaf"
+                ,rprev.desc_serv_prod                                               AS "Descr. Serv. Mastersaf" 
+                 , NULL                                                             AS "Codigo Empresa"
+                 , NULL                                                             AS "Razão Social Drogaria."
+                 , NULL                                                             AS "Razão Social Cliente."
+                 , NULL                                                             AS "Número da Nota Fiscal."   
+                 , NULL                                                             AS "Data de Emissão da NF."
+                 , NULL                                                             AS "Data Fiscal."
+                 , NULL                                                             AS "Valor do Tributo."
+                 , NULL                                                             AS "Observação."
+                 , NULL                                                             AS "Tipo de Serviço E-social."    
+                 , NULL                                                             AS "Vlr. Base de Calc. Retenção."
+                 , NULL                                                             AS "Valor da Retenção."  
+                 FROM msafi.tb_fin4816_report_fiscal_gtt rpf   LEFT OUTER JOIN   msafi.tb_fin4816_reinf_prev_gtt   rprev
+              ON (   1=1
+                     AND rprev."Codigo Empresa"            = rpf.cod_empresa
+                     AND rprev."Codigo Estabelecimento"    = rpf.cod_estab
+                     AND rprev."Data Fiscal"               = rpf.data_fiscal
+                     AND rprev."Número da Nota Fiscal"     = rpf.num_docfis
+                     AND rprev.num_item                    = rpf.num_item   
+                     AND rprev."Emissão"                   = rpf.data_emissao  )
+                UNION ALL 
+              SELECT   
+                 rpf.cod_empresa                                                    AS "Codigo da Empresa"
+                ,rpf.cod_estab                                                      AS "Codigo do Estabelecimento"
+                ,TO_CHAR(rpf.data_emissao, 'MM/YYYY')                               AS "Periodo de Emissão"
+                ,rpf.cgc                                                            AS "CNPJ Drogaria"
+                ,rpf.num_docfis                                                     AS "Numero da Nota Fiscal"
+                ,rpf.tipo_docto                                                     AS "Tipo de Documento"
+                ,rpf.data_emissao                                                   AS "Data Emissão"
+                ,rpf.cgc_fornecedor                                                 AS "CNPJ Fonecedor"
+                ,rpf.uf                                                             AS "UF"
+                ,rpf.valor_total                                                    AS "Valor Total da Nota"
+                ,rpf.vlr_base_inss                                                  AS "Base de Calculo INSS"
+                ,rpf.vlr_inss                                                       AS "Valor do INSS"
+                ,rpf.codigo_fisjur                                                  AS "Codigo Pessoa Fisica/juridica"
+                ,INITCAP ( rpf.razao_social )                                       AS "Razão Social"
+                ,INITCAP ( rpf.municipio_prestador )                                AS "Municipio Prestador"
+                ,rpf.cod_servico                                                    AS "Codigo de Serviço"
+                ,rpf.cod_cei                                                        AS "Codigo CEI"  
+                ,NVL2(r2010.cod_empresa,'S','N')                                    AS DWT 
+                ,NULL                                                               AS empresa
+                ,NULL                                                               AS "Codigo Estabelecimento"
+                ,NULL                                                               AS cod_pessoa_fis_jur
+                ,NULL                                                               AS "Razão Social Cliente"
+                ,NULL                                                               AS "CNPJ Cliente" 
+                ,NULL                                                               AS "Nro. Nota Fiscal"
+                ,NULL                                                               AS "Dt. Emissao" 
+                ,NULL                                                               AS "Dt. Fiscal"    
+                ,NULL                                                               AS "Vlr. Total da Nota"
+                ,NULL                                                               AS "Vlr Base Calc. Retenção"
+                ,NULL                                                               AS "Vlr. Aliquota INSS"
+                ,NULL                                                               AS "Vlr.Trib INSS RETIDO"    
+                ,NULL                                                               AS "Razão Social Drogaria"
+                ,NULL                                                               AS "CNPJ Drogarias"
+                ,NULL                                                               AS "Descr. Tp. Documento"                         
+                ,NULL                                                               AS "Tp.Serv. E-social"
+                ,NULL                                                               AS "Descr. Tp. Serv E-social"
+                ,NULL                                                               AS "Vlr. do Servico"    
+                ,NULL                                                               AS "Cod. Serv. Mastersaf"
+                ,NULL                                                               AS "Descr. Serv. Mastersaf" 
+                ,r2010.cod_empresa                                                  AS "Codigo Empresa"
+                ,INITCAP ( r2010."Razão Social Drogaria" )                          AS "Razão Social Drogaria."
+                ,INITCAP ( r2010."Razão Social Cliente" )                           AS "Razão Social Cliente."
+                ,r2010."Número da Nota Fiscal"                                      AS "Número da Nota Fiscal."   
+                ,r2010."Data de Emissão da NF"                                      AS "Data de Emissão da NF."
+                ,r2010."Data Fiscal"                                                AS "Data Fiscal."
+                ,r2010."Valor do Tributo"                                           AS "Valor do Tributo."
+                ,INITCAP ( r2010."observacao" )                                     AS "Observação."
+                ,r2010."Tipo de Serviço E-social"                                   AS "Tipo de Serviço E-social."    
+                ,r2010."Vlr. Base de Calc. Retenção"                                AS "Vlr. Base de Calc. Retenção."
+                ,r2010."Valor da Retenção"                                          AS "Valor da Retenção."
+              FROM  msafi.tb_fin4816_report_fiscal_gtt rpf   JOIN   msafi.tb_fin4816_reinf_2010_gtt   r2010
+              ON ( 1=1
+                   AND r2010.cod_empresa      = rpf.cod_empresa 
+                   AND r2010.cod_estab        = rpf.cod_estab
+                   AND r2010.dat_emissao      = rpf.data_emissao
+                   AND r2010.data_fiscal      = rpf.data_fiscal
+                   AND r2010.num_docfis       = rpf.num_docfis                     
+                  )) ORDER BY 1,2, 5,7
+        ;
+             BEGIN
+                EXECUTE IMMEDIATE ('ALTER SESSION SET CURSOR_SHARING = FORCE');
+                EXECUTE IMMEDIATE ('ALTER SESSION SET TEMP_UNDO_ENABLED=FALSE ');
+                
+                 DELETE FROM  msafi.tb_fin4816_report_fiscal_gtt;  
+                 DELETE FROM  msafi.tb_fin4816_reinf_prev_gtt;
+                 COMMIT;
+
+               
+                 
+--                 SELECT * FROM msafi.tb_fin4816_report_fiscal_gtt;  
+--                 SELECT * FROM msafi.tb_fin4816_reinf_prev_gtt;
+--                 SELECT * FROM msafi.tb_fin4816_reinf_2010_gtt;
+--                 SELECT * FROM msafi.tb_fin4816_rel_apoio_fiscal;
+--                 SELECT * FROM msafi.tb_fin4816_prev_tmp_estab;
+                 
+                 COMMIT;
+
+
+                     --================================================
+                     -- Table -  Report Fiscal
+                     --================================================
+                     OPEN cr_rtf ;
+                     LOOP
+                     FETCH cr_rtf BULK COLLECT INTO 
+                         v1_cod_empresa               ,v1_cod_estab          ,v1_data_fiscal        ,v1_movto_e_s
+                       , v1_norm_dev                  ,v1_ident_docto        ,v1_ident_fis_jur      ,v1_num_docfis
+                       , v1_serie_docfis              ,v1_sub_serie_docfis   ,v1_ident_servico      ,v1_num_item
+                       , v1_periodo_emissao           ,v1_cgc                ,v1_num_docto          ,v1_tipo_docto
+                       , v1_data_emissao              ,v1_cgc_fornecedor     ,v1_uf                 ,v1_valor_total
+                       , v1_vlr_base_inss             ,v1_vlr_inss           ,v1_codigo_fisjur      ,v1_razao_social
+                       , v1_municipio_prestador       ,v1_cod_servico        ,v1_cod_cei            ,v1_equalizacao 
+                     LIMIT 1000;                                 
+                 
+                     --  SELECT * FROM  msafi.tb_fin4816_report_fiscal_gtt
+                     FORALL i IN v1_cod_empresa.FIRST .. v1_cod_empresa.LAST
+                     INSERT /*+ APPEND */
+                     INTO  msafi.tb_fin4816_report_fiscal_gtt
+                       (cod_empresa                     ,cod_estab              ,data_fiscal                ,movto_e_s
+                       ,norm_dev                        ,ident_docto            ,ident_fis_jur              ,num_docfis
+                       ,serie_docfis                    ,sub_serie_docfis       ,ident_servico              ,num_item
+                       ,periodo_emissao                 ,cgc                    ,num_docto                  ,tipo_docto
+                       ,data_emissao                    ,cgc_fornecedor         ,uf                         ,valor_total
+                       ,vlr_base_inss                   ,vlr_inss               ,codigo_fisjur              ,razao_social
+                       ,municipio_prestador             ,cod_servico            ,cod_cei                    ,equalizacao )
+                     VALUES (
+                       v1_cod_empresa(i)                ,v1_cod_estab(i)          ,v1_data_fiscal(i)        ,v1_movto_e_s(i)
+                      , v1_norm_dev(i)                  ,v1_ident_docto(i)        ,v1_ident_fis_jur(i)      ,v1_num_docfis(i)
+                      , v1_serie_docfis(i)              ,v1_sub_serie_docfis(i)   ,v1_ident_servico(i)      ,v1_num_item(i)
+                      , v1_periodo_emissao(i)           ,v1_cgc(i)                ,v1_num_docto(i)          ,v1_tipo_docto(i)
+                      , v1_data_emissao(i)              ,v1_cgc_fornecedor(i)     ,v1_uf(i)                 ,v1_valor_total(i)
+                      , v1_vlr_base_inss(i)             ,v1_vlr_inss(i)           ,v1_codigo_fisjur(i)      ,v1_razao_social(i)
+                      , v1_municipio_prestador(i)       ,v1_cod_servico(i)        ,v1_cod_cei(i)            ,v1_equalizacao(i) );
+
+                       -- Delete type
+                      v1_cod_empresa.DELETE               ;v1_cod_estab.DELETE          ;v1_data_fiscal.DELETE        ;v1_movto_e_s.DELETE    ;
+                      v1_norm_dev.DELETE                  ;v1_ident_docto.DELETE        ;v1_ident_fis_jur.DELETE      ;v1_num_docfis.DELETE   ;
+                      v1_serie_docfis.DELETE              ;v1_sub_serie_docfis.DELETE   ;v1_ident_servico.DELETE      ;v1_num_item.DELETE     ;
+                      v1_periodo_emissao.DELETE           ;v1_cgc.DELETE                ;v1_num_docto.DELETE          ;v1_tipo_docto.DELETE   ;
+                      v1_data_emissao.DELETE              ;v1_cgc_fornecedor.DELETE     ;v1_uf.DELETE                 ;v1_valor_total.DELETE  ;
+                      v1_vlr_base_inss.DELETE             ;v1_vlr_inss.DELETE           ;v1_codigo_fisjur.DELETE      ;v1_razao_social.DELETE ;
+                      v1_municipio_prestador.DELETE       ;v1_cod_servico.DELETE        ;v1_cod_cei.DELETE            ;v1_equalizacao.DELETE  ;
+                      
+                         EXIT WHEN cr_rtf%NOTFOUND;
+                         END LOOP;
+                          COMMIT;
+                          CLOSE cr_rtf;
+                         COMMIT;
+                  
              
              
-             --================================================
-             -- Table -  Previsão Dos Retidos 
-             --================================================
-             OPEN rc_prev ;
-             LOOP
-             FETCH rc_prev BULK COLLECT INTO l_data_reinf LIMIT 100;                                 
-             FORALL i IN 1..l_data_reinf.COUNT
-             INSERT INTO msafi.tb_fin4816_reinf_prev_gtt VALUES l_data_reinf(i);
-             EXIT WHEN rc_prev%NOTFOUND;
-             END LOOP;                           
-             CLOSE rc_prev;
+             
+                        
+                     --================================================
+                     -- Table -  Previsão Dos Retidos 
+                     --================================================
+        
+                     OPEN rc_prev ;
+                     LOOP
+                     FETCH rc_prev  BULK COLLECT INTO  
+                      v2_tipe	        ,v2_cde	            ,v2_cd_estab      ,v2_dt_emiss        
+                     ,v2_dt_fiscal      ,v2_fisjur	        ,v2_docto	      ,v2_ntf	        
+                     ,v2_serie	        ,v2_emissao         ,v2_seried	      ,v2_sserie	     
+                     ,v2_item	        ,v2_cd_user         ,v2_pessjur       ,v2_rzs	            
+                     ,v2_indfisjur      ,v2_cnpj_cl         ,v2_class	      ,v2_tot_nt	    
+                     ,v2_bs_cal	        ,v2_aliq	        ,v2_vlr_inss      ,v2_vlr_ret      
+                     ,v2_vlr_ctbil      ,v2_proc            ,v2_proc_jur      ,v2_rzs1	        
+                     ,v2_value	        ,v2_doc	            ,v2_esocial       ,v2_tpsocial    
+                     ,v2_rzs2           ,v2_vlr_serv        ,v2_num_proc      ,v2_adj	         
+                     ,v2_cd_serv        ,v2_desc_serv       ,v2_cd_docto      ,v2_obs	            
+                     ,v2_desc	      LIMIT 1000;
+                        
+ 
+                      -- SELECT * FROM msafi.tb_fin4816_reinf_prev_gtt
+                      
+                     FORALL j IN v2_cde.FIRST .. v2_cde.LAST
+                     INSERT /*+ APPEND */  
+                     INTO msafi.tb_fin4816_reinf_prev_gtt (   
+                          TIPO, "Codigo Empresa", "Codigo Estabelecimento", 
+                          "Data Emissão", "Data Fiscal", IDENT_FIS_JUR, 
+                          IDENT_DOCTO, "Número da Nota Fiscal", "Docto/Série", 
+                          "Emissão", SERIE_DOCFIS, SUB_SERIE_DOCFIS, 
+                          NUM_ITEM, COD_USUARIO, "Codigo Pessoa Fisica/Juridica", 
+                          "Razão Social Cliente", IND_FIS_JUR, "CNPJ Cliente", 
+                          COD_CLASS_DOC_FIS, VLR_TOT_NOTA, "Vlr Base Calc. Retenção", 
+                          VLR_ALIQ_INSS, "Vlr.Trib INSS RETIDO", "Valor da Retenção", 
+                          VLR_CONTAB_COMPL, IND_TIPO_PROC, NUM_PROC_JUR, 
+                          RAZAO_SOCIAL, CGC, "Documento", 
+                          "Tipo de Serviço E-social", DSC_TIPO_SERV_ESOCIAL, "Razão Social Drogaria", 
+                          "Valor do Servico", NUM_PROC_ADJ_ADIC, IND_TP_PROC_ADJ_ADIC, 
+                          CODIGO_SERV_PROD, DESC_SERV_PROD, COD_DOCTO, 
+                          "Observação", DSC_PARAM) 
+                     VALUES ( 
+                             v2_tipe(j) 	        ,v2_cde(j)	            ,v2_cd_estab(j)         ,v2_dt_emiss(j)    
+                            ,v2_dt_fiscal(j)        ,v2_fisjur(j)	        ,v2_docto(j)	        ,v2_ntf(j)	        
+                            ,v2_serie(j)	        ,v2_emissao(j)          ,v2_seried(j)	        ,v2_sserie(j)	  
+                            ,v2_item(j)	            ,v2_cd_user(j)          ,v2_pessjur(j)          ,v2_rzs(j)	       
+                            ,v2_indfisjur(j)        ,v2_cnpj_cl(j)          ,v2_class(j)	        ,v2_tot_nt(j)	    
+                            ,v2_bs_cal(j)	        ,v2_aliq(j)	            ,v2_vlr_inss(j)         ,v2_vlr_ret(j)    
+                            ,v2_vlr_ctbil(j)        ,v2_proc(j)             ,v2_proc_jur(j)         ,v2_rzs1(j)	       
+                            ,v2_value(j)	        ,v2_doc(j)	            ,v2_esocial(j)          ,v2_tpsocial(j)      
+                            ,v2_rzs2(j)             ,v2_vlr_serv(j)         ,v2_num_proc(j)         ,v2_adj(j)	      
+                            ,v2_cd_serv(j)          ,v2_desc_serv(j)        ,v2_cd_docto(j)         ,v2_obs(j)         
+                            ,v2_desc(j) );	 
+                            
+                            v2_tipe.DELETE          ;v2_cde.DELETE	        ;v2_cd_estab.DELETE     ;v2_dt_emiss.DELETE     ; 
+                            v2_dt_fiscal.DELETE     ;v2_fisjur.DELETE       ;v2_docto.DELETE        ;v2_ntf.DELETE	        ;
+                            v2_serie.DELETE         ;v2_emissao.DELETE      ;v2_seried.DELETE        ;v2_sserie.DELETE       ;
+                            v2_item.DELETE	        ;v2_cd_user.DELETE      ;v2_pessjur.DELETE      ;v2_rzs.DELETE	        ;
+                            v2_indfisjur.DELETE     ;v2_cnpj_cl.DELETE      ;v2_class.DELETE	    ;v2_tot_nt.DELETE	    ;
+                            v2_bs_cal.DELETE        ;v2_aliq.DELETE	        ;v2_vlr_inss.DELETE     ;v2_vlr_ret.DELETE      ;       
+                            v2_vlr_ctbil.DELETE     ;v2_proc.DELETE         ;v2_proc_jur.DELETE     ;v2_rzs1.DELETE	        ;
+                            v2_value.DELETE	        ;v2_doc.DELETE          ;v2_esocial.DELETE      ;v2_tpsocial.DELETE     ;
+                            v2_rzs2.DELETE          ;v2_vlr_serv.DELETE     ;v2_num_proc.DELETE     ;v2_adj.DELETE          ;      
+                            v2_cd_serv.DELETE       ;v2_desc_serv.DELETE    ;v2_cd_docto.DELETE     ;v2_obs.DELETE          ;
+        
+                            EXIT WHEN rc_prev%NOTFOUND;
+                            END LOOP;
+                             COMMIT;
+                             CLOSE rc_prev;
+                            COMMIT;
+        
+        
+                          
+                                    
+                         --================================================
+                         -- Table -  Reinf - Event - R-2010
+                         --================================================        
+                         OPEN rc_2010 ;
+                         LOOP
+                         FETCH rc_2010  BULK COLLECT INTO  
+                          v3_cod_empresa                 ,v3_cod_estab                    ,v3_dat_emissao             
+                         ,v3_iden_fis_jur                ,v3_num_docfis                   ,v3_cd				         
+                         ,v3_rzsd       			     ,v3_rzsc        			       ,v3_ntf       				 
+                         ,v3_dt_emissao                  ,v3_dt_fiscal                    ,v3_vlr_tributo             
+                         ,v3_obs                  	     ,v3_tp_esocial                   ,v3_vlr_base_ret			 
+                         ,v3_vlr_retencao                ,v3_proc_id                      ,v3_ind_status              
+                         ,v3_cnpj_prestador              ,v3_ind_obra                     ,v3_tp_inscricao            
+                         ,v3_nr_inscricao                ,v3_num_recibo                   ,v3_ind_tp_amb              
+                         ,v3_vlr_bruto                   ,v3_vlr_base_ret1                ,v3_vlr_ret_princ           
+                         ,v3_vlr_ret_adic                ,v3_vlr_n_ret_princ              ,v3_vlr_n_ret_adic          
+                         ,v3_ind_cprb                    ,v3_cod_versao_proc              ,v3_cod_versao_layout       
+                         ,v3_ind_proc_emissao            ,v3_id_evento                    ,v3_ind_oper                
+                         ,v3_dat_ocorrencia              ,v3_cgc                          ,v3_razao_social            
+                         ,v3_x04_razao_social            ,v3_id_r2010_oc                  ,v3_num_docto               
+                         ,v3_serie                       ,v3_dat_emissao_nf               ,v3_data_fiscal             
+                         ,v3_rnf_vlr_bruto               ,v3_observacao                   ,v3_id_r2010_nf             
+                         ,v3_ind_tp_proc_adj_adic        ,v3_num_proc_adj_adic            ,v3_cod_susp_adic           
+                         ,v3_radic_vlr_n_ret_adic        ,v3_ind_tp_proc_adj_princ        ,v3_num_proc_adj_princ      
+                         ,v3_cod_susp_princ              ,v3_rprinc_vlr_n_ret_princ       ,v3_tp_servico              
+                         ,v3_rserv_vlr_base_ret          ,v3_vlr_retencao1                ,v3_vlr_ret_sub             
+                         ,v3_rserv_vlr_n_ret_princ       ,v3_vlr_servicos_15              ,v3_vlr_servicos_20         
+                         ,v3_vlr_servicos_25             ,v3_rserv_vlr_ret_adic           ,v3_rserv_vlr_n_ret_adic    
+                         ,v3_rnk                         ,v3_id_pger_apur                  LIMIT 1000;                          
+                              
+                         
+                         FORALL k IN v3_cod_empresa.FIRST .. v3_cod_empresa.LAST
+                          INSERT /*+ APPEND */  
+                          INTO msafi.tb_fin4816_reinf_2010_gtt(  
+                               cod_empresa                    ,cod_estab                    ,dat_emissao                  
+                              ,iden_fis_jur                   ,num_docfis                   ,"Codigo Empresa"             
+                              ,"Razão Social Drogaria"        ,"Razão Social Cliente"       ,"Número da Nota Fiscal"      
+                              ,"Data de Emissão da NF"        ,"Data Fiscal"                ,"Valor do Tributo"           
+                              ,"observacao"                   ,"Tipo de Serviço E-social"   ,"Vlr. Base de Calc. Retenção"
+                              ,"Valor da Retenção"            ,proc_id                      ,ind_status                   
+                              ,cnpj_prestador                 ,ind_obra                     ,tp_inscricao                 
+                              ,nr_inscricao                   ,num_recibo                   ,ind_tp_amb                   
+                              ,vlr_bruto                      ,vlr_base_ret                 ,vlr_ret_princ                
+                              ,vlr_ret_adic                   ,vlr_n_ret_princ              ,vlr_n_ret_adic               
+                              ,ind_cprb                       ,cod_versao_proc              ,cod_versao_layout            
+                              ,ind_proc_emissao               ,id_evento                    ,ind_oper                     
+                              ,dat_ocorrencia                 ,cgc                          ,razao_social                 
+                              ,x04_razao_social               ,id_r2010_oc                  ,num_docto                    
+                              ,serie                          ,dat_emissao_nf               ,data_fiscal                  
+                              ,rnf_vlr_bruto                  ,observacao                   ,id_r2010_nf                  
+                              ,ind_tp_proc_adj_adic           ,num_proc_adj_adic            ,cod_susp_adic                
+                              ,radic_vlr_n_ret_adic           ,ind_tp_proc_adj_princ        ,num_proc_adj_princ           
+                              ,cod_susp_princ                 ,rprinc_vlr_n_ret_princ       ,tp_servico                   
+                              ,rserv_vlr_base_ret             ,vlr_retencao                 ,vlr_ret_sub                  
+                              ,rserv_vlr_n_ret_princ          ,vlr_servicos_15              ,vlr_servicos_20              
+                              ,vlr_servicos_25                ,rserv_vlr_ret_adic           ,rserv_vlr_n_ret_adic         
+                              ,rnk                            ,id_pger_apur ) 
+                         VALUES (                
+                               v3_cod_empresa(k)              ,v3_cod_estab(k)             ,v3_dat_emissao(k)           
+                              ,v3_iden_fis_jur(k)             ,v3_num_docfis(k)            ,v3_cd(k)				    
+                              ,v3_rzsd(k)       			  ,v3_rzsc(k)                  ,v3_ntf(k)       			
+                              ,v3_dt_emissao(k)               ,v3_dt_fiscal(k)             ,v3_vlr_tributo(k)           
+                              ,v3_obs(k)                  	  ,v3_tp_esocial(k)            ,v3_vlr_base_ret(k)			
+                              ,v3_vlr_retencao(k)             ,v3_proc_id(k)               ,v3_ind_status(k)            
+                              ,v3_cnpj_prestador(k)           ,v3_ind_obra(k)              ,v3_tp_inscricao(k)          
+                              ,v3_nr_inscricao(k)             ,v3_num_recibo(k)            ,v3_ind_tp_amb(k)            
+                              ,v3_vlr_bruto(k)                ,v3_vlr_base_ret1(k)          ,v3_vlr_ret_princ(k)         
+                              ,v3_vlr_ret_adic(k)             ,v3_vlr_n_ret_princ(k)       ,v3_vlr_n_ret_adic(k)        
+                              ,v3_ind_cprb(k)                 ,v3_cod_versao_proc(k)       ,v3_cod_versao_layout(k)     
+                              ,v3_ind_proc_emissao(k)         ,v3_id_evento(k)             ,v3_ind_oper(k)              
+                              ,v3_dat_ocorrencia(k)           ,v3_cgc(k)                   ,v3_razao_social(k)          
+                              ,v3_x04_razao_social(k)         ,v3_id_r2010_oc(k)           ,v3_num_docto(k)             
+                              ,v3_serie(k)                    ,v3_dat_emissao_nf(k)        ,v3_data_fiscal(k)           
+                              ,v3_rnf_vlr_bruto(k)            ,v3_observacao(k)            ,v3_id_r2010_nf(k)           
+                              ,v3_ind_tp_proc_adj_adic(k)     ,v3_num_proc_adj_adic(k)     ,v3_cod_susp_adic(k)         
+                              ,v3_radic_vlr_n_ret_adic(k)     ,v3_ind_tp_proc_adj_princ(k) ,v3_num_proc_adj_princ(k)    
+                              ,v3_cod_susp_princ(k)           ,v3_rprinc_vlr_n_ret_princ(k) ,v3_tp_servico(k)            
+                              ,v3_rserv_vlr_base_ret(k)       ,v3_vlr_retencao(k)          ,v3_vlr_ret_sub(k)           
+                              ,v3_rserv_vlr_n_ret_princ(k)    ,v3_vlr_servicos_15(k)       ,v3_vlr_servicos_20(k)       
+                              ,v3_vlr_servicos_25(k)          ,v3_rserv_vlr_ret_adic(k)    ,v3_rserv_vlr_n_ret_adic(k)  
+                              ,v3_rnk(k)                      ,v3_id_pger_apur(k)                 ) ; 
+                              
+                              
+                              v3_cod_empresa.DELETE              ;v3_cod_estab.DELETE             ;v3_dat_emissao.DELETE          ;        
+                              v3_iden_fis_jur.DELETE             ;v3_num_docfis.DELETE            ;v3_cd.DELETE			          ;
+                              v3_rzsd.DELETE      			     ;v3_rzsc.DELETE                  ;v3_ntf.DELETE       			  ;
+                              v3_dt_emissao.DELETE               ;v3_dt_fiscal.DELETE             ;v3_vlr_tributo.DELETE          ;
+                              v3_obs.DELETE                 	 ;v3_tp_esocial.DELETE            ;v3_vlr_base_ret.DELETE		  ;
+                              v3_vlr_retencao.DELETE             ;v3_proc_id.DELETE               ;v3_ind_status.DELETE           ;
+                              v3_cnpj_prestador.DELETE           ;v3_ind_obra.DELETE              ;v3_tp_inscricao.DELETE         ;
+                              v3_nr_inscricao.DELETE             ;v3_num_recibo.DELETE            ;v3_ind_tp_amb.DELETE           ;
+                              v3_vlr_bruto.DELETE                ;v3_vlr_base_ret1.DELETE         ;v3_vlr_ret_princ.DELETE        ;
+                              v3_vlr_ret_adic.DELETE             ;v3_vlr_n_ret_princ.DELETE       ;v3_vlr_n_ret_adic.DELETE       ;
+                              v3_ind_cprb.DELETE                 ;v3_cod_versao_proc.DELETE       ;v3_cod_versao_layout.DELETE    ;
+                              v3_ind_proc_emissao.DELETE         ;v3_id_evento.DELETE             ;v3_ind_oper.DELETE             ;
+                              v3_dat_ocorrencia.DELETE           ;v3_cgc.DELETE                   ;v3_razao_social.DELETE         ;
+                              v3_x04_razao_social.DELETE         ;v3_id_r2010_oc.DELETE           ;v3_num_docto.DELETE            ;
+                              v3_serie.DELETE                    ;v3_dat_emissao_nf.DELETE        ;v3_data_fiscal.DELETE          ;
+                              v3_rnf_vlr_bruto.DELETE            ;v3_observacao.DELETE            ;v3_id_r2010_nf.DELETE          ;
+                              v3_ind_tp_proc_adj_adic.DELETE     ;v3_num_proc_adj_adic.DELETE     ;v3_cod_susp_adic.DELETE        ;
+                              v3_radic_vlr_n_ret_adic.DELETE     ;v3_ind_tp_proc_adj_princ.DELETE ;v3_num_proc_adj_princ.DELETE   ;
+                              v3_cod_susp_princ.DELETE           ;v3_rprinc_vlr_n_ret_princ.DELETE;v3_tp_servico.DELETE           ;
+                              v3_rserv_vlr_base_ret.DELETE       ;v3_vlr_retencao.DELETE          ;v3_vlr_ret_sub.DELETE          ;
+                              v3_rserv_vlr_n_ret_princ.DELETE    ;v3_vlr_servicos_15.DELETE       ;v3_vlr_servicos_20.DELETE      ;
+                              v3_vlr_servicos_25.DELETE          ;v3_rserv_vlr_ret_adic.DELETE    ;v3_rserv_vlr_n_ret_adic.DELETE ;
+                              v3_rnk.DELETE                      ;v3_id_pger_apur.DELETE  ; 
+                              
+                               EXIT WHEN rc_2010%NOTFOUND;
+                                END LOOP;
+                                 COMMIT;
+                                 CLOSE rc_2010;
+                                COMMIT;
+                              
+
+
+                               
+                              --================================================
+                              -- Table -  Apoio Fiscal 
+                              --================================================    
+
+                                OPEN rc_apoio_fiscal ;
+                                LOOP
+                                FETCH rc_apoio_fiscal  BULK COLLECT INTO                           
+                                  v4_value1  ,   --"Codigo da Empresa"            
+                                  v4_value2  ,   --"Codigo do Estabelecimento"    
+                                  v4_value3  ,   --"Periodo de Emissão"           
+                                  v4_value4  ,   --"CNPJ Drogaria"                
+                                  v4_value5  ,   --"Numero da Nota Fiscal"        
+                                  v4_value6  ,   --"Tipo de Documento"            
+                                  v4_value7  ,   --"Data Emissão"                 
+                                  v4_value8  ,   --"CNPJ Fonecedor"               
+                                  v4_value9  ,   --UF                             
+                                  v4_value10 ,   --"Valor Total da Nota"          
+                                  v4_value11 ,   --"Base de Calculo INSS"         
+                                  v4_value12 ,   --"Valor do INSS"                
+                                  v4_value13 ,   --"Codigo Pessoa Fisica/juridica"
+                                  v4_value14 ,   --"Razão Social"                 
+                                  v4_value15 ,   --"Municipio Prestador"          
+                                  v4_value16 ,   --"Codigo de Serviço"            
+                                  v4_value17 ,   --"Codigo CEI"                   
+                                  v4_value18 ,   --DWT                            
+                                  v4_value19 ,   --EMPRESA                        
+                                  v4_value20 ,   --"Codigo Estabelecimento"       
+                                  v4_value21 ,   --COD_PESSOA_FIS_JUR             
+                                  v4_value22 ,   --"Razão Social Cliente"         
+                                  v4_value23 ,   --"CNPJ Cliente"                 
+                                  v4_value24 ,   --"Nro. Nota Fiscal"             
+                                  v4_value25 ,   --"Dt. Emissao"                  
+                                  v4_value26 ,   --"Dt. Fiscal"                   
+                                  v4_value27 ,   --"Vlr. Total da Nota"           
+                                  v4_value28 ,   --"Vlr Base Calc. Retenção"      
+                                  v4_value29 ,   --"Vlr. Aliquota INSS"           
+                                  v4_value30 ,   --"Vlr.Trib INSS RETIDO"         
+                                  v4_value31 ,   --"Razão Social Drogaria"        
+                                  v4_value32 ,   --"CNPJ Drogarias"               
+                                  v4_value33 ,   --"Descr. Tp. Documento"         
+                                  v4_value34 ,   --"Tp.Serv. E-social"            
+                                  v4_value35 ,   --"Descr. Tp. Serv E-social"     
+                                  v4_value36 ,   --"Vlr. do Servico"              
+                                  v4_value37 ,   --"Cod. Serv. Mastersaf"         
+                                  v4_value38 ,   --"Descr. Serv. Mastersaf"       
+                                  v4_value39 ,   --"Codigo Empresa"               
+                                  v4_value40 ,   --"Razão Social Drogaria."       
+                                  v4_value41 ,   --"Razão Social Cliente."        
+                                  v4_value42 ,   --"Número da Nota Fiscal."       
+                                  v4_value43 ,   --"Data de Emissão da NF."       
+                                  v4_value44 ,   --"Data Fiscal."                 
+                                  v4_value45 ,   --"Valor do Tributo."            
+                                  v4_value46 ,   --"Observação."                  
+                                  v4_value47 ,   --"Tipo de Serviço E-social."    
+                                  v4_value48 ,   --"Vlr. Base de Calc. Retenção." 
+                                  v4_value49     --"Valor da Retenção."  
+                                  limit 1000   ;    
+                        
+                        FORALL l IN v4_value1.FIRST .. v4_value1.LAST
+                         INSERT /*+ APPEND */  
+                        INTO msafi.tb_fin4816_rel_apoio_fiscal (
+                           "Codigo da Empresa", "Codigo do Estabelecimento", "Periodo de Emissão", 
+                           "CNPJ Drogaria", "Numero da Nota Fiscal", "Tipo de Documento", 
+                           "Data Emissão", "CNPJ Fonecedor", UF, 
+                           "Valor Total da Nota", "Base de Calculo INSS", "Valor do INSS", 
+                           "Codigo Pessoa Fisica/juridica", "Razão Social", "Municipio Prestador", 
+                           "Codigo de Serviço", "Codigo CEI", DWT, 
+                           EMPRESA, "Codigo Estabelecimento", COD_PESSOA_FIS_JUR, 
+                           "Razão Social Cliente", "CNPJ Cliente", "Nro. Nota Fiscal", 
+                           "Dt. Emissao", "Dt. Fiscal", "Vlr. Total da Nota", 
+                           "Vlr Base Calc. Retenção", "Vlr. Aliquota INSS", "Vlr.Trib INSS RETIDO", 
+                           "Razão Social Drogaria", "CNPJ Drogarias", "Descr. Tp. Documento", 
+                           "Tp.Serv. E-social", "Descr. Tp. Serv E-social", "Vlr. do Servico", 
+                           "Cod. Serv. Mastersaf", "Descr. Serv. Mastersaf", "Codigo Empresa", 
+                           "Razão Social Drogaria.", "Razão Social Cliente.", "Número da Nota Fiscal.", 
+                           "Data de Emissão da NF.", "Data Fiscal.", "Valor do Tributo.", 
+                           "Observação.", "Tipo de Serviço E-social.", "Vlr. Base de Calc. Retenção.", 
+                           "Valor da Retenção.") 
+                         VALUES (     v4_value1(l)  ,   --"Codigo da Empresa"            
+                                      v4_value2(l)  ,   --"Codigo do Estabelecimento"    
+                                      v4_value3(l)  ,   --"Periodo de Emissão"           
+                                      v4_value4(l)  ,   --"CNPJ Drogaria"                
+                                      v4_value5(l)  ,   --"Numero da Nota Fiscal"        
+                                      v4_value6(l)  ,   --"Tipo de Documento"            
+                                      v4_value7(l)  ,   --"Data Emissão"                 
+                                      v4_value8(l)  ,   --"CNPJ Fonecedor"               
+                                      v4_value9(l)  ,   --UF                             
+                                      v4_value10(l) ,   --"Valor Total da Nota"          
+                                      v4_value11(l) ,   --"Base de Calculo INSS"         
+                                      v4_value12(l) ,   --"Valor do INSS"                
+                                      v4_value13(l) ,   --"Codigo Pessoa Fisica/juridica"
+                                      v4_value14(l) ,   --"Razão Social"                 
+                                      v4_value15(l) ,   --"Municipio Prestador"          
+                                      v4_value16(l) ,   --"Codigo de Serviço"            
+                                      v4_value17(l) ,   --"Codigo CEI"                   
+                                      v4_value18(l) ,   --DWT                            
+                                      v4_value19(l) ,   --EMPRESA                        
+                                      v4_value20(l) ,   --"Codigo Estabelecimento"       
+                                      v4_value21(l) ,   --COD_PESSOA_FIS_JUR             
+                                      v4_value22(l) ,   --"Razão Social Cliente"         
+                                      v4_value23(l) ,   --"CNPJ Cliente"                 
+                                      v4_value24(l) ,   --"Nro. Nota Fiscal"             
+                                      v4_value25(l) ,   --"Dt. Emissao"                  
+                                      v4_value26(l) ,   --"Dt. Fiscal"                   
+                                      v4_value27(l) ,   --"Vlr. Total da Nota"           
+                                      v4_value28(l) ,   --"Vlr Base Calc. Retenção"      
+                                      v4_value29(l) ,   --"Vlr. Aliquota INSS"           
+                                      v4_value30(l) ,   --"Vlr.Trib INSS RETIDO"         
+                                      v4_value31(l) ,   --"Razão Social Drogaria"        
+                                      v4_value32(l) ,   --"CNPJ Drogarias"               
+                                      v4_value33(l) ,   --"Descr. Tp. Documento"         
+                                      v4_value34(l) ,   --"Tp.Serv. E-social"            
+                                      v4_value35(l) ,   --"Descr. Tp. Serv E-social"     
+                                      v4_value36(l) ,   --"Vlr. do Servico"              
+                                      v4_value37(l) ,   --"Cod. Serv. Mastersaf"         
+                                      v4_value38(l) ,   --"Descr. Serv. Mastersaf"       
+                                      v4_value39(l) ,   --"Codigo Empresa"               
+                                      v4_value40(l) ,   --"Razão Social Drogaria."       
+                                      v4_value41(l) ,   --"Razão Social Cliente."        
+                                      v4_value42(l) ,   --"Número da Nota Fiscal."       
+                                      v4_value43(l) ,   --"Data de Emissão da NF."       
+                                      v4_value44(l) ,   --"Data Fiscal."                 
+                                      v4_value45(l) ,   --"Valor do Tributo."            
+                                      v4_value46(l) ,   --"Observação."                  
+                                      v4_value47(l) ,   --"Tipo de Serviço E-social."    
+                                      v4_value48(l) ,   --"Vlr. Base de Calc. Retenção." 
+                                      v4_value49(l) );  --"Valor da Retenção."  
+                                      
+                                      --
+                                      v4_value1.delete; v4_value10.delete;v4_value19.delete;v4_value28.delete;v4_value37.delete;v4_value46.delete;
+                                      v4_value2.delete; v4_value11.delete;v4_value20.delete;v4_value29.delete;v4_value38.delete;v4_value47.delete;
+                                      v4_value3.delete; v4_value12.delete;v4_value21.delete;v4_value30.delete;v4_value39.delete;v4_value48.delete;
+                                      v4_value4.delete; v4_value13.delete;v4_value22.delete;v4_value31.delete;v4_value40.delete;v4_value49.delete;
+                                      v4_value5.delete; v4_value14.delete;v4_value23.delete;v4_value32.delete;v4_value41.delete;
+                                      v4_value6.delete; v4_value15.delete;v4_value24.delete;v4_value33.delete;v4_value42.delete;
+                                      v4_value7.delete; v4_value16.delete;v4_value25.delete;v4_value34.delete;v4_value43.delete;
+                                      v4_value8.delete; v4_value17.delete;v4_value26.delete;v4_value35.delete;v4_value44.delete;
+                                      v4_value9.delete; v4_value18.delete;v4_value27.delete;v4_value36.delete;v4_value45.delete;
+                                      
+                      
+                             EXIT WHEN rc_apoio_fiscal%NOTFOUND;
+                              END LOOP;
+                              COMMIT;
+                             CLOSE rc_apoio_fiscal;
+                             COMMIT;
+
+            
+
+
+
+
              
              
-             --================================================
-             -- Table -  Reinf - Event - R-2010
-             --================================================
-             OPEN rc_2010 ;
-             LOOP
-             FETCH rc_2010 BULK COLLECT INTO l_data_r2010 LIMIT 100;                                 
-             FORALL i IN 1..l_data_reinf.COUNT
-             INSERT INTO msafi.tb_fin4816_reinf_2010_gtt VALUES l_data_r2010(i);
-             EXIT WHEN rc_2010%NOTFOUND;
-             END LOOP;                           
-             CLOSE rc_2010;   
-             COMMIT; 
+             
+             
+ 
            
-             --================================================
-             -- Table -  table final (excel)
-             --================================================
-             OPEN rc_apoio_fiscal ;
-             LOOP
-             FETCH rc_apoio_fiscal BULK COLLECT INTO l_data_rel_apoio LIMIT 100;                                 
-             FORALL i IN 1..l_data_rel_apoio.COUNT
-             INSERT INTO msafi.tb_fin4816_rel_apoio_fiscal VALUES l_data_rel_apoio(i);
-             EXIT WHEN rc_apoio_fiscal%NOTFOUND;
-             END LOOP;                
-             CLOSE rc_apoio_fiscal;        
+             --  select * from msafi.tb_fin4816_report_fiscal_gtt    --  akk           
+             --  select * from msafi.tb_fin4816_reinf_prev_gtt       -- akk
+             --  select * from msafi.tb_fin4816_reinf_2010_gtt       --  akk  
+             --  select * from msafi.tb_fin4816_rel_apoio_fiscal
 
              --  select * from msafi.tb_fin4816_report_fiscal_gtt    --  akk           
              --  select * from msafi.tb_fin4816_reinf_prev_gtt       -- akk
@@ -3069,13 +3693,12 @@ IS
     PROCEDURE prc_limpa_table
     IS
     BEGIN  
-     delete  msafi.tb_fin4816_rel_apoio_fiscal;   -- unico 
-     delete  msafi.tb_fin4816_report_fiscal_gtt;  -- gtt    ok 
-     delete  msafi.tb_fin4816_reinf_prev_gtt;     --gtt     ok 
-     delete  msafi.tb_fin4816_reinf_2010_gtt;      -- gtt   ok 
-     delete  msafi.tb_fin4816_prev_tmp_estab;       -- gtt 
-      --  DENTRO DA procedure 
-     delete  msafi.tb_fin4816_reinf_conf_prev_gtt;
+    delete  msafi.tb_fin4816_rel_apoio_fiscal;       -- unico 
+     -- delete  msafi.tb_fin4816_report_fiscal_gtt;  -- tmp    ok 
+     -- delete  msafi.tb_fin4816_reinf_prev_gtt;     -- tmp     ok 
+     -- delete  msafi.tb_fin4816_reinf_2010_gtt;     -- tmp   ok 
+     -- delete  msafi.tb_fin4816_prev_tmp_estab;     -- tmp 
+     -- delete  msafi.tb_fin4816_reinf_conf_prev_gtt;-- tmp 
      commit work;
     END prc_limpa_table; 
     
@@ -3087,26 +3710,18 @@ IS
         RETURN INTEGER
     IS
         --Variaveis genericas
-        p_lote INTEGER := 10;
-        v_descricao VARCHAR2 ( 4000 );
-        v_qt_grupos INTEGER := pdata_final - pdata_inicial + 1;
-        v_qt_grupos_paralelos INTEGER := 10;
-        p_task VARCHAR2 ( 30 );
-        v_cont_estab INTEGER := 0;
-        l_status NUMBER;
+        v_descricao             VARCHAR2 ( 4000 );
+        p_task                  VARCHAR2 ( 30 );
+        p_lote                  INTEGER := 10;
+        v_qt_grupos             INTEGER := pdata_final - pdata_inicial + 1;
+        v_qt_grupos_paralelos   INTEGER := 10;
+       
+        v_cont_estab            INTEGER := 0;
+        l_status                NUMBER;
+        
     BEGIN
       
-                --  tb_fin4816_reinf_conf_prev_gtt  (transforma em gtt ) 
-                --  tb_fin4816_reinf_2010_gtt       (transforma em gtt ) 
-
-                -- reinf 2010     
-                --01/2018	590   -- OK  (n) 
-                --06/2018	2      -- OK (n) 
-                --12/2018	95        --OK    (n)
-                --05/2018	37      -- OK 
-                ---
-                --01/2019	1       -- OK 
-                --11/2019	2
+         
 
 
 
@@ -3187,5 +3802,5 @@ IS
           RETURN mproc_id;
  
     END;
-END dpsp_v3_fin4816_prev_cproc;
+END dpsp_v4_fin4816_prev_cproc;
 /
