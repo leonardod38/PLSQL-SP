@@ -1,15 +1,17 @@
 
 
 DECLARE
-    p_data_inicial DATE             := '01/12/2018';
-    p_data_final DATE               := '31/12/2018';
+    p_data_inicial DATE             := '01/12/2018';  -- data  inicial emissao
+    p_data_final DATE               := '31/12/2019';  -- data  final  emissao
     p_cod_empresa VARCHAR2 ( 10 )   := 'DSP';
-    p_cod_estab VARCHAR2 ( 10 )     := 'DSP004';
+    p_cod_estab VARCHAR2 ( 10 )     := 'DSP062';
+    pproc_id  number                := 290380;
+    
     idx NUMBER ( 10 )               := 0;
-    ---
     v_sql VARCHAR2 ( 32767 );
     l_status  varchar2(10);
-    
+  
+   --    select distinct * from msafi.tb_fin4816_rel_apoio_fiscalv5 
     
    TYPE typ_fin4816_rtf IS RECORD
     (
@@ -184,117 +186,201 @@ DECLARE
           r_fin4816_rel_apoio_fiscal  msafi.tb_fin4816_rel_apoio_fiscal%rowtype;  --  TARGET LOOP
           
           
-       
+          
+          
+               CURSOR rc_prev   
+                 (  pcod_empresa        VARCHAR2   
+                   ,pcod_estab          VARCHAR2
+                   ,pdataemissao        DATE
+                   ,pdata               DATE
+                   ,pident_fisjur       NUMBER
+                   ,pident_docto        NUMBER
+                   ,pnum_docfis         VARCHAR2
+                   ,pserie_docfis       VARCHAR2
+                   ,psubseriesdocfis    VARCHAR2
+                   ,pnum_item           NUMBER
+                   ,pproc_id            NUMBER) 
+                   IS
+                 SELECT 'S'                                                     AS tipo
+                     , reinf.cod_empresa                                        AS "Codigo Empresa"
+                     , reinf.cod_estab                                          AS "Codigo Estabelecimento"
+                     , reinf.data_emissao                                       AS "Data Emissão"
+                     , reinf.data_fiscal                                        AS "Data Fiscal"
+                     , reinf.ident_fis_jur                                      AS ident_fis_jur
+                     , reinf.ident_docto                                        AS ident_docto
+                     , reinf.num_docfis                                         AS "Número da Nota Fiscal"
+                     , reinf.num_docfis || '/' || reinf.serie_docfis            AS "Docto/Série"
+                     , reinf.data_emissao                                       AS "Emissão"
+                     , reinf.serie_docfis                                       AS serie_docfis
+                     , reinf.sub_serie_docfis                                   AS sub_serie_docfis
+                     , reinf.num_item                                           AS num_item
+                     , reinf.cod_usuario                                        AS cod_usuario
+                     , x04.cod_fis_jur                                          AS "Codigo Pessoa Fisica/Juridica"
+                     , INITCAP ( x04.razao_social )                             AS "Razão Social Cliente"
+                     , x04.ind_fis_jur                                          AS ind_fis_jur
+                     , x04.cpf_cgc                                              AS "CNPJ Cliente"                            
+                     , reinf.cod_class_doc_fis                                  AS cod_class_doc_fis
+                     , reinf.vlr_tot_nota                                       AS vlr_tot_nota
+                     , reinf.vlr_base_inss                                      AS "Vlr Base Calc. Retenção"
+                     , reinf.vlr_aliq_inss                                      AS vlr_aliq_inss
+                     , reinf.vlr_inss_retido                                    AS "Vlr.Trib INSS RETIDO"
+                     , reinf.vlr_inss_retido                                    AS "Valor da Retenção"
+                     , reinf.vlr_contab_compl                                   AS vlr_contab_compl
+                     , reinf.ind_tipo_proc                                      AS ind_tipo_proc
+                     , reinf.num_proc_jur                                       AS num_proc_jur
+                     , estab.razao_social                                       AS razao_social
+                     , estab.cgc                                                AS cgc
+                     , x2005.descricao                                          AS "Documento"
+                     , prt_tipo.cod_tipo_serv_esocial                           AS "Tipo de Serviço E-social"
+                     , prt_tipo.dsc_tipo_serv_esocial                           AS dsc_tipo_serv_esocial
+                     , INITCAP ( empresa.razao_social )                         AS "Razão Social Drogaria"
+                     , reinf.vlr_servico                                        AS "Valor do Servico"
+                     , reinf.num_proc_adj_adic                                  AS num_proc_adj_adic
+                     , reinf.ind_tp_proc_adj_adic                               AS ind_tp_proc_adj_adic
+                     , x2018.cod_servico                                        AS codigo_serv_prod
+                     , INITCAP ( x2018.descricao )                              AS desc_serv_prod
+                     , x2005.cod_docto                                          AS cod_docto
+                     , NULL                                                     AS "Observação"
+                     , NULL                                                     AS dsc_param
+                FROM   msafi.tb_fin4816_reinf_conf_prev_tmp reinf     
+                     , msafi.tb_fin4816_prev_tmp_estab      estab1
+                     , x04_pessoa_fis_jur                   x04
+                     , estabelecimento                      estab
+                     , x2005_tipo_docto                     x2005
+                     , prt_tipo_serv_esocial                prt_tipo
+                     , x2018_servicos                       x2018
+                     , empresa
+                 WHERE 1 = 1
+                  AND reinf.cod_empresa                 = pcod_empresa             
+                  AND reinf.cod_estab                   = pcod_estab          
+                  AND reinf.data_emissao                = pdataemissao        
+                  AND reinf.data_fiscal                 = pdata               
+                  AND reinf.ident_fis_jur               = pident_fisjur       
+                  AND reinf.ident_docto                 = pident_docto        
+                  AND reinf.num_docfis                  = pnum_docfis                 
+                  AND reinf.serie_docfis                = pserie_docfis       
+                  AND reinf.sub_serie_docfis            = psubseriesdocfis    
+                  AND reinf.num_item                    = pnum_item                 
+                  AND pproc_id                          = pproc_id
+                  --
+                  AND reinf.ident_fis_jur               = x04.ident_fis_jur
+                  AND reinf.cod_empresa                 = estab.cod_empresa
+                  AND reinf.cod_estab                   = estab.cod_estab
+                  AND reinf.ident_docto                 = x2005.ident_docto
+                  AND reinf.ident_tipo_serv_esocial     = prt_tipo.ident_tipo_serv_esocial 
+                  AND reinf.cod_empresa                 = empresa.cod_empresa                   
+                  AND reinf.ident_servico               = x2018.ident_servico
+                  AND LENGTH ( TRIM ( x04.cpf_cgc ) )  > 11;
+   
     
-    BEGIN
-      delete msafi.tb_fin4816_rel_apoio_fiscalV5 ;
-      commit;
-      --  select * from msafi.tb_fin4816_rel_apoio_fiscal
-      --  select * from msafi.reinf_conf_previdenciaria_tmp
-            
-      
---    p_data_inicial DATE             := '01/01/2019';
---    p_data_final DATE               := '31/01/2019';
---    p_cod_empresa VARCHAR2 ( 10 )   := 'DSP';
---    p_cod_estab VARCHAR2 ( 10 )     := 'DSP004';
---    
-      
---                     prc_reinf_conf_retencao( 
---                                    p_cod_empresa   => p_cod_empresa
---                                   ,p_cod_estab     => p_cod_estab
---                                   ,p_tipo_selec    => '1'
---                                   ,p_data_inicial  => TO_DATE ('01/01/2019', 'DD/MM/YYYY')
---                                   ,p_data_final    => TO_DATE ('31/01/2019', 'DD/MM/YYYY')
---                                   ,p_cod_usuario   => 'leonardo.b.lima'
---                                   ,p_entrada_saida => 'E'
---                                   ,p_status        => l_status
---                                   ,p_proc_id       => 1);
---                     -- LOGA(L_STATUS);
-                         
+        BEGIN
+          delete msafi.tb_fin4816_rel_apoio_fiscalV5 ;
+          delete msafi.tb_fin4816_reinf_conf_prev_tmp;      
+          commit;
+   
+
+
+              --   select * from msafi.tb_fin4816_rel_apoio_fiscalv5 
+              --   select * from msafi.tb_fin4816_reinf_conf_prev_tmp
+
+ 
+         
+                                                       prc_reinf_conf_retencao( 
+                                                              p_cod_empresa   => p_cod_empresa
+                                                             ,p_cod_estab     => p_cod_estab
+                                                             ,p_tipo_selec    => '1'
+                                                             ,p_data_inicial  => p_data_inicial
+                                                             ,p_data_final    => p_data_final
+                                                             ,p_cod_usuario   => 'leonardo.b.lima'
+                                                             ,p_entrada_saida => 'E'
+                                                             ,p_status        => l_status
+                                                             ,p_proc_id       => 290380
+                                                             --
+                                                             );
         
  
-       for m in  cr_rtf  
-       loop
-              idx := idx + 1;
-              t_fin4816_rtf ( idx )."Codigo da Empresa"            := m.cod_empresa ;
-              t_fin4816_rtf ( idx )."Codigo do Estabelecimento"    := m.cod_estab;
-              t_fin4816_rtf ( idx )."Periodo de Emissão"           := to_char(m.data_emissao,'mm/yyyy');
-              t_fin4816_rtf ( idx )."CNPJ Drogaria"                := m.cgc;
-              t_fin4816_rtf ( idx )."Numero da Nota Fiscal"        := m.num_docto;
-              t_fin4816_rtf ( idx )."Tipo de Documento"            := m.tipo_docto;
-              t_fin4816_rtf ( idx )."Data Emissão"                 := m.data_emissao;
-              t_fin4816_rtf ( idx )."CNPJ Fonecedor"               := m.cgc_fornecedor;       
-              t_fin4816_rtf ( idx ).uf                             := m.uf;                   
-              t_fin4816_rtf ( idx )."Valor Total da Nota"          := m.valor_total;          
-              t_fin4816_rtf ( idx )."Base de Calculo INSS"         := m.base_inss  ;
-              t_fin4816_rtf ( idx )."Valor do INSS"                := m.valor_inss ;
-              t_fin4816_rtf ( idx )."Codigo Pessoa Fisica/juridica":= m.cod_fis_jur;
-              t_fin4816_rtf ( idx )."Razão Social"                 := m.razao_social;         
-              t_fin4816_rtf ( idx )."Municipio Prestador"          := m.municipio_prestador;  
-              t_fin4816_rtf ( idx )."Codigo de Serviço"            := m.cod_servico;          
-              t_fin4816_rtf ( idx )."Codigo CEI"                   := m.cod_cei; 
+                         for m in  cr_rtf  
+                         loop
+                              idx := idx + 1;
+                              t_fin4816_rtf ( idx )."Codigo da Empresa"            := m.cod_empresa ;
+                              t_fin4816_rtf ( idx )."Codigo do Estabelecimento"    := m.cod_estab;
+                              t_fin4816_rtf ( idx )."Periodo de Emissão"           := to_char(m.data_emissao,'mm/yyyy');
+                              t_fin4816_rtf ( idx )."CNPJ Drogaria"                := m.cgc;
+                              t_fin4816_rtf ( idx )."Numero da Nota Fiscal"        := m.num_docto;
+                              t_fin4816_rtf ( idx )."Tipo de Documento"            := m.tipo_docto;
+                              t_fin4816_rtf ( idx )."Data Emissão"                 := m.data_emissao;
+                              t_fin4816_rtf ( idx )."CNPJ Fonecedor"               := m.cgc_fornecedor;       
+                              t_fin4816_rtf ( idx ).uf                             := m.uf;                   
+                              t_fin4816_rtf ( idx )."Valor Total da Nota"          := m.valor_total;          
+                              t_fin4816_rtf ( idx )."Base de Calculo INSS"         := m.base_inss  ;
+                              t_fin4816_rtf ( idx )."Valor do INSS"                := m.valor_inss ;
+                              t_fin4816_rtf ( idx )."Codigo Pessoa Fisica/juridica":= m.cod_fis_jur;
+                              t_fin4816_rtf ( idx )."Razão Social"                 := m.razao_social;         
+                              t_fin4816_rtf ( idx )."Municipio Prestador"          := m.municipio_prestador;  
+                              t_fin4816_rtf ( idx )."Codigo de Serviço"            := m.cod_servico;          
+                              t_fin4816_rtf ( idx )."Codigo CEI"                   := m.cod_cei; 
               
-              
-              
-              
-              
-              
-              
-             
-              
-               --   select * from msafi.tb_fin4816_rel_apoio_fiscal 
-               --   select * from msafi.tb_fin4816_rel_apoio_fiscalv5
-               
-              
---               CREATE TABLE msafi.tb_fin4816_rel_apoio_fiscalV5 
---                AS SELECT * FROM msafi.tb_fin4816_rel_apoio_fiscal;
---                    
-              
-              
-              
-                  insert into msafi.tb_fin4816_rel_apoio_fiscalV5 
-                   values t_fin4816_rtf ( idx );
-                  commit;
-           
+                                                    
+                                                
+                                                            FOR n IN  rc_prev   
+                                                               (  pcod_empresa     => m.cod_empresa     
+                                                               ,  pcod_estab       => m.cod_estab                         
+                                                               ,  pdataemissao     => m.data_emissao                     
+                                                               ,  pdata            => m.data_fiscal                    
+                                                               ,  pident_fisjur    => m.ident_fis_jur                    
+                                                               ,  pident_docto     => m.ident_docto                  
+                                                               ,  pnum_docfis      => m.num_docfis                       
+                                                               ,  pserie_docfis    => m.serie_docfis
+                                                               ,  psubseriesdocfis => m.sub_serie_docfis  
+                                                               ,  pnum_item        => m.num_item
+                                                               ,  pproc_id         => pproc_id   )  
+                                                            LOOP
+                                                                 t_fin4816_rtf ( idx ).DWT                         := 'S';                                              
+                                                                 t_fin4816_rtf ( idx ).EMPRESA                     := n."Codigo Empresa";                              
+                                                                 t_fin4816_rtf ( idx )."Codigo Estabelecimento"    := n."Codigo Estabelecimento";                          
+                                                                 t_fin4816_rtf ( idx ).cod_pessoa_fis_jur          := n."Codigo Pessoa Fisica/Juridica";                   
+                                                                 t_fin4816_rtf ( idx )."Razão Social Cliente"      := n."Razão Social Cliente";                            
+                                                                 t_fin4816_rtf ( idx )."CNPJ Cliente"              := n."CNPJ Cliente";                                    
+                                                                 t_fin4816_rtf ( idx )."Nro. Nota Fiscal"          := n."Número da Nota Fiscal";                           
+                                                                 t_fin4816_rtf ( idx )."Dt. Emissao"               := n."Emissão";                                         
+                                                                 t_fin4816_rtf ( idx )."Dt. Fiscal"                := n."Data Fiscal";                                     
+                                                                 t_fin4816_rtf ( idx )."Vlr. Total da Nota"        := n.vlr_tot_nota;                                      
+                                                                 t_fin4816_rtf ( idx )."Vlr Base Calc. Retenção"   := n."Vlr Base Calc. Retenção";                         
+                                                                 t_fin4816_rtf ( idx )."Vlr. Aliquota INSS"        := n.vlr_aliq_inss  ;                                    
+                                                                 t_fin4816_rtf ( idx )."Vlr.Trib INSS RETIDO"      := n."Vlr.Trib INSS RETIDO";                            
+                                                                 t_fin4816_rtf ( idx )."Razão Social Drogaria"     := n."Razão Social Drogaria";                           
+                                                                 t_fin4816_rtf ( idx )."CNPJ Drogarias"            := n.cgc;                                                  
+                                                                 t_fin4816_rtf ( idx )."Descr. Tp. Documento"      := n.cod_docto;                                       
+                                                                 t_fin4816_rtf ( idx )."Tp.Serv. E-social"         := n."Tipo de Serviço E-social";                                    
+                                                                 t_fin4816_rtf ( idx )."Descr. Tp. Serv E-social"  := n.dsc_tipo_serv_esocial;                             
+                                                                 t_fin4816_rtf ( idx )."Vlr. do Servico"           := n."Valor do Servico";                                
+                                                                 t_fin4816_rtf ( idx )."Cod. Serv. Mastersaf"      := n.codigo_serv_prod;                                  
+                                                                 t_fin4816_rtf ( idx )."Descr. Serv. Mastersaf"    := n.desc_serv_prod;                                
+                                                            END LOOP;  
+                                                            
+                                                            IF   t_fin4816_rtf ( idx ).DWT IS NULL 
+                                                            THEN t_fin4816_rtf ( idx ).DWT := 'N';                                                                                                         
+                                                            END IF; 
+                                                                                                                                  
+                                                                                                                                                            
+                                                                                                                                                            
+      
+                                                                                                             
+                                             INSERT INTO msafi.tb_fin4816_rel_apoio_fiscalv5 VALUES t_fin4816_rtf ( idx );
+                                             COMMIT;
                     
            
            
-           
-           
-           
-           
-               
-                    
---                    if  t_fin4816_rtf ( idx ).num_docfis = '081086' then
---                    
---                     dbms_output.put_line ( t_fin4816_rtf ( idx ).num_docfis);
---                     dbms_output.put_line ( '-- ok : = 081086');
---                      
---                       t_fin4816_rtf ( idx ).num_docfis :='0999999';
---                      dbms_output.put_line ( t_fin4816_rtf ( idx ).num_docfis);
---                      
---                    end if;
---                    
---                    
-                    
-                   
-               
-           
-           
-            
-           
-          
-
 
            
          
        
        
-       end loop;
-       idx := 0;
+                         END LOOP;
+                         idx := 0;
     
-    EXCEPTION
-    WHEN OTHERS THEN
+        EXCEPTION
+        WHEN OTHERS THEN
     dbms_output.put_line ( SQLERRM );
  END ;
    
