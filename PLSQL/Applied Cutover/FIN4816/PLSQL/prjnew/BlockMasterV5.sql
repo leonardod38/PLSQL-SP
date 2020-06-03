@@ -3,7 +3,7 @@
     p_data_final DATE               := '31/12/2018';  -- data  final  emissao
     p_cod_empresa VARCHAR2 ( 10 )   := 'DSP';
     p_cod_estab VARCHAR2 ( 10 )     := 'DSP062';
-    pproc_id  number                := 290380;
+    pprocid  number                := 295754;
     
     idx NUMBER ( 10 )               := 0;
     v_sql VARCHAR2 ( 32767 );
@@ -17,18 +17,17 @@
             --   select * from msafi.tb_fin4816_prev_tmp_estab	
             --   select * from msafi.tb_fin4816_rel_apoio_fiscalv5 
             
-              delete msafi.tb_fin4816_reinf_conf_prev_tmp;      
-              delete msafi.tb_fin4816_rel_apoio_fiscalV5 ;
-              commit;
+              ---delete msafi.tb_fin4816_reinf_conf_prev_tmp;      
+              --delete msafi.tb_fin4816_rel_apoio_fiscalV5 ;
+              --commit;
               
          
       
          
 
-             for  m  in  pkg_fin4816_cursor.cr_rtf  (pcod_empresa  => p_cod_empresa,  pdata_ini => p_data_inicial, pdata_fim   => p_data_final , pproc_id => pproc_id )
+             for  m  in  pkg_fin4816_cursor.cr_rtf  (pcod_empresa  => p_cod_empresa,  pdata_ini => p_data_inicial, pdata_fim   => p_data_final , pproc_id => pprocid )
              loop
              idx := idx + 1;
-            
              pkg_fin4816_type.t_fin4816_rtf ( idx )."Codigo da Empresa"            := m.cod_empresa ;
              pkg_fin4816_type.t_fin4816_rtf ( idx )."Codigo do Estabelecimento"    := m.cod_estab;
              pkg_fin4816_type.t_fin4816_rtf ( idx )."Periodo de Emissão"           := to_char(m.data_emissao,'mm/yyyy');
@@ -47,7 +46,7 @@
              pkg_fin4816_type.t_fin4816_rtf ( idx )."Codigo de Serviço"            := m.cod_servico;          
              pkg_fin4816_type.t_fin4816_rtf ( idx )."Codigo CEI"                   := m.cod_cei;    
              pkg_fin4816_type.t_fin4816_rtf ( idx ).id_rtf := idx;
-             
+             --
              insert into msafi.tb_fin4816_rel_apoio_fiscalv5 
              values pkg_fin4816_type.t_fin4816_rtf ( idx );
              commit; 
@@ -55,9 +54,8 @@
              end loop;
              idx := 0;
              
-             --    select * from msafi.tb_fin4816_rel_apoio_fiscalv5 
 
-             for n in   pkg_fin4816_cursor.cr_inss_retido (pempresa  => p_cod_empresa , pdata_ini => p_data_inicial , pdata_fim => p_data_final , procid => pproc_id ) 
+             for n in   pkg_fin4816_cursor.cr_inss_retido (pempresa  => p_cod_empresa , pdata_ini => p_data_inicial , pdata_fim => p_data_final , pproc_id => pprocid ) 
              loop
              idx := idx + 1;            
              pkg_fin4816_type.t_fin4816_rtf ( idx ).EMPRESA                     := n."Codigo Empresa";                              
@@ -90,10 +88,9 @@
              idx := 0;
 
            
-             for j in   pkg_fin4816_cursor.rc_reinf_evento_e2010 (pcod_empresa  =>p_cod_empresa ,   pdata_ini => p_data_inicial , pdata_fim => p_data_final , pprocid => pproc_id)   
+             for j in   pkg_fin4816_cursor.rc_reinf_evento_e2010 (pcod_empresa  =>p_cod_empresa ,   pdata_ini => p_data_inicial , pdata_fim => p_data_final , pproc_id => pprocid)   
              loop
              idx := idx + 1;
-             
              pkg_fin4816_type.t_fin4816_rtf ( idx )."Codigo Empresa"               := j."Codigo Empresa"               ;             
              pkg_fin4816_type.t_fin4816_rtf ( idx )."Razão Social Drogaria."       := j."Razão Social Drogaria"        ;
              pkg_fin4816_type.t_fin4816_rtf ( idx )."Razão Social Cliente."        := j."Razão Social Cliente"         ;
@@ -106,16 +103,16 @@
              pkg_fin4816_type.t_fin4816_rtf ( idx )."Vlr. Base de Calc. Retenção." := j."Vlr. Base de Calc. Retenção"  ;
              pkg_fin4816_type.t_fin4816_rtf ( idx )."Valor da Retenção."           := j."Valor da Retenção"            ;                                                                                                                       
              pkg_fin4816_type.t_fin4816_rtf ( idx ).id_reinf_e2010 := idx;
-             
+             --
              insert into msafi.tb_fin4816_rel_apoio_fiscalv5 
              values pkg_fin4816_type.t_fin4816_rtf ( idx );
              commit; 
              pkg_fin4816_type.t_fin4816_rtf .delete;      
              end loop;            
-             idx := 0;
-                 
+             idx := 0;                 
              
-             --  select  * from msafi.tb_fin4816_rel_apoio_fiscalv5                
+             UPDATE  msafi.tb_fin4816_rel_apoio_fiscalv5 SET  ID_GERAL = ROWNUM ;
+             COMMIT;
+         
 
-
-        END ;
+            END ;
