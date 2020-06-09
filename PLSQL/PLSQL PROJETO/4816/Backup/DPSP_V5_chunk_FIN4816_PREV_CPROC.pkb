@@ -405,9 +405,27 @@ IS
         lib_proc.add ( dsp_planilha.tabela_fim
                      , ptipo => 99 );
     END prc_output_excel;
+    
+    
+    
+    --           carga( pnr_particao  INTEGER,
+--                  pnr_particao2 INTEGER,
+--                  p_data_ini    DATE,      -- ok 
+--                  p_data_fim    DATE,      -- ok 
+--                  p_proc_id     VARCHAR2,   --ok 
+--                  p_nm_empresa  VARCHAR2,  -- ok 
+--                  p_nm_usuario  VARCHAR2);  -- ok 
+    
 
 
-   procedure   carga_test (pcod_empresa varchar2, pdata_inicial date, pdata_final  date ,  pprocid number ) 
+   procedure   carga_test ( 
+                  pnr_particao  INTEGER
+                , pnr_particao2 INTEGER
+                , pdata_inicial DATE
+                , pdata_final   DATE
+                , pprocid       VARCHAR2
+                , pcod_empresa  VARCHAR2
+                , p_nm_usuario  VARCHAR2 ) 
    is 
 --    p_data_inicial DATE             := '01/12/2018';  -- data  inicial emissao '01/07/2018'   AND  '30/07/2018'  DSP062
 --    p_data_final DATE               := '31/12/2018';  -- data  final  emissao
@@ -620,6 +638,10 @@ IS
          loga('Quantidade em paralelo: ' || v_qt_grupos_paralelos, FALSE);
          loga(' ', FALSE);
          
+
+         
+         
+         
          
          
          
@@ -637,15 +659,56 @@ IS
          
          
          
+         
+         
+        --===================================
+        -- CHUNK
+        --===================================
+      
+        msaf.dpsp_chunk_parallel.exec_parallel(mproc_id,
+                                               'DPSP_V5_FIN4816_PREV_CPROC.CARGA_TEST',
+                                               v_qt_grupos,
+                                               v_qt_grupos_paralelos,
+                                               p_task,               -- 'PROCESSAR_EXCLUSAO',
+                                               'TO_DATE(''' ||
+                                               to_char(pdata_inicial,
+                                                       'DDMMYYYY') ||
+                                               ''',''DDMMYYYY''),' ||
+                                               'TO_DATE(''' ||
+                                               to_char(pdata_final, 'DDMMYYYY') ||
+                                               ''',''DDMMYYYY''),' || mproc_id ||
+                                               ',''' || mcod_empresa || ''',' || '''' ||
+                                               mnm_usuario || '''');
+      
+        dbms_parallel_execute.drop_task(p_task);
+                 
+ 
+
+
+        
+--         carga_test ( 
+--                  pnr_particao  INTEGER
+--                , pnr_particao2 INTEGER
+--                , pdata_inicial DATE
+--                , pdata_final   DATE
+--                , pprocid       VARCHAR2
+--                , pcod_empresa  VARCHAR2
+--                , p_nm_usuario  VARCHAR2 ) 
+         
+         
        
          --============================================
          -- LOOP  ( load table ) 
          --============================================
-          carga_test  (   
-            pcod_empresa    => mcod_empresa
-          , pdata_inicial   => pdata_inicial    --TO_DATE ( pdata_inicial, 'DD/MM/YYYY') 
-          , pdata_final     => pdata_final       --TO_DATE ( pdata_final, 'DD/MM/YYYY')  
-          , pprocid         => mproc_id ) ;
+--          carga_test  (   
+--            pcod_empresa    => mcod_empresa
+--          , pdata_inicial   => pdata_inicial    --TO_DATE ( pdata_inicial, 'DD/MM/YYYY') 
+--          , pdata_final     => pdata_final      --TO_DATE ( pdata_final, 'DD/MM/YYYY')  
+--          , pprocid         => mproc_id ) ;
+          
+
+
+
          
 
 
@@ -669,5 +732,3 @@ IS
     
 END dpsp_v5_fin4816_prev_cproc;
 /
-
-Show errors;
