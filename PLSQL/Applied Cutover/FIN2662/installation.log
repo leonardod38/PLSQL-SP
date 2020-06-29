@@ -1,0 +1,197 @@
+
+Tabela criada.
+
+
+Tabela criada.
+
+
+Sequência criada.
+
+
+Sequência criada.
+
+
+Advertência: Pacote criado com erros de compilação.
+
+
+Advertência: Package Body criado com erros de compilação.
+
+
+Pacote criado.
+
+
+Advertência: Package Body criado com erros de compilação.
+
+
+Advertência: Pacote criado com erros de compilação.
+
+
+Advertência: Package Body criado com erros de compilação.
+
+
+Advertência: Pacote criado com erros de compilação.
+
+
+Advertência: Package Body criado com erros de compilação.
+
+
+Pacote criado.
+
+SP2-0310: não foi possível abrir o arquivo "param.sql"
+SP2-0310: não foi possível abrir o arquivo "param.sql"
+SP2-0310: não foi possível abrir o arquivo "return.sql"
+SP2-0310: não foi possível abrir o arquivo "return.sql"
+SP2-0310: não foi possível abrir o arquivo "param.sql"
+
+Advertência: Pacote criado com erros de compilação.
+
+
+Advertência: Package Body criado com erros de compilação.
+
+
+Pacote criado.
+
+
+Advertência: Package Body criado com erros de compilação.
+
+
+Pacote criado.
+
+
+Advertência: Package Body criado com erros de compilação.
+
+
+Pacote criado.
+
+
+Advertência: Package Body criado com erros de compilação.
+
+
+Advertência: Pacote criado com erros de compilação.
+
+
+Advertência: Package Body criado com erros de compilação.
+
+
+Tipo criado.
+
+
+Tipo criado.
+
+
+Tipo criado.
+
+
+Sinônimo criado.
+
+
+Sinônimo criado.
+
+
+Sinônimo criado.
+
+
+Sinônimo criado.
+
+
+Sinônimo criado.
+
+
+Sinônimo criado.
+
+
+Sinônimo criado.
+
+
+Pacote alterado.
+
+
+Corpo de Pacote alterado.
+
+
+Pacote alterado.
+
+
+Corpo de Pacote alterado.
+
+
+Pacote alterado.
+
+
+Corpo de Pacote alterado.
+
+
+Pacote alterado.
+
+
+Corpo de Pacote alterado.
+
+
+Pacote alterado.
+
+
+Corpo de Pacote alterado.
+
+
+Pacote alterado.
+
+
+Pacote alterado.
+
+
+Corpo de Pacote alterado.
+
+
+Pacote alterado.
+
+
+Pacote alterado.
+
+
+Corpo de Pacote alterado.
+
+
+Pacote alterado.
+
+
+Corpo de Pacote alterado.
+
+
+Pacote alterado.
+
+
+Corpo de Pacote alterado.
+
+
+Procedimento PL/SQL concluído com sucesso.
+
+20200615-14:59:03.97 3    ===== Run Test Suite "TST_PLSQL_ERROR" ====           
+begin pTest.runTestSuite ( 'TST_PLSQL_ERROR'); end;
+*
+ERRO na linha 1:
+ORA-06502: PL/SQL: erro: valor-chave de tabela de índice NULL numérico ou de 
+valor 
+ORA-06512: em "MSAF_DW.PLSQL_TEST", line 131 
+ORA-06512: em line 1 
+
+
+20200615-14:59:07.39 3    ===== Run Test Suite "TST_PLSQL_UTIL" ====            
+begin pTest.runTestSuite ( 'TST_PLSQL_UTIL' ); end;
+*
+ERRO na linha 1:
+ORA-06502: PL/SQL: erro: valor-chave de tabela de índice NULL numérico ou de 
+valor 
+ORA-06512: em "MSAF_DW.PLSQL_TEST", line 131 
+ORA-06512: em line 1 
+
+
+20200615-14:59:07.64 3    ===== Run Test Suite "TST_PLSQL_LOG" ====             
+begin pTest.runTestSuite ( 'TST_PLSQL_LOG' ); end;
+*
+ERRO na linha 1:
+ORA-06502: PL/SQL: erro: valor-chave de tabela de índice NULL numérico ou de 
+valor 
+ORA-06512: em "MSAF_DW.PLSQL_TEST", line 131 
+ORA-06512: em line 1 
+
+
